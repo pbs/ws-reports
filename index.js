@@ -39,7 +39,7 @@ if(require.main == module){
 
     var today = (new Date()).toLocaleDateString();
 
-    proc.execSync('git add . && git commit -m "' + today + ' plato report"');
-    proc.execSync('git push origin gh-pages');
+    // proc.execSync('git add . && git commit -m "' + today + ' plato report"');
+    // proc.execSync('git push origin gh-pages');
 }
 
