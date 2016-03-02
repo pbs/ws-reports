@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - deps_src/celerity-airdates/cmsplugin_airdates/static/cmsplugin_airdates/js/airdates.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>deps_src/celerity-airdates/cmsplugin_airdates/static/cmsplugin_airdates/js/airdates.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">67.70</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">438</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">73.13</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">3.58</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function ($) {
+    &quot;use strict&quot;;
+
+    // Used for storing stations callsigns. 
+    // Because stations callsigns are not so many (hundreds) we can store them 
+    // on the client side after first Ajax call. This will make autocomplete more
+    // responsive on subsequent searches and there is no need to call sam API twice 
+    // if results are always the same
+    var CALLSIGNS = null;
+
+    var LayoutListener = {
+
+        init : function () {
+            this.bind_submit();
+            this.bind_change();
+            this.select_layout();
+            this.requests = [];
+            if(!$(&#039;#id_station_shortname&#039;).val() &amp;&amp; 
+                !$(&#039;#id_listing_name&#039;).val() &amp;&amp;
+                !parseInt($(&#039;#id_listing_id&#039;).val())){
+                this.toggleSave(false);
+            }
+        },
+
+        temp_input_value : &quot;&quot;,
+
+        bind_submit : function(){
+            var clearHidenInputs = function(){
+                $(&#039;.form-row&#039;).each(function(){
+                    if(!$(this).is(&quot;:visible&quot;)){
+                        $(this).find(&#039;input&#039;).attr(&quot;value&quot;, &quot;&quot;);
+                    }
+                });
+            };
+
+
+            $(&#039;#airdateschoice_form&#039;).submit(function(){
+                $(&#039;#id_station_shortname&#039;).val($(&#039;#id_station_shortname&#039;).val().toUpperCase());
+                clearHidenInputs();
+                return true;
+            });
+        },
+
+        bind_change : function () {
+            var form_type = $(&#039;#id_display&#039;),
+                listing_id = $(&#039;#id_listing_title&#039;),
+                elems_selector = &#039;#id_listing_name, #id_station_shortname&#039;,
+                that = this;
+
+            form_type.change(function (e) {
+                $(&#039;#id_listing_name, #id_station_shortname&#039;).val(&quot;&quot;);
+                $(&#039;#id_listing_id&#039;).val(&quot;0&quot;);
+
+                that.select_layout();
+
+               
+            });
+
+
+            // Store input value before changing it. We will need it in the keyup event.
+            // Because keydown is triggered before new key is added to input
+            // we can get the input value before changing it.
+            // Also handle navigation in the keydown event.
+
+            $(elems_selector).keydown(function(e){
+
+                that.temp_input_value = $(this).val();
+
+                var key = (e.keyCode ? e.keyCode : e.which);
+                var elem = $(this);
+
+                //Catch only DOWN, UP and ENTER keys.
+                if(key == 40 || key == 38 || key == 13){
+                    if($(this).siblings(&#039;#drop_down&#039;).length){
+                        that.autocomplete_navigation.focus(elem);
+                        return that.autocomplete_navigation.get_item(e);
+                    }
+                }
+
+                return true;
+            });
+
+            var finishTypingCB = function(el){
+
+                switch($(el).attr(&#039;id&#039;)){
+                    case &quot;id_listing_name&quot;:
+                        if(that.temp_input_value != $(el).val()){
+                            that.toggleSave(false);
+
+                            if ($(el).val().length &gt; 2) {
+
+                                // Use timeout to make sure user has stopped typing. This prevents making
+                                // Ajax calls every time he types even though he is not finished typing
+                                // window[&#039;key_up_timer&#039;] -&gt; create Global scope variable on the fly
+                                clearTimeout(window[&#039;key_up_timer&#039;]);
+
+                                window[&#039;timeout_handler&#039;] = function(){
+                                        that.search_program($(el));
+                                };
+                                window[&#039;key_up_timer&#039;] = setTimeout(window[&#039;timeout_handler&#039;], 500);
+                            }
+                        }
+                        break;
+                    case &quot;id_station_shortname&quot;:
+                        if(that.temp_input_value != $(el).val()) {
+                            that.toggleSave(false);
+
+                            if($(el).val().length &amp;&amp; that.temp_input_value != $(el).val()){
+
+                                // Fetch stations only if they are not stored in the CALLSIGNS array.
+                                // Use same timeout logic as above.
+                                clearTimeout(window[&#039;key_up_timer&#039;]);
+
+                                //clear program fields beacuse user is typing new station which can lead to 
+                                // bad results if listing_id already filled
+                                $(&#039;#id_listing_name&#039;).val(&quot;&quot;);
+                                $(&#039;#id_listing_id&#039;).val(&quot;0&quot;);
+
+                                window[&#039;timeout_handler&#039;] = function(){
+                                        that.fetch_stations($(el));
+                                    };
+
+                                window[&#039;key_up_timer&#039;] = setTimeout(window[&#039;timeout_handler&#039;], 500);
+                                
+                            }
+                        }
+                        break;
+                }
+            };
+
+            // After the input value is updated, get the new value and perform Ajax 
+            // calls for each input element. Do not call Ajax if value is the same.
+            // EX: for non character keys this event will still be triggered but 
+            // there&#039;s no need to make an Ajax call
+            $(elems_selector).keyup(function (e) {
+                var key = (e.keyCode ? e.keyCode : e.which);
+
+                //handle dropdown navigation only for these keys
+                if(key == 40 || key == 38 || key == 13){
+                    if($(this).siblings(&#039;#drop_down&#039;).length){
+                        return false;
+                    }
+                }else{
+                    if(!$(this).val()){
+                        return true;
+                    }
+                    finishTypingCB(this)
+                }
+
+                return true;
+            });
+
+            //Handle pasting event
+            $(elems_selector).bind(&#039;input propertychange&#039;, function() {
+                finishTypingCB(this)
+            });
+
+
+
+            $(elems_selector).attr(&quot;autocomplete&quot;, &quot;off&quot;);
+        },
+
+        toggleSave : function(enableBtn){
+            if(!enableBtn){
+                $(&#039;#airdateschoice_form [name=&quot;_save&quot;]&#039;).attr(&#039;disabled&#039;,&#039;disabled&#039;);
+            }else{
+                $(&#039;#airdateschoice_form [name=&quot;_save&quot;]&#039;).removeAttr(&#039;disabled&#039;);
+            }
+        },
+
+        hide_fields : function(){
+
+        },
+
+        select_layout : function () {
+            var selection = $(&#039;#id_display&#039;).find(&quot;:selected&quot;).text(),
+                image_field = $(&quot;div[class*=&#039;field-listing_image&#039;]&quot;)[0],
+                callsign_field = $(&quot;div[class*=&#039;field-station_shortname&#039;]&quot;)[0],
+                element_style;
+
+            switch (selection) {
+            case &quot;Producer&quot;:
+                element_style = &quot;display:none&quot;;
+                break;
+            default:
+                element_style = &quot;&quot;;
+            }
+
+            image_field.setAttribute(&quot;style&quot;, element_style);
+            callsign_field.setAttribute(&quot;style&quot;, element_style);
+            
+
+            if(!$(&#039;#id_station_shortname&#039;).val() &amp;&amp; 
+                !$(&#039;#id_listing_name&#039;).val() &amp;&amp;
+                !parseInt($(&#039;#id_listing_id&#039;).val())){
+                this.toggleSave(false);
+            }
+        },
+
+        requests :[],
+
+        fetch_stations : function (elem) {
+            var callsigns;
+            var that= this;
+
+            this.create_dropdown(elem, true);
+
+            this.requests.push($.ajax({
+                url: &#039;/lb-tvss/stations/search/&#039;+elem.val()+&#039;/&#039;,
+                success: function (response) {
+                    CALLSIGNS = response;
+                    that.populate_dropdown(CALLSIGNS, elem);
+                },
+                error: function (response) {
+                    that.populate_dropdown(CALLSIGNS, elem);
+                }
+            }));
+        },
+
+        search_program : function (elem) {
+            var that = this;
+            var station_callsign = $(&#039;#id_station_shortname&#039;).val();
+            var api_url = (station_callsign &amp;&amp; $(&#039;#id_station_shortname&#039;).is(&quot;:visible&quot;)
+                ? &#039;/lb-tvss/programs/callsign/&#039;+station_callsign+&#039;/search/&#039;+elem.val()+&quot;/&quot;
+                : &#039;/lb-tvss/programs/search/&#039;+elem.val()+&quot;/&quot;);
+            this.create_dropdown(elem, true);
+
+            this.requests.push($.ajax({
+                url: api_url,
+                success: function (response) {
+                    that.populate_dropdown(response, elem);
+                },
+                error: function (response) {
+                    that.populate_dropdown(response, elem);
+                }
+            }));
+
+        },
+
+        // Create drop down list.
+        // If loading == true the list will display a loading gif animation
+        // The animation will be replaced by the Ajax response once it&#039;s received
+        create_dropdown : function(sibling, loading){
+            if(!sibling){
+                return;
+            }
+
+            if(!$(&#039;#drop_down&#039;).length){
+                sibling.parent().append(&quot;&lt;ul id=&#039;drop_down&#039;&gt;&lt;/ul&gt;&quot;);
+            }
+
+            if(loading){
+                $(&#039;#drop_down&#039;).html(&#039;&lt;li class=&quot;loading&quot;&gt;&lt;/li&gt;&#039;);
+            }
+        },
+
+        //Populate dropdown with results from Ajax or any array
+        populate_dropdown : function(list, sibling){
+
+            if (!list || !sibling){
+                return;
+            }
+
+            var html = &quot;&quot;;
+
+            for (var i=0; i&lt; list.length; i++){
+                var selection_id = (list[i].program_id ? &quot;data-pbs-listing-id=&#039;&quot;+list[i].program_id+&quot;&#039;&quot; : &quot;&quot;);
+                html += &quot;&lt;li class=&#039;dd_item&#039; &quot;+selection_id+&quot;&gt;&quot;+(list[i].title ? list[i].title : list[i])+&quot;&lt;/li&gt;&quot;;
+            }
+            $(&#039;#drop_down&#039;).html(html);
+            LayoutListener.autocomplete_navigation.deinit();
+
+            // Bind mouse events to autocomplete items
+            this.autocomplete_navigation.mouseEvents(sibling);
+
+            // Once designated input element loses focus (ex: click outside, press TAB) destroy 
+            // autocomplete dropdown
+            sibling.blur(function(e){
+                LayoutListener.deinit_autocomplete();
+            });
+
+            // Destroy dropdown when clicking outside and designated input is not focused
+            $(&#039;body&#039;).click(function(){
+                LayoutListener.autocomplete_navigation.deinit();
+            });
+        },
+
+        //Destroy dropdown list
+        deinit_autocomplete : function(){
+            
+            clearTimeout(window[&#039;key_up_timer&#039;]);
+            for (var i=0; i&lt; this.requests.length; i++){
+                this.requests[i].abort();
+            }
+            if($(&#039;#drop_down&#039;)){
+                $(&#039;#drop_down&#039;).remove();
+            }
+
+            LayoutListener.autocomplete_navigation.deinit();
+
+        },
+
+        //Handle UP, DOWN, ENTER keys navigation to select dropdown items
+        autocomplete_navigation: {
+            nav_index : -1,
+            items : null,
+            input : null,
+
+            deinit : function(){
+                this.nav_index = -1;
+                this.items = null;
+                this.input = null;
+            },
+
+            focus : function(elem){
+                this.items = $(&#039;#drop_down li&#039;);
+                this.input = elem;
+
+                for (var i=0; i&lt;this.items.length; i++){
+                    $(this.items[i]).removeClass(&#039;focused&#039;);
+                }
+
+            },
+
+
+            get_item : function(e){
+                var key = (e.keyCode ? e.keyCode : e.which);
+                var input = LayoutListener.autocomplete_navigation.input;
+
+                function getIndex(){
+                    return LayoutListener.autocomplete_navigation.nav_index;
+                }
+
+                function getElem(index){
+                    return LayoutListener.autocomplete_navigation.items[index];
+                }
+
+                switch(key){
+                    case 40:
+                        //UP key pressed
+
+                        if(getElem(getIndex() + 1)){
+                            $(getElem(getIndex())).removeClass(&#039;focused&#039;);
+                            LayoutListener.autocomplete_navigation.nav_index++;
+                        }
+                        input.val($(getElem(getIndex())).text());
+                        $(getElem(getIndex())).addClass(&#039;focused&#039;);
+                        var selection_id = $(getElem(getIndex())).attr(&quot;data-pbs-listing-id&quot;);
+                        if(selection_id){
+                            $(&#039;#id_listing_id&#039;).val(selection_id);
+
+                            if($(&#039;#id_station_shortname&#039;).is(&quot;:visible&quot;)){
+                                if($(&#039;#id_station_shortname&#039;).val()){
+                                    LayoutListener.toggleSave(true);
+                                }
+                            }else{
+                                LayoutListener.toggleSave(true);
+                            }
+                        }
+                        return false;
+                    case 38:
+                        //DOWN key pressed
+
+                        if(getElem(getIndex() - 1)){
+                            $(getElem(getIndex())).removeClass(&#039;focused&#039;);
+                            LayoutListener.autocomplete_navigation.nav_index--;
+                        }
+                        input.val($(getElem(getIndex())).text());
+                        $(getElem(getIndex())).addClass(&#039;focused&#039;);
+
+                        var selection_id = $(getElem(getIndex())).attr(&quot;data-pbs-listing-id&quot;);
+                        if(selection_id){
+                            
+                            $(&#039;#id_listing_id&#039;).val(selection_id);
+
+                            if($(&#039;#id_station_shortname&#039;).is(&quot;:visible&quot;)){
+                                if($(&#039;#id_station_shortname&#039;).val()){
+                                    LayoutListener.toggleSave(true);
+                                }
+                            }else{
+                                LayoutListener.toggleSave(true);
+                            }
+                        }
+                        return false;
+                    case 13:
+                        //ENTER key pressed
+
+                        LayoutListener.deinit_autocomplete();
+                        return false;
+                }
+
+                return true;
+
+            },
+
+            //Handle dropdown mouseover and click events for dropdown items
+            mouseEvents : function(input){
+                var items = $(&#039;#drop_down li&#039;);
+                items.each(function(){
+                    $(this).mouseover(function(){
+                        for (var i=0; i&lt;items.length; i++){
+                            $(items[i]).removeClass(&#039;focused&#039;);
+                        }
+                        $(this).addClass(&#039;focused&#039;);
+                        input.val($(this).text());
+                        var selection_id = $(this).attr(&quot;data-pbs-listing-id&quot;);
+                        if(selection_id){
+                            
+                            $(&#039;#id_listing_id&#039;).val(selection_id);    
+
+                            if($(&#039;#id_station_shortname&#039;).is(&quot;:visible&quot;)){
+                                if($(&#039;#id_station_shortname&#039;).val()){
+                                    LayoutListener.toggleSave(true);
+                                }
+                            }else{
+                                LayoutListener.toggleSave(true);
+                            }
+                        }
+                    });
+
+                    $(this).click(function(){
+                        LayoutListener.deinit_autocomplete();
+                    });
+
+                });
+
+                
+            }
+        }
+
+    };
+
+    $(document).ready(function () {
+        LayoutListener.init();
+    });
+
+
+}(jQuery));</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

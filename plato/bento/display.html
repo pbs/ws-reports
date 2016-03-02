@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - JavaScript Introspection</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <script>
+    var __options = {"title":"Bento code report","flags":{"complexity":{"logicalor":true,"switchcase":true,"forin":false,"trycatch":false,"newmi":true},"jshint":{"globals":{"angular":false,"jQuery":true},"options":{"node":true,"browser":true,"esnext":true,"bitwise":true,"camelcase":false,"curly":true,"eqeqeq":true,"immed":true,"indent":4,"latedef":true,"newcap":true,"noarg":true,"quotmark":false,"undef":true,"unused":false,"strict":true,"trailing":true,"smarttabs":true,"sub":true}}}}
+  </script>
+
+  <link href="assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="assets/css/plato.css" rel="stylesheet">
+  <link href="assets/css/plato-display.css" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Bento code report</h1>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="reportBlock lineCount">
+                <div class="reportContent">
+                    <small class="chart-label">Total / Average Lines</small>
+                    <h1>4621 / 140</h1>
+                </div>
+                <div id="chart_historical_sloc" class="chart js-chart"></div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="reportBlock maintainability">
+                <div class="reportContent">
+                    <small class="chart-label">Average Maintainability</small>
+                    <h1>72.73</h1>
+                </div>
+                <div id="chart_historical_maint" class="chart js-chart"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="reportBlock maintainabilityList">
+                <h2 class="reportTitle">Worst Maintainability Scores</h2>
+                <ul class="list-unstyled">
+
+                    <li>
+                        <strong>62 score</strong>
+                        <small>deps_src/cmsplugin-merlin/cmsplugin_merlin/static/js/merlin_browser.js</small>
+                    </li>
+
+                    <li>
+                        <strong>63 score</strong>
+                        <small>deps_src/celerity-airdates/cmsplugin_airdates/static/cmsplugin_airdates/js/frontend-airdates.js</small>
+                    </li>
+
+                    <li>
+                        <strong>63 score</strong>
+                        <small>deps_src/cmsplugin-profile/cmsplugin_profile/static/cmsplugin_profile/js/profilegrid.js</small>
+                    </li>
+
+                    <li>
+                        <strong>63 score</strong>
+                        <small>deps_src/django-filer/filer/static/filer/js/popup_handling.js</small>
+                    </li>
+
+                    <li>
+                        <strong>64 score</strong>
+                        <small>deps_src/celerity-photogallery/photogallery/static/photogallery/js/galleria.bento.js</small>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="reportBlock locList">
+                <h2 class="reportTitle">Largest Files</h2>
+                <ul class="list-unstyled">
+
+                    <li>
+                        <strong>939 lines</strong>
+                        <small>deps_src/celerity-photogallery/photogallery/static/admin/photogallery/js/photos-inline-formset.js</small>
+                    </li>
+
+                    <li>
+                        <strong>478 lines</strong>
+                        <small>deps_src/cmsplugin-profile/cmsplugin_profile/static/admin/js/profile_admin.js</small>
+                    </li>
+
+                    <li>
+                        <strong>438 lines</strong>
+                        <small>deps_src/celerity-airdates/cmsplugin_airdates/static/cmsplugin_airdates/js/airdates.js</small>
+                    </li>
+
+                    <li>
+                        <strong>436 lines</strong>
+                        <small>deps_src/cmsplugin-profile/cmsplugin_profile/static/cmsplugin_profile/js/profilegrid.js</small>
+                    </li>
+
+                    <li>
+                        <strong>368 lines</strong>
+                        <small>deps_src/celerity-photogallery/photogallery/static/photogallery/js/galleria.bento.js</small>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="reportBlock lintList">
+                <h2 class="reportTitle">Lint Warnings</h2>
+                <ul class="list-unstyled">
+
+                    <li>
+                        <strong>51 lint errors</strong>
+                        <small>deps_src/cmsplugin-profile/cmsplugin_profile/static/admin/js/profile_admin.js</small>
+                   </li>
+
+                    <li>
+                        <strong>34 lint errors</strong>
+                        <small>deps_src/celerity-photogallery/photogallery/static/admin/photogallery/js/photos-inline-formset.js</small>
+                   </li>
+
+                    <li>
+                        <strong>30 lint errors</strong>
+                        <small>deps_src/cmsplugin-merlin/cmsplugin_merlin/static/js/pbs_player.js</small>
+                   </li>
+
+                    <li>
+                        <strong>28 lint errors</strong>
+                        <small>deps_src/celerity-photogallery/photogallery/static/photogallery/js/galleria.bento.js</small>
+                   </li>
+
+                    <li>
+                        <strong>23 lint errors</strong>
+                        <small>deps_src/cmsplugin-merlin/cmsplugin_merlin/static/js/merlin_browser.js</small>
+                   </li>
+
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<script type="text/javascript" src="assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="assets/scripts/plato-display.js"></script>
+
+</body>
+</html>

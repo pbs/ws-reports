@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - deps_src/celerity-photogallery/photogallery/static/admin/photogallery/js/photos-inline-formset.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>deps_src/celerity-photogallery/photogallery/static/admin/photogallery/js/photos-inline-formset.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">69.38</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">939</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">67.21</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">15.17</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function($) {
+
+    var cutText = function(txt, max) {
+        max = max || 80;
+        var trimmed = $(&#039;&lt;p /&gt;&#039;).html(txt).text().replace(/\s+/g, &#039; &#039;).trim();
+        var cut = trimmed.substring(0, max);
+        return cut.length &lt; trimmed.length ? (cut.trim() + &#039;...&#039;) : cut.trim();
+    };
+
+    var _inline = {
+        photosformset: {
+            rows: {
+                all: function(){
+                    return $(_inline.options.rows).not(
+                        _inline.options.form_template +&#039;, .formset-custom-template&#039;);
+                },
+                onRowAdd: function(row) {
+                    _inline.options.sortable_el.sortable(&#039;option&#039;,&#039;update&#039;)(null, { item: $(row) });
+                    _inline.photosformset.rows.attach_edit(row);
+                    _inline.photosformset.updateLayout();
+                },
+                onRowDelete: function(row) {
+                    _inline.options.sortable_el.sortable(&#039;option&#039;,&#039;update&#039;)(null, { item: $(row) });
+                    _inline.photosformset.updateLayout();
+                },
+                attach_edit: function(row) {
+                    var _this = this;
+                    (function updateCss() {
+                        $(_inline.options.prefix_group_selector).find(&#039;.edit-row, .delete-row&#039;)
+                    })();
+
+                    function set_original_click_handlers(button){
+                        if (!button.length) {
+                            return [];
+                        }
+                        var el = button[0];
+                        var alreadySaved = button.data(&#039;original_click&#039;) || false;
+                        if (alreadySaved === true){
+                            return;
+                        }
+                        var events = (
+                            el.events || $.data(el, &quot;events&quot;) ||
+                            $._data(el, &quot;events&quot;)).click || [];
+
+                        $.each(events, function(i, event){
+                            button.bind(&#039;orginalClick&#039;, event.handler)
+                        });
+                        button.data(&#039;original_click&#039;, true);
+                    }
+
+                    var delete_button = row.find(&#039;a.delete-row&#039;).first();
+                    set_original_click_handlers(delete_button);
+                    // unbind all click events since they are passed to the dialog buttons
+                    delete_button.off(&#039;click&#039;).click(function(){
+                        _inline.callbacks.confirmPhotoDeletion(delete_button);
+                    });
+
+                    var edit_button = row.find(&#039;a.edit-row&#039;).first();
+                    edit_button.click(function() {
+                        _inline.callbacks.showPhotoInDialog(row);
+                    });
+                    return edit_button;
+                }
+            },
+            emptySlots: function() {
+                var prefix = _inline.options.prefix,
+                    maxForms = $(&#039;#id_&#039; + prefix + &#039;-MAX_NUM_FORMS&#039;),
+                    totalForms = $(&#039;#id_&#039; + prefix + &#039;-TOTAL_FORMS&#039;),
+                    available = parseInt(maxForms.val(), 10) - parseInt(totalForms.val(), 10);
+                return available &gt; 0 ? available : 0;
+            },
+            updateLayout: function () {
+                var info = &#039;No photos added yet&#039;,
+                    photoCount = _inline.photosformset.rows.all().length;
+                if (photoCount &gt; 0){
+                    info = photoCount + (photoCount &gt; 1 ? &quot; photos&quot;: &quot; photo&quot;)
+                }
+                _inline.options.photosBoxInfo.find(&#039;.photos-count&#039;).text(info);
+                _inline.options.addMoreButton.toggle(_inline.photosformset.emptySlots() &gt; 0);
+            },
+            sortable: function() {
+                var _this = this;
+                _inline.options.sortable_el.sortable({
+                    items: &quot;li&quot;,
+                    placeholder: &quot;ui-state-highlight&quot;,
+                    update: function( event, ui ) {
+                        _this.rows.all().each(function(i) {
+                            $(this).find(&#039;.order input&#039;).attr(&#039;value&#039;, i + 1);
+                        });
+                    }
+                }).disableSelection();
+                return _this;
+            },
+            formset: function() {
+                $(_inline.options.rows).formset({
+                    prefix: _inline.options.prefix,
+                    addText: &#039;&#039;,
+                    addCssClass: &#039;add-row-hidden&#039;,
+                    deleteText: &#039;&lt;span class=&quot;inline-edit ace-icon fa fa-times&quot; unselectable=&quot;on&quot;&gt;&lt;/span&gt;&#039;,
+                    formCssClass: &quot;dynamic-&quot; + _inline.options.prefix.prefix,
+                    formTemplate: _inline.options.form_template,
+                    removed: this.rows.onRowDelete,
+                    added: this.rows.onRowAdd
+                });
+                return this;
+            },
+            initRows: function() {
+                var _this = this;
+                // sort initial data by order field
+                _this.rows.all()
+                    .sort(function(a, b) {
+                        function _orderVal(el) {
+                            return parseInt($(el).find(&#039;.order input&#039;).attr(&#039;value&#039;), 10)
+                        }
+                        return _orderVal(a) - _orderVal(b);
+                    })
+                    .prependTo($(_inline.options.sortable_el))
+                    .each(function(i) {
+                        _this.rows.attach_edit($(this));
+                    });
+                // show/hide photo buttons on hover
+                $(_inline.options.rows).hover(
+                    function() {
+                        $(this).find(&#039;a.edit-row, a.delete-row&#039;).addClass(&quot;show-me&quot;);
+                    }, function() {
+                        $(this).find(&#039;a.edit-row, a.delete-row&#039;).removeClass(&quot;show-me&quot;);
+                    }
+                );
+                return _this;
+            }
+        },
+        uploaders: {
+            progressItem: function(name, selectable){
+                var item = $(&quot;&lt;li /&gt;&quot;).appendTo(this.widgets.itemsList);
+                var filename = $(&#039;&lt;div /&gt;&#039;).addClass(&#039;filename&#039;).text(name).appendTo(item);
+                if (selectable &amp;&amp; selectable.id) {
+                    item.addClass(&#039;selectable-file&#039;);
+                    var checkbox = $(&#039;&lt;input type=&quot;checkbox&quot;/&gt;&#039;)
+                                        .val(selectable.id)
+                                        .prop(&#039;checked&#039;, true)
+                                        .addClass(&#039;ace&#039;);
+                    item.prepend(checkbox);
+                    $(&#039;&lt;span class=&quot;lbl&quot;&gt;&#039;).insertAfter(checkbox);
+                    if (selectable.icon){
+                        $(&#039;&lt;img src=&quot;&#039;+ selectable.icon +&#039;&quot;/&gt;&#039;).insertBefore(filename);
+                    }
+                } else {
+                    $(&#039;&lt;div /&gt;&#039;).addClass(&#039;file-info&#039;).text(&quot;In progress&quot;).appendTo(item);
+                    var progressBox = $(&#039;&lt;div /&gt;&#039;).addClass(&#039;progress-item&#039;).appendTo(item);
+                    $(&#039;&lt;div /&gt;&#039;).addClass(&#039;bar&#039;).progressbar({
+                        max: 100
+                    }).appendTo(progressBox);
+                    $(&#039;&lt;a /&gt;&#039;).addClass(&#039;item-cancel&#039;).text(&#039;Cancel&#039;).appendTo(progressBox);
+                }
+                item.attachCancel = function(data){
+                    $(item).find(&#039;.item-cancel&#039;).first().click(function(e){
+                        e.preventDefault();
+                        data.abort();
+                    });
+                }
+                item.setError = function(msg){
+                    $(item).find(&#039;.progress-item&#039;).remove();
+                    $(item).find(&#039;.file-info&#039;).addClass(&#039;fail&#039;).text(cutText(&#039;Upload failed. &#039; + msg));
+                }
+                item.success = function(){
+                    $(item).find(&#039;.progress-item&#039;).remove();
+                    $(item).find(&#039;.file-info&#039;).addClass(&#039;success&#039;).text(&#039;Upload successful.&#039;);
+                }
+                item.setProgress = function(value){
+                    $(item).find(&#039;.bar&#039;).progressbar(&quot;option&quot;, &quot;value&quot;, value);
+                    if (value === false){
+                        $(item).find(&#039;.item-cancel&#039;).remove();
+                    }
+                }
+                return item;
+            },
+            progress: {
+                itemsCount: function(){
+                    return this.processFailures + this.failed + this.succeeded;
+                },
+                progressUpdate: function() {
+                    var inProgress = !this.done();
+                    var canUploadMore = _inline.photosformset.emptySlots() &gt; 0;
+                    $.each(_inline.uploaders.buttons(), function(i, button){
+                        if(inProgress || !canUploadMore){
+                            $(button).button( &quot;disable&quot; );
+                        } else {
+                            $(button).button( &quot;enable&quot; );
+                        }
+                    });
+                    _inline.options.canDismissAddDialog = !inProgress;
+                    if (this.total == 0){
+                        _inline.uploaders.widgets.progressInfo.empty();
+                    } else {
+                    _inline.uploaders.widgets.progressInfo.html(
+                        this.succeeded + &quot; of &quot; + this.total + &quot; uploaded&quot;).show();
+                    }
+                    _inline.uploaders.widgets.dialog.trigger(&#039;progresschange&#039;);
+                    _inline.uploaders.widgets.listControls.hide();
+                    var buttons = _inline.uploaders.widgets.dialog.dialog(&#039;option&#039;, &#039;buttons&#039;);
+                    if(this.total === 0){
+                        buttons.cancel.text = &#039;Cancel&#039;;
+                        buttons.cancel.class = &#039;cancel-btn btn&#039;;
+                    } else if (!inProgress){
+                        buttons.cancel.text = &#039;Done&#039;;
+                        buttons.cancel.class = &#039;default-button btn&#039;;
+                    }
+                    _inline.uploaders.widgets.dialog.dialog(&#039;option&#039;, &#039;buttons&#039;, buttons);
+                },
+                process_next: function(){
+                    this.currentProcessing += 1;
+                },
+                process_fail: function(){
+                    this.processFailures += 1;
+                    this.progressUpdate();
+                },
+                fail: function(){
+                    this.failed += 1;
+                    this.progressUpdate();
+                },
+                success: function(){
+                    this.succeeded += 1;
+                    this.progressUpdate();
+                },
+                done: function(){
+                    return this.itemsCount() &gt;= this.total;
+                },
+                reset: function(total){
+                    this.total = (total || 0);
+                    this.currentProcessing = 0;
+                    this.processFailures = 0;
+                    this.succeeded = 0;
+                    this.failed = 0;
+                    _inline.uploaders.widgets.progressInfo.empty().hide();
+                    _inline.uploaders.widgets.itemsList.empty();
+                    _inline.uploaders.widgets.listControls.empty().hide();
+                    _inline.uploaders.setDialogButtons();
+                    this.progressUpdate();
+                }
+            },
+            local: {
+                helpText: &quot;Max file size 2MB. Max gallery size 40 images.&quot;,
+                getAndSetMaxFiles: function() {
+                    var maxPhotos = _inline.photosformset.emptySlots();
+                    var fileupload_el = this.getInputUpload();
+                    if (fileupload_el.length &gt; 0 &amp;&amp;
+                            fileupload_el.data(&#039;blueimpFileupload&#039;)) {
+                        fileupload_el.fileupload(
+                            &#039;option&#039;, &#039;maxNumberOfFiles&#039;, maxPhotos);
+                    }
+                    return maxPhotos;
+                },
+                resetAndStart: function(e, data){
+                    var _this = _inline.uploaders.local;
+                    _this.getAndSetMaxFiles();
+                    _this.progress.reset(data.files.length);
+                },
+                attachFileUploader: function(input){
+                    var originalAdd = $.blueimp.fileupload.prototype.options.add;
+                    var _this = this;
+                    var fileItem = function(data){
+                        return data.files[0].context;
+                    }
+                    return input.fileupload({
+                        type: &#039;POST&#039;,
+                        url: _inline.options.urls.photoUpload,
+                        dataType: &#039;json&#039;,
+                        maxFileSize: _inline.options.maxFileSize,
+                        minFileSize: 1,
+                        acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
+                        maxNumberOfFiles: _inline.photosformset.emptySlots(),
+                        dropZone: null,
+                        pasteZone: null,
+                        change: _this.resetAndStart,
+                        paste: _this.resetAndStart,
+                        drop: _this.resetAndStart,
+                        formData: function(){ return []; },
+                        getNumberOfFiles: function(){
+                            // make sure max photos is always latest value
+                            _this.getAndSetMaxFiles();
+                            // remove failures to allow other images to get
+                            //  uploaded if they failed
+                            return (
+                                _this.progress.currentProcessing - 1 -
+                                _this.progress.processFailures
+                            );
+                        },
+                        process: function (e, data) {
+                            // set this before processing validators to keep track
+                            //      of the current processing file and make sure
+                            //      that getNumberOfFiles works correctly
+                            _this.progress.process_next();
+                            fileItem(data).setProgress(1);
+                        },
+                        processfail: function (e, data) {
+                            _this.progress.process_fail();
+                            fileItem(data).setError(data.files[0].error);
+                        },
+                        done: function (e, data) {
+                            var item = data.result;
+                            var row = _inline.callbacks.addRowWithData(item);
+                            if (row === false){
+                                fileItem(data).setError(&#039;Maximum number of files exceeded&#039;);
+                                _this.progress.fail();
+                                return;
+                            }
+                            fileItem(data).success();
+                            _this.progress.success();
+
+                        },
+                        fail: function (e, data) {
+                            if (data.errorThrown &amp;&amp; data.errorThrown == &#039;abort&#039;){
+                                fileItem(data).setError(&#039;Upload cancelled.&#039;);
+                            } else {
+                                fileItem(data).setError(
+                                    data.jqXHR.statusText + &#039;. &#039; +
+                                    (data.jqXHR.responseText || &#039;&#039;));
+                            }
+                            _this.progress.fail();
+                        },
+                        progress: function (e, data) {
+                            var value = parseInt(data.loaded / data.total * 100, 10);
+                            // show complete only after row was added to form
+                            fileItem(data).setProgress(value == 100 ? false : value);
+                        },
+                        add: function (e, data) {
+                            var file = data.files[0];
+                            file.context = (
+                                file.context ||
+                                _inline.uploaders.progressItem(file.name));
+                            _this.progress.progressUpdate();
+                            originalAdd.call(this, e, data);
+                        },
+                        submit:  function (e, data) {
+                            fileItem(data).attachCancel(data);
+                        }
+                    });
+                },
+                getInputUpload: function (argument) {
+                    if (this.widgets.inputUpload){
+                        return $(&#039;input[name=&quot;files[]&quot;]&#039;);
+                    }
+                    return this.widgets.inputUpload = $(&#039;&lt;input /&gt;&#039;)
+                        .attr({ type: &quot;file&quot;, name: &#039;files[]&#039;, multiple: true });
+                },
+                getFileChooser: function(){
+                    return this.widgets.uploadButton = $(
+                        this.widgets.uploadButton ||
+                        $(&#039;&lt;span&gt;&#039;)
+                            .addClass(&#039;fileinput-button btn btn-white btn-primary&#039;)
+                            .append(&#039;&lt;span&gt;Upload&lt;/span&gt;&#039;)
+                            .append(this.attachFileUploader(this.getInputUpload()))
+                    );
+                }
+            },
+            filer: {
+                uploadButton: {
+                    text: &quot;Upload images&quot;,
+                    class: &#039;btn btn-info&#039;,
+                    click: function() {
+                        var _this = _inline.uploaders.filer;
+                        var selectedItems = _this.widgets.itemsList.find(
+                            &#039;li.selectable-file input[type=&quot;checkbox&quot;]:checked&#039;);
+                        var total = selectedItems.length;
+                        if (total === 0){
+                            return ;
+                        }
+                        _this.progress.reset(total);
+                        // process data
+                        var dataFiles = {};
+                        var maxAllowed = _inline.photosformset.emptySlots();
+                        selectedItems.each(function(i, inputEl){
+                            var filename = $(inputEl).parent().find(&#039;.filename&#039;).first().text();
+                            var item = _inline.uploaders.progressItem(filename);
+                            if(i + 1 &lt;= maxAllowed){
+                                item.setProgress(false);
+                                dataFiles[$(inputEl).val()] = item;
+                            } else {
+                                _this.progress.process_fail();
+                                item.setError(&quot;Maximum number of files exceeded.&quot;);
+                            }
+                            _this.progress.progressUpdate();
+                        });
+                        // send data
+                        $.each(dataFiles, function(file_id, item){
+                            $.ajax({
+                                type: &quot;POST&quot;,
+                                url: _inline.options.urls.imageToPhoto,
+                                data: {&#039;file_id&#039;: file_id}
+                            }).done(function(data){
+                                var row = _inline.callbacks.addRowWithData(data);
+                                if (row === false){
+                                    item.setError(&#039;Maximum number of files exceeded&#039;);
+                                    _this.progress.fail();
+                                    return;
+                                }
+                                item.success();
+                                _this.progress.success();
+                            }).fail(function(jqXHR, textStatus) {
+                                item.setError(
+                                    jqXHR.statusText + &#039;. &#039; +
+                                    jqXHR.responseText);
+                                _this.progress.fail();
+                            });
+                        });
+                    }
+                },
+                fetchImages: function(folderId){
+                    var loader = $(&#039;&lt;img /&gt;&#039;).addClass(&#039;filer-loader&#039;).attr(
+                        &#039;src&#039;, _inline.options.static_url + &#039;cms/images/toolbar/loader.gif&#039;
+                    );
+                    var _this = _inline.uploaders.filer;
+                    _this.progress.reset();
+                    _this.widgets.itemsList.append(loader);
+
+                    function noImages(){
+                        if(_this.widgets.itemsList.find(&#039;li&#039;).length &gt; 0){
+                            return ;
+                        }
+                        _this.widgets.itemsList.html(&#039;&lt;div class=&quot;alert alert-danger&quot;&gt;No images found. Select a different folder.&lt;/div&gt;&#039;);
+                    }
+
+                    $.ajax({
+                        url: _inline.options.urls.fetchFilerImages,
+                        data: { &#039;folder_id&#039;: folderId }
+                    }).fail(noImages).done(function( data ) {
+                        _this.widgets.itemsList.empty();
+                        if (data.length === 0){ return noImages(); }
+                        $.each(data, function(i, image){
+                            _inline.uploaders.progressItem(image.name, image);
+                        });
+                        _this.addListControls();
+                        _inline.uploaders.setDialogButtons(
+                            { uploadButton: $.extend({}, _this.uploadButton) }
+                        );
+                    });
+
+                },
+                browse: function(event){
+                    var _this = _inline.uploaders.filer;
+                    event.preventDefault();
+
+                    //keep old function reference, set it back later
+                    window._showRelatedObjectLookupPopup = window.showRelatedObjectLookupPopup;
+
+                    // override dfault django function,
+                    // needs to return window instance,
+                    // also increase window size
+                    window.showRelatedObjectLookupPopup = function(triggeringLink) {
+                        var name = triggeringLink.id.replace(/^lookup_/, &#039;&#039;);
+                        name = id_to_windowname(name);
+                        var href;
+                        if (triggeringLink.href.search(/\?/) &gt;= 0) {
+                            href = triggeringLink.href + &#039;&amp;_popup=1&#039;;
+                        } else {
+                            href = triggeringLink.href + &#039;?_popup=1&#039;;
+                        }
+                        var win = window.open(href, name, &#039;height=500,width=1120,resizable=yes,scrollbars=yes&#039;);
+                        win.focus();
+                        return win;
+                    };
+                    // get reference of the popup
+                    var opened = showRelatedFilerObjectLookupPopup(this);
+
+                    // overwrite this so we can start fetching images from folder
+                    opened.opener.dismissRelatedFolderLookupPopup = function (_, folderId, _){
+                        _this.fetchImages(folderId);
+                        opened.close();
+                    };
+
+                    // set back to default value
+                    window.showRelatedObjectLookupPopup = window._showRelatedObjectLookupPopup;
+                },
+                addListControls: function(){
+                    var _this = this;
+                    var items = {&#039;Select All&#039;: true, &#039;Deselect All&#039;: false};
+                    $.each(items, function(text, value){
+                        $(&#039;&lt;a href=&quot;#&quot; /&gt;&#039;)
+                        .addClass(text.toLowerCase().replace(/ /g, &#039;&#039;))
+                        .appendTo(_this.widgets.listControls)
+                        .text(text)
+                        .click(function(e){
+                            e.preventDefault();
+                            $(_this.widgets.itemsList)
+                                .find(&#039;li.selectable-file input&#039;)
+                                .prop(&#039;checked&#039;, value).trigger(&#039;change&#039;);
+                        });
+                    });
+                    _this.widgets.listControls.show()
+                },
+                helpText: (&#039;To select specific images from Filer, add a &#039; +
+                    &#039;Filer folder to the uploader tool and then select &#039; +
+                    &#039;individual photos to add to the gallery.&#039;),
+                getFileChooser: function() {
+                    return this.widgets.uploadButton = $(
+                        this.widgets.uploadButton || $(&quot;&lt;a /&gt;&quot;)
+                            .attr({
+                                &#039;href&#039;: _inline.options.urls.browseFilerFolder,
+                                &#039;id&#039;: _inline.options.filerPopupName,
+                                &#039;class&#039;: &#039;btn btn-white btn-primary&#039;
+                            }).append(&#039;&lt;span&gt;Select Filer Folder&lt;/span&gt;&#039;).click(this.browse)
+                    );
+                }
+            },
+            setDialogButtons: function(buttonData){
+                var currentButtons = this.widgets.dialog.dialog(&#039;option&#039;, &#039;buttons&#039;);
+                if (!buttonData){
+                    // set only cancel allowed
+                    this.widgets.dialog.dialog(&#039;option&#039;, &#039;buttons&#039;, {cancel: currentButtons.cancel});
+                    return ;
+                }
+                this.widgets.dialog.dialog(&#039;option&#039;, &#039;buttons&#039;, $.extend(currentButtons, buttonData));
+            },
+            helpText: function(){
+                return $.map(this.all(), function(uploader, i ){
+                    return uploader.helpText || &#039;&#039;;
+                }).join(&#039;&#039;);
+            },
+            buttons: function(){
+                return $.map(this.all(), function(uploader, i ){
+                    return uploader.getFileChooser();
+                });
+            },
+            all: function(){
+                if (!_inline.options.use_filer) {
+                    return [this.local];
+                }
+                return [this.local, this.filer]
+            },
+            init: function(progressInfo, listControls, itemsList, dialog) {
+                this.widgets = {
+                    progressInfo: progressInfo,
+                    listControls: listControls,
+                    itemsList: itemsList,
+                    dialog: $(dialog)
+                };
+                this.local.widgets = $.extend({}, this.widgets);
+                this.local.progress = this.progress;
+                this.filer.widgets = $.extend({}, this.widgets);
+                this.filer.progress = this.progress;
+                return this;
+            }
+        },
+        callbacks: {
+            confirmPhotoDeletion: function(delete_button){
+                $(&quot;&lt;div/&gt;&quot;).html(
+                    &#039;&lt;div class=&quot;confirm-text&quot;&gt;Are you sure?&lt;/div&gt;&#039;
+                ).dialog({
+                    title: &#039;Remove image&#039;,
+                    width:&#039;300&#039;,
+                    modal: true,
+                    minHeight: 0,
+                    buttons: {
+                        Cancel: function(){
+                            $(this).dialog(&#039;close&#039;);
+                        },
+                        Yes: function(){
+                            delete_button.trigger(&#039;orginalClick&#039;);
+                            $(this).dialog(&#039;close&#039;);
+                        }
+                    },
+                    close: function( event, ui ) { $(this).dialog(&#039;destroy&#039;); },
+                    create: function( event, ui ) {
+                        // remove close button
+                        $(this).parent().find(&quot;button&quot;).first().remove();
+                        // debugger
+                        $(this).parent().find(&quot;button&quot;).first().addClass(&#039;btn&#039;);
+                        $(this).parent().find(&quot;button&quot;).last().addClass(&#039;btn btn-info&#039;);
+
+                    }
+                });
+            },
+            showPhotoInDialog: function(photoRow) {
+                var popup = photoRow.find(&#039;.photo-form&#039;).first().dialog({
+                    width:&#039;600&#039;,
+                    modal: true,
+                    title: &#039;Edit Photo&#039;,
+                    dialogClass: &quot;no-close&quot;,
+                    open: function( event, ui ) {
+                        var img = $(this).find(&#039;fieldset&#039;).siblings(&#039;img&#039;);
+                        var inputs = $(this).find(&#039;[name]&#039;).not(&#039;[type=&quot;hidden&quot;]&#039;);
+                        inputs.each(function() {
+                            var opts = {};
+                            var helpEl = $(this).siblings(&#039;p.help&#039;).first();
+                            $(this).parent().addClass(&#039;no-padding-right&#039;);
+                            if (helpEl.length !== 0)
+                                opts = {
+                                    status_element: $(&quot;&lt;span /&gt;&quot;).insertBefore(helpEl)
+                                };
+                            if($(this).is(&quot;textarea&quot;)) {
+                               $(this).show_char_limit(400, opts);
+                            } else {
+                               $(this).show_char_limit(opts);
+                            }
+                        });
+                        this._intial_form_data = inputs.serializeArray();
+                        img.wrap(&#039;&lt;div class=&quot;img-container&quot;&gt;&lt;/div&gt;&#039;);
+                    },
+                    focus: function(){
+                        var container = $(this).closest(&#039;.ui-dialog&#039;);
+                        if(container.height() &gt; $(&#039;html&#039;).height()){
+                            container.addClass(&#039;spacer&#039;);
+                        }
+                    },
+                    buttons: [{
+                        text: &quot;Cancel changes&quot;,
+                        class: &quot;btn&quot;,
+                        click: function() {
+                            var dialogForm = $(this);
+                            $.each(this._intial_form_data, function(i ,obj) {
+                                dialogForm.find(&#039;[name=&quot;&#039;+ obj.name +&#039;&quot;]&#039;).first()
+                                    .val(obj.value).trigger(&#039;showLimit&#039;);
+                            });
+                            dialogForm.dialog( &quot;close&quot; );
+                        }
+                    }, {
+                        text: &quot;Return to gallery&quot;,
+                        class: &quot;btn btn-info&quot;,
+                        click: function() { $(this).dialog( &quot;close&quot; ); }
+                    }],
+                    close: function( event, ui ) {
+                        $(this).find(&#039;[name]&#039;).not(&#039;[type=&quot;hidden&quot;]&#039;).each(function() {
+                            $(this).show_char_limit(&#039;destroy&#039;);
+                        });
+                        // move fieldset back to its form
+                        $(this).dialog(&#039;destroy&#039;).appendTo($(photoRow)).hide();
+                    }
+                });
+
+                $(&#039;.ui-widget-overlay&#039;).on(&#039;click&#039;, function(){
+                    popup.dialog( &quot;close&quot; );
+                });
+            },
+            addRowWithData: function (formData) {
+                if (_inline.photosformset.emptySlots() === 0) {
+                    return false;
+                }
+                var opts = _inline.options,
+                    formTemplate = $(opts.prefix_group_selector)
+                        .find(&#039;.formset-custom-template&#039;).first(),
+                    hiddenButtonRow = $(opts.prefix_group_selector)
+                        .find(&#039;.add-row-hidden&#039;).first(),
+                    initialForms = $(&#039;#id_&#039; + opts.prefix + &#039;-INITIAL_FORMS&#039;),
+                    totalForms = $(&#039;#id_&#039; + opts.prefix + &#039;-TOTAL_FORMS&#039;),
+                    formCount = parseInt(totalForms.val(), 10),
+                    childElementSelector = &#039;input,select,textarea,label,div&#039;,
+                    newRow = formTemplate.clone(true).removeClass(&#039;formset-custom-template empty-form&#039;);
+
+                function _updateItem(elem, prefix, ndx) {
+                    var idRegex = new RegExp(prefix + &#039;-(\\d+|__prefix__)-&#039;),
+                        replacement = prefix + &#039;-&#039; + ndx + &#039;-&#039;;
+                    if (elem.attr(&quot;for&quot;)) elem.attr(&quot;for&quot;, elem.attr(&quot;for&quot;).replace(idRegex, replacement));
+                    if (elem.attr(&#039;id&#039;)) elem.attr(&#039;id&#039;, elem.attr(&#039;id&#039;).replace(idRegex, replacement));
+                    if (elem.attr(&#039;name&#039;)) {
+                        var fieldName = elem.attr(&#039;name&#039;).replace(idRegex, &#039;&#039;);
+                        elem.attr(&#039;name&#039;, elem.attr(&#039;name&#039;).replace(idRegex, replacement));
+                        if (formData[fieldName] !== undefined) {
+                            elem.val(formData[fieldName]);
+                        }
+                    }
+                };
+
+                newRow.insertBefore(hiddenButtonRow);
+                newRow.find(childElementSelector).each(function() {
+                    _updateItem($(this), opts.prefix, formCount);
+                });
+                totalForms.val(formCount + 1);
+                initialForms.val(parseInt(initialForms.val(), 10) + 1);
+                _inline.photosformset.rows.onRowAdd(newRow);
+                if (formData &amp;&amp; formData.thumbnails) {
+                    if(formData.thumbnails.normal) {
+                        newRow.css(&#039;background-image&#039;,  &#039;url(&quot;&#039; + formData.thumbnails.normal + &#039;&quot;)&#039;);
+                        $(&#039;&lt;img /&gt;&#039;)
+                            .attr(&#039;src&#039;, formData.thumbnails.normal)
+                            .appendTo(newRow.find(&#039;.photo-form&#039;));
+                    }
+                }
+                return newRow;
+            },
+            cancelForm: function() {
+                var userResp = confirm(
+                    &#039;Are you sure you want to cancel all the changes? &#039; +
+                    &#039;All new uploaded photos will get deleted.&#039;);
+                if (userResp === false) {
+                    return false;
+                }
+                $.ajax({
+                    type: &quot;POST&quot;,
+                    async: false,
+                    url: _inline.options.urls.discardPhotos,
+                    data: $(&quot;input[name=&#039;original_photo_ids&#039;]&quot;).serialize()
+                });
+                return true;
+            },
+            resizeIframe: function() {
+                var insideIframe = (window.location != window.parent.location) ? true : false;
+                if (!insideIframe) { return; }
+                var documentHeight = Math.max(django.jQuery(&#039;html&#039;).outerHeight(true),
+                                              django.jQuery(&#039;body&#039;).outerHeight(true));
+                var _jQuery = window.parent.jQuery || window.parent.$ || (window.parent.django &amp;&amp; window.parent.django.jQuery);
+                _jQuery(window.frameElement).css(&#039;height&#039;, documentHeight + &#039;px&#039;);
+            },
+            buildAddDialog: function() {
+                var dialog = $(&quot;&lt;div class=&#039;add-dialog&#039; /&gt;&quot;).appendTo(
+                    $(_inline.options.prefix_group_selector));
+
+                dialog.dialog({
+                    modal: true,
+                    minWidth: 200,
+                    width: 600,
+                    title: &quot;Add images&quot;,
+                    buttons: {
+                        cancel: {
+                            text: &#039;Cancel&#039;,
+                            click: function() {
+                                $(dialog).dialog(&quot;close&quot;);
+                            }
+                        }
+                    },
+                    create: function( event, ui ) {
+                        var fileChoosers = $(&quot;&lt;div /&gt;&quot;)
+                            .addClass(&#039;file-chooser-toolbar&#039;).appendTo(dialog);
+                        var itemsTopBox = $(&quot;&lt;div /&gt;&quot;)
+                            .addClass(&#039;images-toolbar&#039;).appendTo(dialog);
+                        var itemsBox = $(&quot;&lt;ul /&gt;&quot;).
+                            addClass(&#039;images-list&#039;).appendTo(dialog);
+
+                        var listControls = $(&quot;&lt;div /&gt;&quot;)
+                            .addClass(&#039;list-controls&#039;).appendTo(itemsTopBox);
+                        var progressInfoBox = $(&quot;&lt;div /&gt;&quot;)
+                            .addClass(&#039;progress-info&#039;).appendTo(itemsTopBox);
+
+                        var uploaders = _inline.uploaders.init(
+                            progressInfoBox, listControls, itemsBox, dialog);
+
+                        // add file choosers
+                        $.each(uploaders.buttons(), function(i, button){
+                            if (i &gt; 0){
+                                fileChoosers.append($(&quot;&lt;span /&gt;&quot;).text(&#039;OR&#039;));
+                            }
+                            fileChoosers.append(button);
+                        });
+
+                        // add help texts
+                        fileChoosers.append(
+                            $(&#039;&lt;span&gt;?&lt;/span&gt;&#039;)
+                            .attr({
+                                &#039;class&#039;: &#039;help-button&#039;,
+                                &#039;data-rel&#039;: &#039;popover&#039;,
+                                &#039;data-trigger&#039;: &#039;hover&#039;,
+                                &#039;data-placement&#039;: &#039;right&#039;,
+                                &#039;data-content&#039;: uploaders.helpText()
+                            })
+                        ).find(&#039;.help-button&#039;).popover();
+
+                        // remove close button
+                        $(this).parent().find(&quot;button&quot;).first().remove();
+                        $(this).parent().find(&quot;button&quot;).addClass(&#039;cancel-btn btn&#039;);
+                    },
+                    focus: function(){
+                        var container = $(this).closest(&#039;.ui-dialog&#039;);
+                        if(container.height() &gt; $(&#039;html&#039;).height()){
+                            container.addClass(&#039;spacer&#039;);
+                        }
+                    },
+                    beforeClose: function( event, ui ) {
+                        return _inline.options.canDismissAddDialog;
+                    },
+                    close: function( event, ui ) {
+                        $(this).dialog(&#039;destroy&#039;).remove();
+                    }
+                }).bind(&#039;progresschange&#039;, function() {
+                    var buttons = $(this).dialog(&#039;option&#039;, &#039;buttons&#039;);
+                    var inProgress = !_inline.options.canDismissAddDialog;
+                    buttons.cancel.disabled = inProgress;
+                    $(this).dialog(&#039;option&#039;, &#039;buttons&#039;, buttons);
+                });
+
+                $(&#039;.ui-widget-overlay&#039;).on(&#039;click&#039;, function(){
+                    dialog.dialog( &quot;close&quot; );
+                });
+            },
+            buildHelpOverlay: function(){
+                var photosGrid = $(&#039;#photos-group-grid&#039;),
+                    overlay,
+                    hasEnoughImages = photosGrid.find(&#039;li:visible&#039;).length &gt;= 5;
+
+                if(!$(&#039;#help-overlay&#039;).length){
+                    overlay = $(&#039;&lt;div id=&quot;help-overlay&quot;&gt;&#039;)
+                                .html(&#039;&lt;div class=&quot;ui-widget-overlay ui-front&quot;&gt;&lt;/div&gt;&#039;+
+                                      &#039;&lt;div class=&quot;close ui-front&quot;&gt;&amp;times;&lt;/div&gt;&#039;+
+                                      &#039;&lt;div class=&quot;delete ui-front&quot;&gt;&lt;/div&gt;&#039;+
+                                      &#039;&lt;div class=&quot;edit ui-front&quot;&gt;&lt;/div&gt;&#039;+
+                                      &#039;&lt;div class=&quot;drag ui-front&quot;&gt;&lt;/div&gt;&#039;+
+                                      &#039;&lt;div class=&quot;add ui-front&quot;&gt;&lt;/div&gt;&#039;)
+                                .appendTo(&#039;body&#039;)
+                                .css({
+                                    width: $(&#039;body&#039;).get(0).scrollWidth,
+                                    height: photosGrid.outerHeight(true) + $(&#039;.photos-formset-info&#039;).outerHeight(true) + 10, //give 10px space
+                                    top: $(&#039;.photos-formset-info&#039;).offset().top - parseInt($(&#039;.photos-formset-info&#039;).css(&#039;margin-top&#039;))
+                                });
+                    overlay.find(&#039;.close&#039;).click(function(){
+                        overlay.remove();
+                        photosGrid.find(&#039;li&#039;).first().find(&#039;a.edit-row, a.delete-row&#039;).removeClass(&quot;show-me&quot;);
+                        $(&#039;#dumy-images&#039;).remove();
+                        photosGrid.show();
+                    });
+                }else{
+                    overlay = $(&#039;#help-overlay&#039;);
+                }
+
+
+                if(!hasEnoughImages){
+                    var dumyImages = $(&#039;&lt;div id=&quot;dumy-images&quot;&gt;&#039;).insertAfter(photosGrid);
+                    photosGrid.hide();
+                    $(&#039;#help-overlay&#039;).css({
+                        height: $(&#039;#dumy-images&#039;).height() + $(&#039;.photos-formset-info&#039;).outerHeight(true) + 10
+                    });
+                    overlay.find(&#039;.add&#039;).css({
+                        top: 380,
+                        left: 420
+                    });
+                }else{
+                    var firstImg = photosGrid.find(&#039;li&#039;).first();
+                    var edit = firstImg.find(&#039;a.edit-row&#039;);
+                    var del = firstImg.find(&#039;a.delete-row&#039;);
+                    var add = photosGrid.find(&#039;.add-row .add-btn&#039;);
+                    var originX = $(&#039;#photos-group&#039;).offset().left;
+                    var originY = $(&#039;.photos-formset-info&#039;).outerHeight(true) + parseInt($(&#039;#photos-group&#039;).css(&#039;margin-top&#039;));
+
+                    firstImg.find(&#039;a.edit-row, a.delete-row&#039;).addClass(&quot;show-me&quot;);
+                    if(!_inline.photosformset.emptySlots()){
+                        overlay.find(&#039;.add&#039;).hide();
+                    }else{
+                        overlay.find(&#039;.add&#039;).css({
+                            left: add.offset().left + add.width() / 2,
+                            top: originY + add.position().top + parseInt(add.css(&#039;margin-top&#039;)) - overlay.find(&#039;.add&#039;).height() / 2
+                        });
+                    }
+
+                }
+                overlay.find(&#039;.drag&#039;).css({
+                    &#039;margin-top&#039;: $(&#039;.photos-formset-info&#039;).css(&#039;margin-top&#039;)
+                });
+
+            }
+        },
+        initOpts: function(requiredOpts) {
+            this.options = requiredOpts;
+            this.options = $.extend(this.options, {
+                prefix_group_selector: &quot;#&quot; + this.options.prefix + &quot;-group&quot;,
+                form_template: &quot;#&quot; + this.options.prefix + &quot;-empty&quot;,
+                rows: &quot;#&quot; + this.options.prefix + &quot;-group li.inline-related&quot;,
+                sortable_el: $(&quot;#&quot; + this.options.prefix + &quot;-group-grid&quot;),
+                addMoreButton: $(&quot;#&quot; + this.options.prefix + &quot;-group&quot;).find(&#039;.add-row&#039;).first(),
+                canDismissAddDialog: true,
+                filerPopupName: _inline.options.prefix + &#039;filerFolderSelector&#039;,
+                photosBoxInfo: $(&#039;.photos-formset-info&#039;).first(),
+                tutorialButton: $(&#039;.photos-help-text a&#039;).first()
+            });
+        },
+        helpTextToTooltips: function(){
+            $(&#039;p.help&#039;).each(function(i, helpEl){
+                var helpEl = $(helpEl);
+                var helpText = helpEl.html();
+                var formElement = helpEl.prev();
+                $(&quot;&lt;span /&gt;&quot;).attr({&#039;title&#039;: helpText, &#039;class&#039;: &#039;help&#039;})
+                    .html(&#039;?&#039;)
+                    .tooltip({
+                        position: { my: &quot;left center&quot;, at: &quot;right+15&quot;},
+                        open: function(event, ui){
+                            var target = $(event.target);
+                            var tooltip = $(ui.tooltip[0]);
+                            var fitsOnRight = $(&#039;body&#039;).width() - (target.offset().left + target.outerWidth()) &gt; 320; //300 is tooltip max width + 30px the arrow
+                            if(!fitsOnRight){
+                                tooltip.addClass(&#039;right&#039;);
+                            }
+                        }
+                    })
+                    .insertAfter(formElement);
+                $(this).remove();
+            });
+        },
+        checkboxesToToggles: function() {
+            $(&#039;input[type=&quot;checkbox&quot;]&#039;).each(function() {
+                $(this).addClass(&#039;ace ace-switch ace-switch-4 btn-empty&#039;);
+                $(&#039;&lt;span class=&quot;lbl&quot;&gt;&#039;).insertAfter($(this));
+            });
+        },
+        setupAjaxCalls: function() {
+            $.ajaxSetup({
+                global:true,
+                headers: {
+                    &quot;X-Requested-With&quot;: &quot;XMLHttpRequest&quot;,
+                    &quot;X-CSRFToken&quot;: $(&#039;input[name=&quot;csrfmiddlewaretoken&quot;]&#039;).val()
+                },
+                cache: false,
+                error: function(x, e) {
+                    if (x.status == 500) {
+                        alert(&#039;Internel Server Error.&#039;);
+                    }
+                }
+            });
+        },
+        attachEvents: function() {
+            var that = this;
+            $(&#039;#photogallery_form&#039;).find(&#039;input[name=&quot;_cancel&quot;]&#039;)
+                .click(this.callbacks.cancelForm);
+            $(document).on(&quot;DOMSubtreeModified&quot;, this.callbacks.resizeIframe);
+            $(window).on(&quot;load&quot;, this.callbacks.resizeIframe);
+            this.options.addMoreButton.click(this.callbacks.buildAddDialog);
+            this.options.tutorialButton.click(this.callbacks.buildHelpOverlay);
+        },
+        preloadImages: function(){
+            var images = [
+                &#039;admin/photogallery/img/arrow-right.png&#039;,
+                &#039;admin/photogallery/img/dumy-images.png&#039;,
+                &#039;admin/photogallery/img/help-overlay-sprite.png&#039;,
+            ];
+
+            for(var i=0; i&lt;images.length; i++){
+                (new Image()).src = _inline.options.static_url + images[i];
+            }
+        }
+    };
+
+    PhotosInlineFormset = window.PhotosInlineFormset || {
+        init: function(requiredOpts) {
+            _inline.setupAjaxCalls();
+            _inline.initOpts(requiredOpts);
+            _inline.photosformset.sortable().formset().initRows().updateLayout();
+            _inline.checkboxesToToggles();
+            _inline.helpTextToTooltips();
+            _inline.attachEvents();
+            _inline.preloadImages();
+        }
+    };
+
+}(django.jQuery));</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

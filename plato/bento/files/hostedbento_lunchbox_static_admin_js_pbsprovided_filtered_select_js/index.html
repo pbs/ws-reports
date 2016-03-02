@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - hostedbento/lunchbox/static/admin/js/pbsprovided_filtered_select.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>hostedbento/lunchbox/static/admin/js/pbsprovided_filtered_select.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">72.17</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">81</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">27.58</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">0.89</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function($) {
+
+    function set(items){
+        if (window.HashSet){
+            var set = new HashSet();
+            set.addAll(items);
+            return set;
+        }
+        return items;
+    }
+
+    function contains(items, value){
+        if (items.contains){
+            return items.contains(value);
+        }
+        return items.indexOf(value) !== -1;
+    }
+
+
+    function filteritems(id, pbs_items) {
+        var pbsOn = pbs_items !== false;
+        var searchOn = $(&quot;#&quot; + id + &#039;_input&#039;).val().trim().length &gt; 0;
+
+        function _isPBSProvided(node){
+            return contains(pbs_items, parseInt(node.value, 10))
+        }
+
+        $.each(SelectBox.cache[id + &#039;_from&#039;], function(i, node) {
+            if (searchOn){
+                node.displayed = pbsOn &amp;&amp; node.displayed ? _isPBSProvided(node) | 0 : node.displayed;
+            } else {
+                node.displayed = (!pbsOn || _isPBSProvided(node)) | 0;
+            }
+        });
+        SelectBox.redisplay(id + &#039;_from&#039;);
+    }
+
+    function _init(id, items){
+        var pbs_items = set(items);
+        var box = quickElement(&#039;div&#039;, $(&quot;label[for=&#039;&quot; + id + &quot;&#039;]&quot;).parent().next()[0], null, &#039;class&#039;, &#039;pbs-provided-filter&#039;);
+        var toggler = quickElement(&#039;input&#039;, box, null, &#039;type&#039;, &#039;checkbox&#039;);
+        var label = quickElement(&#039;label&#039;, box, &#039;Show only PBS-provided&#039;, &#039;class&#039;, &#039;vCheckboxLabel&#039;);
+
+        function filterWithSearch(e){
+            var searchText = $(&quot;#&quot; + id + &#039;_input&#039;).val().trim();
+            var pbsOn = $(toggler).is(&quot;:checked&quot;);
+            if (searchText &amp;&amp; !pbsOn){
+                // reset to search results
+                SelectBox.filter(id + &#039;_from&#039;, searchText);
+                return ;
+            }
+            filteritems(id, pbsOn ? pbs_items : false);
+        }
+
+        addEvent(toggler, &#039;click&#039;, filterWithSearch);
+        addEvent(label, &#039;click&#039;, function(){ $(toggler).trigger(&#039;click&#039;); });
+
+        $(&#039;#&#039; + id + &#039;_remove_link, #&#039; + id + &#039;_remove_all_link&#039;)
+            .bind(&#039;PBS.filteritems&#039;, filterWithSearch)
+            .each(function(){
+                var link = $(this);
+                var idx = link.attr(&#039;href&#039;).lastIndexOf(&#039;;&#039;);
+                if (idx === -1){
+                    return;
+                }
+                var new_link = link.attr(&#039;href&#039;).substring(0, idx + 1) +
+                    &#039;django.jQuery(&quot;#&#039; + link.attr(&#039;id&#039;) + &#039;&quot;).trigger(&quot;PBS.filteritems&quot;);&#039; +
+                    link.attr(&#039;href&#039;).substring(idx + 1);
+                link.attr(&#039;href&#039;, new_link);
+            });
+
+        $(&quot;#&quot; + id + &#039;_input&#039;).bind(&#039;keyup&#039;, function(e){
+            filteritems(id, $(toggler).is(&quot;:checked&quot;) ? pbs_items: false);
+        });
+    }
+
+    PBSProvidedSelect = window.PBSProvidedSelect || {
+        &#039;init&#039;: _init
+    };
+
+}(django.jQuery));</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

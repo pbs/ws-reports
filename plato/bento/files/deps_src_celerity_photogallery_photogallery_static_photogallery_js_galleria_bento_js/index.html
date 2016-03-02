@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - deps_src/celerity-photogallery/photogallery/static/photogallery/js/galleria.bento.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>deps_src/celerity-photogallery/photogallery/static/photogallery/js/galleria.bento.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">63.89</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">368</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">42.17</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">4.55</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/* Bento theme for Galleria.io */
+
+(function($) {
+
+/*global window, jQuery, Galleria */
+
+Galleria.addTheme({
+    name: &#039;bento&#039;,
+    author: &#039;PBS&#039;,
+    css: &#039;gallery.css&#039;,
+    defaults: {
+        transition: &#039;fade&#039;,
+        imageCrop: false,
+        transitionSpeed: 500,
+        thumbCrop: &quot;height&quot;,
+        idleMode: &quot;hover&quot;,
+        idleSpeed: 500,
+        fullscreenTransition: true,
+        thumbnails: false,
+        responsive: true,
+        maxScaleRatio: 1,
+
+        _is_fullscreen: false,
+        _toggleCaption: true,
+        _showTooltip: true,
+
+        _locale: {
+            toggle_captions: &quot;Toggle captions&quot;,
+            play: &quot;Play slideshow&quot;,
+            pause: &quot;Pause slideshow&quot;,
+            share: &quot;Share this gallery&quot;,
+            facebook: &quot;Facebook&quot;,
+            twitter: &quot;Twitter&quot;,
+            pinterest: &quot;Pinterest&quot;,
+            tumblr: &quot;Tumblr&quot;,
+            email: &quot;Email&quot;,
+            google: &quot;Google Plus&quot;,
+            enter_fullscreen: &quot;Enter fullscreen&quot;,
+            exit_fullscreen: &quot;Exit fullscreen&quot;,
+            next: &quot;Next image&quot;,
+            prev: &quot;Previous image&quot;,
+            showing_image: &quot;Showing image %s of %s&quot;
+        },
+
+        dataConfig: function(img) {
+            var author = $(img).data(&#039;author&#039;) ? &#039;&lt;div class=&quot;galleria-info-author&quot;&gt;&#039;+$(img).data(&#039;author&#039;)+&#039;&lt;/div&gt;&#039; : &#039;&#039;;
+            var description = $(img).data(&#039;description&#039;) ? $(img).data(&#039;description&#039;) : &#039;&#039;;
+
+            function getElipsis(text, max){
+                return (text.length &gt; max ? &#039;...&#039; : &#039;&#039;);
+            }
+
+            if(description){
+                shortDesc = &#039;&lt;span class=&quot;short&quot;&gt;&#039; + description.substr(0, 200) + getElipsis(description, 200)+&#039;&lt;/span&gt;&#039;;
+                longDesc = &#039;&lt;span class=&quot;long&quot;&gt;&#039; + description.substr(0, 400) + getElipsis(description, 400) + &#039;&lt;/span&gt;&#039;;
+                description = &#039;&lt;span class=&quot;description&quot;&gt;&#039; + shortDesc + longDesc + &#039;&lt;/span&gt;&#039;;
+            }
+
+            return {
+                title: $(img).data(&#039;title&#039;),
+                description: description + author,
+            };
+        }
+    },
+
+    init: function(options) {
+        Galleria.requires(1.4, &#039;This version of Classic theme requires Galleria 1.4 or later&#039;);
+
+        this.addElement(&quot;bar&quot;, &quot;fullscreen&quot;, &quot;info-icn&quot;, &quot;share-icn&quot;,
+                        &quot;email-icn&quot;, &quot;tumblr-icn&quot;, &quot;pinterest-icn&quot;,
+                        &quot;google-icn&quot;, &quot;twitter-icn&quot;, &quot;facebook-icn&quot;, &quot;social-icons&quot;,
+                        &quot;image-nav-prev&quot;, &quot;image-nav-next&quot;)
+            .append({
+                container: [&quot;bar&quot;,&quot;social-icons&quot;],
+                bar: [ &quot;image-nav-prev&quot;, &quot;image-nav-next&quot;, &quot;counter&quot;,
+                        &quot;fullscreen&quot;, &quot;info-icn&quot;, &quot;share-icn&quot;,],
+                &#039;social-icons&#039;: [&quot;facebook-icn&quot;,&quot;twitter-icn&quot;,&quot;google-icn&quot;,
+                                &quot;pinterest-icn&quot;,&quot;tumblr-icn&quot;,&quot;email-icn&quot;,]
+            })
+            .prependChild(&quot;stage&quot;, &quot;info&quot;)
+            .appendChild(&quot;container&quot;, &quot;tooltip&quot;);
+
+
+        var self = this,
+            doc = window.document,
+            locale = options._locale,
+            infoIcn = this.$(&#039;info-icn&#039;),
+            socialIcons = this.$(&quot;facebook-icn, twitter-icn, pinterest-icn, tumblr-icn, google-icn, email-icn&quot;),
+            info = this.$(&#039;info&#039;);
+            ga = window.ga || function(){};
+
+        function galleryResize(){
+            var isChromeIpad = navigator.userAgent.match(&#039;CriOS&#039;),
+                isiPad = navigator.userAgent.match(/iPad/i) != null;
+            if(options._is_fullscreen){
+                if(isiPad){
+                    self.resize({
+                        width: window.innerWidth+&#039;px&#039;,
+                        height: (isChromeIpad ? Math.max(window.innerHeight, $(window).height()) : window.innerHeight)+&#039;px&#039;
+                    });
+                }
+                return ;
+            }
+
+            var galleriaInst = Galleria.get(),
+                galleryElem,
+                width,
+                height;
+
+            for(var i=0; i&lt;galleriaInst.length; i++){
+                galleryElem = $(&#039;#photogallery_&#039;+galleriaInst[i]._options._gallery_id+&#039;_thumbs&#039;);
+                width = galleryElem.width();
+                height = width / (16/9) + galleryElem.find(&#039;.galleria-bar&#039;).height();
+                galleryElem.css(&#039;height&#039;, height);
+                if(!galleriaInst[i]._options._is_fullscreen){
+                    galleriaInst[i].resize({
+                        width: width+&#039;px&#039;,
+                        height: height+&#039;px&#039;
+                    });
+                }
+            }
+        }
+
+        window.addEventListener(&quot;orientationchange&quot;, function() {
+            //safari ipad fix LUN-1875
+            if(options._is_fullscreen){
+                $(window).scrollTop(0);
+                $(&#039;.galleria-theme-bento.fullscreen&#039;).css(&#039;z-index&#039;,&#039;9999999999&#039;);
+            }
+            galleryResize();
+        }, false);
+
+        //prevent passport menu from sliding when user swipes inside a gallery
+        //update the global passport menu ignore list
+        window.PBS = window.PBS || {};
+        PBS.passportMenu = window.PBS.passportMenu || {};
+        PBS.passportMenu.swipeIgnore = window.PBS.passportMenu.swipeIgnore || [];
+        if($.inArray(&#039;.galleria-stage&#039;, window.PBS.passportMenu.swipeIgnore) &lt; 0){
+            window.PBS.passportMenu.swipeIgnore.push(&#039;.galleria-stage&#039;);
+        }
+
+        this.addIdleState(this.get(&quot;image-nav-left&quot;),
+                          { opacity: 0, left: 0 },
+                          { opacity: 1 },
+                          true);
+
+        this.addIdleState(this.get(&quot;image-nav-right&quot;),
+                          { opacity: 0,right: 0},
+                          { opacity: 1 },
+                          true);
+
+        //set current image
+        this.bind(&#039;image&#039;, function(e) {
+            options._current_image = e.imageTarget.src;
+        });
+
+        //fullscreen enter event
+        this.bind(&#039;fullscreen_enter&#039;, function(){
+            self.$(&#039;share-icn&#039;).hide();
+            options._is_fullscreen = true;
+
+            //safari ipad fix LUN-1875
+            if(options._is_fullscreen){
+                $(window).scrollTop(0);
+                $(&#039;.galleria-theme-bento.fullscreen&#039;).css(&#039;z-index&#039;,&#039;9999999999&#039;);
+                $(&#039;body&#039;).bind(&#039;touchmove.gallery&#039;, function(e){
+                    e.preventDefault();
+                    return true;
+                });
+            }
+            galleryResize();
+
+            ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Enable Fullscreen - &#039;+(self.getIndex()+1), options._title);
+        });
+
+        //fullscreen exit event
+        this.bind(&#039;fullscreen_exit&#039;, function(){
+            self.$(&#039;share-icn&#039;).show();
+            options._is_fullscreen = false;
+
+            //safari ipad fix LUN-1875
+            if(!options._is_fullscreen){
+                $(&#039;body&#039;).unbind(&#039;touchmove.gallery&#039;);
+                $(&#039;.galleria-theme-bento&#039;).css(&#039;z-index&#039;,&#039;&#039;);
+            }
+            galleryResize();
+
+            ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Exit Fullscreen - &#039;+(self.getIndex()+1), options._title);
+        });
+
+        //toggle fullscreen
+        this.$(&quot;fullscreen&quot;).on(&quot;click&quot;, function(e) {
+            $(window).off(&#039;resize.gallery&#039;);
+            e.preventDefault();
+
+            self.toggleFullscreen();
+
+        });
+
+
+        this.$(&quot;image-nav-next&quot;).on(&quot;click&quot;, function(e){
+            self.next();
+            if(!options._is_fullscreen){
+                ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Inline image advance - &#039;+(self.getIndex()+1), options._title);
+            }else{
+                ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Fullscreen image advance - &#039;+(self.getIndex()+1), options._title);
+            }
+        });
+
+        this.$(&#039;image-nav-right&#039;).on(&quot;click&quot;, function(){
+            if(!options._is_fullscreen){
+                ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Inline image advance - &#039;+(self.getIndex()+1), options._title);
+            }else{
+                ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Fullscreen image advance - &#039;+(self.getIndex()+1), options._title);
+            }
+        });
+
+        this.$(&quot;image-nav-prev&quot;).on(&quot;click&quot;, function(e){
+            self.prev();
+            if(!options._is_fullscreen){
+                ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Inline image reverse - &#039;+(self.getIndex()+1), options._title);
+            }else{
+                ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Fullscreen image reverse - &#039;+(self.getIndex()+1), options._title);
+            }
+        });
+
+        this.$(&#039;image-nav-left&#039;).on(&quot;click&quot;, function(){
+            if(!options._is_fullscreen){
+                ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Inline image reverse - &#039;+(self.getIndex()+1), options._title);
+            }else{
+                ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Fullscreen image reverse - &#039;+(self.getIndex()+1), options._title);
+            }
+        });
+
+        // toggle captions
+        if ( options._toggleCaption === true ) {
+            infoIcn.bind( &#039;click&#039;, function() {
+
+                if(infoIcn.hasClass(&#039;deactivated&#039;)){
+                    info.css({bottom: -1, opacity: 1.0});
+                    ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Description on - &#039;+(self.getIndex()+1), options._title);
+                }else{
+                    info.css({bottom: -info.outerHeight(), opacity: 0});
+                    ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Description off - &#039;+(self.getIndex()+1), options._title);
+                }
+                infoIcn.toggleClass(&#039;deactivated&#039;);
+
+            });
+        } else {
+            info.show();
+        }
+
+        //captions are deactivated by default
+        infoIcn.addClass(&#039;deactivated&#039;);
+        if (options._expose_metadata){
+            infoIcn.trigger(&#039;click&#039;);
+        }
+
+        //toggle social icons
+        this.$(&quot;share-icn&quot;).bind( &#039;click&#039;, function() {
+            if(window.screen.width &lt; 600 || $(window).width() &lt; 600){
+                self.$(&#039;social-icons&#039;)
+                    .removeClass(&#039;left-expanded&#039;)
+                    .toggleClass(&#039;top-expanded&#039;);
+            }else{
+                self.$(&#039;social-icons&#039;)
+                    .removeClass(&#039;top-expanded&#039;)
+                    .toggleClass(&#039;left-expanded&#039;);
+            }
+            if(self.$(&#039;social-icons&#039;).hasClass(&#039;left-expanded&#039;) ||
+               self.$(&#039;social-icons&#039;).hasClass(&#039;top-expanded&#039;)){
+                ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Share - &#039;+(self.getIndex()+1), options._title);
+            }
+        });
+
+        //facebook sharing
+        this.$(&quot;facebook-icn&quot;).bind(&#039;click&#039;, function(){
+            window.open(&#039;http://www.facebook.com/sharer.php?u=&#039;+
+                        encodeURIComponent(window.location.href)+
+                        &#039;&amp;p[images][0]=&#039;+encodeURIComponent(options._current_image)+
+                        &#039;&amp;p[title]=&#039;+encodeURIComponent(options._meta_title)+
+                        &#039;&amp;p[summary]=&#039;+encodeURIComponent(options._title),
+                        &#039;sharer&#039;,
+                        &#039;toolbar=1,status=1,width=626,height=436&#039;);
+            ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Facebook - &#039;+(self.getIndex()+1), options._title);
+        });
+
+        //twitter sharing
+        this.$(&quot;twitter-icn&quot;).bind(&#039;click&#039;, function(){
+            window.open(&#039;https://twitter.com/share?url=&#039;+
+                        encodeURIComponent(window.location.href)+
+                        &#039;&amp;text=&#039;+encodeURIComponent(options._meta_title),
+                        &#039;sharer&#039;,
+                        &#039;toolbar=0,status=0,width=626,height=436&#039;);
+            ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Twitter - &#039;+(self.getIndex()+1), options._title);
+        });
+
+        //google+ sharing
+        this.$(&quot;google-icn&quot;).bind(&#039;click&#039;, function(){
+            window.open(&#039;https://plus.google.com/share?url=&#039;+
+                        encodeURIComponent(window.location.href),
+                        &#039;sharer&#039;,
+                        &#039;toolbar=1,status=1,width=626,height=436&#039;);
+            ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Google Plus - &#039;+(self.getIndex()+1), options._title);
+        });
+
+        //pinterest sharing
+        this.$(&quot;pinterest-icn&quot;).bind(&#039;click&#039;, function(){
+            window.open(&#039;https://pinterest.com/pin/create/button/?url=&#039;+
+                        encodeURIComponent(window.location.href)+
+                        &#039;&amp;media=&#039;+encodeURIComponent(options._current_image)+
+                        &#039;&amp;is_video=0&#039;+
+                        &#039;&amp;description=&#039;+encodeURIComponent(options._meta_title),
+                        &#039;sharer&#039;,
+                        &#039;toolbar=1,status=1,width=626,height=436&#039;);
+            ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Pinterest - &#039;+(self.getIndex()+1), options._title);
+        });
+
+        //tumblr sharing
+        this.$(&quot;tumblr-icn&quot;).bind(&#039;click&#039;, function(){
+            window.open(&#039;http://www.tumblr.com/share/link?url=&#039;+
+                        encodeURIComponent(window.location.href)+
+                        &#039;&amp;name=&#039;+encodeURIComponent(options._meta_title)+
+                        &#039;&amp;description=&#039;+encodeURIComponent(options._title),
+                        &#039;sharer&#039;,
+                        &#039;toolbar=1,status=1,width=626,height=436&#039;);
+            ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Tumblr - &#039;+(self.getIndex()+1), options._title);
+        });
+
+        //email sharing
+        this.$(&quot;email-icn&quot;).bind(&#039;click&#039;, function(){
+            window.open(&#039;mailto:?&#039;+
+                        &#039;subject=&#039;+encodeURIComponent(options._meta_title)+
+                        &#039;&amp;body=&#039;+encodeURIComponent(window.location.href),
+                        &#039;sharer&#039;,
+                        &#039;toolbar=1,status=1,width=626,height=436&#039;);
+            ga(&#039;send&#039;, &#039;event&#039;, &#039;Bento Image Gallery&#039;, &#039;Email - &#039;+(self.getIndex()+1), options._title);
+        });
+
+        if(options._showTooltip){
+            //buttons&#039; tooltips
+            this.bindTooltip({
+                fullscreen: function() {
+                    return self.isFullscreen() ? locale.exit_fullscreen : locale.enter_fullscreen;
+                },
+                play: function() {
+                    return self.isPlaying() ? locale.pause : locale.play;
+                },
+                &quot;info-icn&quot;: locale.toggle_captions,
+                &quot;image-nav-right&quot;: locale.next,
+                &quot;image-nav-left&quot;: locale.prev,
+                &quot;image-nav-next&quot;: locale.next,
+                &quot;image-nav-prev&quot;: locale.prev,
+                &quot;share-icn&quot;: locale.share,
+                &quot;facebook-icn&quot;: locale.facebook,
+                &quot;twitter-icn&quot;: locale.twitter,
+                &quot;google-icn&quot;: locale.google,
+                &quot;pinterest-icn&quot;: locale.pinterest,
+                &quot;tumblr-icn&quot;: locale.tumblr,
+                &quot;email-icn&quot;: locale.email,
+                counter: function() {
+                    return locale.showing_image.replace(/\%s/, self.getIndex() + 1).replace(/\%s/, self.getDataLength());
+                }
+            });
+        }
+
+    }
+});
+
+}(jQuery));</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

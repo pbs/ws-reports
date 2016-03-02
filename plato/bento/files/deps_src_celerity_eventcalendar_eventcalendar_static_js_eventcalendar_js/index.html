@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - deps_src/celerity-eventcalendar/eventcalendar/static/js/eventcalendar.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>deps_src/celerity-eventcalendar/eventcalendar/static/js/eventcalendar.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">68.69</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">168</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">43.99</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.27</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">function formatRFC3339(date){
+    function _(z_tab, no){
+        var str = no + &#039;&#039;;
+        while(str.length &lt; z_tab){
+            str = &#039;0&#039; + str;
+        }
+        return str;
+    }
+    var offset = date.getTimezoneOffset();
+    var offsetStr = offset &gt; 0 ? &quot;-&quot; : &quot;+&quot;;
+    var o1 = _(2, Math.floor(Math.abs(offset) / 60));
+    var o2 = _(2, Math.abs(offset) % 60);
+    offsetStr += o1 + &#039;:&#039; + o2;
+    return _(4, date.getFullYear()) + &#039;-&#039; + _(2, date.getMonth() + 1) + &#039;-&#039; + _(2, date.getDate()) +
+    &#039;T&#039; + _(2, date.getHours()) + &#039;:&#039; + _(2, date.getMinutes()) + &#039;:&#039; + _(2, date.getSeconds()) + offsetStr;
+}
+
+function parseRFC3339(dateString){
+    var datePattern = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.(\d+))?($|Z|([+-])(\d{2})(:(\d{2}))?)/;
+    var m = datePattern.exec(dateString);
+    if (!m){
+        return;
+    }
+    var year = +m[1];
+    var month = m[2] - 1;
+    var day = +m[3];
+    var hour = +m[4];
+    var mins = +m[5];
+    var secs = +m[6];
+    var millis = +(m[8] || 0);
+
+    var tzOffsetStr = m[9];
+    if (!tzOffsetStr){
+        return new Date(year, month, day, hour, mins, secs, millis);
+    }
+
+    var asDate = new Date(0);
+    asDate.setUTCFullYear(year);
+    asDate.setUTCMonth(month);
+    asDate.setUTCDate(day);
+    asDate.setUTCHours(hour);
+    asDate.setUTCMinutes(mins);
+    asDate.setUTCSeconds(secs);
+    asDate.setUTCMilliseconds(millis);
+
+    if (tzOffsetStr !== &#039;Z&#039;){
+        var sign = m[10] === &#039;-&#039; ? -1 : 1,
+            tzHour = +m[11],
+            tzMin = +(m[13] || 0),
+            offset = (tzHour * 60 + tzMin) * sign;
+        asDate.setTime(asDate.getTime() - offset * 60 * 1000);
+    }
+
+    return asDate;
+}
+
+
+function isSameDay(date1, date2){
+    return (
+        date1.getDate() === date2.getDate() &amp;&amp;
+        date1.getMonth() === date2.getMonth() &amp;&amp;
+        date1.getFullYear() === date2.getFullYear()
+    );
+}
+
+
+function GoogleEventCalendar(calendarElement) {
+    this.calendarElement = calendarElement;
+    this.events = [];
+
+    this._build_html_event = function(event){
+        var el = jQuery(&#039;&lt;div /&gt;&#039;).addClass(&#039;event&#039;);
+        jQuery(&#039;&lt;h2 /&gt;&#039;).text(event.Title).appendTo(el);
+        jQuery(&#039;&lt;p /&gt;&#039;).addClass(&#039;event-description&#039;).text(event.Description).appendTo(el);
+        jQuery(&#039;&lt;a /&gt;&#039;).attr(&#039;href&#039;, event.Link).text(&#039;View Event&#039;).appendTo(jQuery(&#039;&lt;p /&gt;&#039;).appendTo(el));
+        return el;
+    };
+
+    this.makeEvents = function(json_items){
+        var events = [];
+        jQuery.each(json_items, function(i, event_data){
+            if (!event_data.start){
+                return;
+            }
+            var str_date = event_data.start.dateTime || event_data.start.date;
+            var startDate = (
+                parseRFC3339(str_date) ||
+                jQuery.datepicker.parseDate(&#039;yy-mm-dd&#039;, str_date.split(&#039;T&#039;)[0])
+            );
+            events[i] = {
+                Title:        event_data.summary || &#039;&#039;,
+                Date:         startDate,
+                Description:  event_data.description || &#039;&#039;,
+                Link:         event_data.htmlLink || &#039;&#039;
+            };
+        });
+        return events;
+    };
+
+    this.makeCalendarView = function(){
+        var self = this;
+        var calendarBox = jQuery(this.calendarElement);
+
+        calendarBox.children(&quot;.calendar&quot;).datepicker({
+            dayNamesShort: [&quot;Sun&quot;, &quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot;],
+            dayNamesMin: [&quot;Sun&quot;, &quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot;],
+            beforeShowDay: function(date) {
+                for(var i = 0; i &lt; self.events.length; i++) {
+                    if(isSameDay(self.events[i].Date, date)){
+                        return [true, &#039;highlight&#039;, null];
+                    }
+                }
+                return [true, &#039;&#039;, null];
+            },
+            onChangeMonthYear: function(year, month){
+                var _calendar = jQuery(this);
+                calendarBox.children(&quot;.events&quot;).html(&quot;&quot;);
+                self.eventsByMonth(year, month - 1, function(){
+                    _calendar.datepicker(&#039;refresh&#039;);
+                });
+            },
+            onSelect: function(dateText) {
+                var date, html=&#039;&#039;,
+                    selectedDate = new Date(dateText);
+                calendarBox.children(&quot;.events&quot;).html(&quot;&quot;);
+                jQuery.each(self.events, function(i, event_data){
+                    if(isSameDay(event_data.Date, selectedDate) ){
+                        self._build_html_event(event_data).appendTo(calendarBox.children(&quot;.events&quot;));
+                    }
+                });
+            }
+        });
+    };
+
+    this.eventsByMonth = function(year, month, callback){
+        var self = this;
+        var startOfMonth = formatRFC3339(new Date(year, month, 1));
+        var nextMonth = new Date(year, month + 1, 1);
+        var endOfMonth = formatRFC3339(new Date(nextMonth-1));
+        var calendar = jQuery(this.calendarElement).children(&quot;[name=&#039;data-calendar-id&#039;]&quot;).val();
+
+        jQuery.ajax({
+            url: &quot;/eventcalendar/events_calendar/&quot; + calendar + &#039;/&#039; + encodeURIComponent(startOfMonth) + &#039;/&#039; + encodeURIComponent(endOfMonth) + &#039;/&#039;,
+            dataType: &quot;json&quot;,
+            success: function(data){
+                self.events = self.makeEvents(data.items || []);
+                callback();
+            }
+        });
+    };
+
+    GoogleEventCalendar.prototype.build_calendar = function() {
+        var now = new Date();
+        var self = this;
+        this.events = this.eventsByMonth(now.getFullYear(), now.getMonth(), function(){
+            self.makeCalendarView();
+        });
+    };
+
+}
+
+jQuery(document).ready(function() {
+    jQuery(&#039;.data-event-calendar&#039;).each(function( index ) {
+        (new GoogleEventCalendar(jQuery(this)))
+            .build_calendar();
+    });
+
+});</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

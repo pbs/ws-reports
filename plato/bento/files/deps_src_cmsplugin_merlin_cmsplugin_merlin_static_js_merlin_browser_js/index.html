@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - deps_src/cmsplugin-merlin/cmsplugin_merlin/static/js/merlin_browser.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>deps_src/cmsplugin-merlin/cmsplugin_merlin/static/js/merlin_browser.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">62.41</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">245</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">48.22</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.76</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function() {
+    var search_results = null,
+        initialData = null,
+        navigationHistory = {1: 1}, // hold last page for each chapter
+        autodiscover = false;
+
+    var updateNavigationHistory = function(){
+        if (!search_results || search_results.length == 0){
+            return;
+        }
+        var page = parseInt(jQuery(&quot;#page_no&quot;).val() || 1, 10);
+        var chapter = parseInt(jQuery(&quot;#chapter_no&quot;).val() || 1, 10);
+        if (page &gt; 0 &amp;&amp; chapter &gt; 0) {
+            navigationHistory[chapter] = page;
+        }
+    }
+
+    var update_navigation = function(){
+        updateNavigationHistory();
+
+        if (!search_results) {
+            return;
+        }
+        var currentPage = parseInt(jQuery(&quot;#page_no&quot;).val() || 1, 10);
+        var currentChapter = parseInt(jQuery(&quot;#chapter_no&quot;).val() || 1, 10);
+        var isFirstPage = currentPage &lt;= 1 &amp;&amp; currentChapter &lt;= 1;
+
+        if (isFirstPage){
+            // prev button should be disabled only for first page
+            jQuery(&quot;#nav_newer&quot;).parent().addClass(&#039;disabled&#039;);
+        } else {
+            jQuery(&quot;#nav_newer&quot;).parent().removeClass(&#039;disabled&#039;);
+        }
+
+        if (search_results.length &gt; 0){
+            if (isFirstPage &amp;&amp; search_results.length &lt; MAX_ITEMS_DISPLAYED){
+                // disable if first page is not full with search results
+                jQuery(&quot;#nav_older&quot;).parent().addClass(&#039;disabled&#039;);
+            } else {
+                jQuery(&quot;#nav_older&quot;).parent().removeClass(&#039;disabled&#039;);
+            }
+            autodiscover = false;
+        } else if(isFirstPage || autodiscover){
+            jQuery(&quot;#nav_older&quot;).parent().addClass(&#039;disabled&#039;);
+        } else if(!autodiscover){
+            // discover next chapter
+            autodiscover = true;
+            jQuery(&quot;#chapter_no&quot;).val(currentChapter + 1);
+            jQuery(&quot;#page_no&quot;).val(1);
+            jQuery(&#039;form#changelist-search&#039;).trigger(&#039;submit&#039;);
+        }
+    }
+
+    var populate_data = function(url, search_data) {
+        //add throbber
+        jQuery(&#039;.spinner&#039;).addClass(&#039;loading&#039;);
+        if (dataChanged(search_data)){
+            resetPagination();
+        }
+        var jqxhr = jQuery.ajax({
+            url: url,
+            data: search_data,
+            type: &#039;GET&#039;,
+            context: &quot;#changelist-results&quot;,
+            success: function(data) {
+                search_results = data;
+                populateResultsTable(data);
+                jQuery(&#039;.spinner&#039;).removeClass(&#039;loading&#039;);
+                update_navigation();
+            },
+            error: function(xhr, status, err) {
+                alert(&#039;Error occured: status code = &#039; + status);
+                return false;
+            }
+        });
+        return jqxhr;
+    }
+
+    var populateResultsTable = function(data) {
+        var html = &#039;&#039;, index = 0, key, row_index;
+
+        for (key in data) {
+            row_index =  index%2===0 ? 1 : 2;
+            html += &#039;&lt;tr class=&quot;row&#039;+row_index+&#039;&quot; id=&quot;td-&#039;+index+&#039;&quot;&gt;&#039;;
+            html += &#039;&lt;td&gt;&lt;input type=&quot;radio&quot; value=&quot;&#039;+index+&#039;&quot; id=&quot;input_&#039;+index+&#039;&quot; name=&quot;merlin&quot; /&gt;&lt;/td&gt;&#039;;
+            html += &#039;&lt;td class=&quot;title&quot;&gt;&#039;+data[key].title+&#039;&lt;/td&gt;&#039;;
+            html += &#039;&lt;td class=&quot;content_channel&quot;&gt;&#039;+ data[key].contentchannel +&#039;&lt;/td&gt;&#039;;
+            html += &#039;&lt;td class=&quot;description&quot;&gt;&#039;+trim_text(data[key].short_description, 50)+&#039;&lt;/td&gt;&#039;;
+            html += &#039;&lt;td class=&quot;type&quot;&gt;&#039;+data[key].webobject_type+&#039;&lt;/td&gt;&#039;;
+            html += &#039;&lt;td class=&quot;published&quot;&gt;&#039;+data[key].published+&#039;&lt;/td&gt;&lt;/tr&gt;&#039;;
+            index++;
+        }
+        if (html == &quot;&quot;) {
+            html += &#039;&lt;tr class=&quot;no-results&quot;&gt;&lt;td colspan=&quot;6&quot;&gt;No results found&lt;/td&gt;&lt;/tr&gt;&#039;;
+        }
+        jQuery(&#039;table#result_list tbody&#039;).html(html);
+    }
+
+    var construct_merlin_object = function(elem) {
+
+        var selected = jQuery(elem).find(&#039;input:checked&#039;);
+        var selected_merlin_id = selected.length&gt;0 ? selected[0].value : &quot;&quot;;
+        var item_selected = search_results[selected_merlin_id];
+        if (item_selected) {
+            return item_selected;
+        }
+        return false;
+    }
+
+    var trim_text = function(text, max_value) {
+        var result_text = &quot;&quot;, new_text, last_space, truncated_text, result_text;
+        if (text.length &gt; max_value) {
+            new_text = text.substring(0, max_value);
+            last_space = new_text.lastIndexOf(&quot; &quot;);
+            truncated_text = new_text.slice(0, last_space);
+            result_text = truncated_text + &quot; ...&quot;;
+        } else {
+            result_text = text;
+        }
+        return result_text;
+    }
+
+    var dataChanged = function(formData){
+        if (!initialData &amp;&amp; !formData){
+            return false;
+        }
+        if (!initialData){
+            return true;
+        }
+        var formFields = [&#039;search_string&#039;, &#039;object_type&#039;, &#039;start_date&#039;, &#039;end_date&#039;];
+        for(var idx=0; idx &lt; formFields.length; idx++ ){
+            var fieldName = formFields[idx];
+            if (formData[fieldName] != initialData[fieldName]){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    var getData = function(){
+        var formData = {
+            site: current_site_id,
+            search_string: jQuery.trim(jQuery(&#039;form#changelist-search input#search_string&#039;).val()),
+            object_type: jQuery.trim(jQuery(&#039;form#changelist-search #object_type&#039;).val()),
+            start_date: jQuery.trim(jQuery(&#039;form#changelist-search input#datepicker_start&#039;).val()),
+            end_date: jQuery.trim(jQuery(&#039;form#changelist-search input#datepicker_end&#039;).val()),
+            page_no: parseInt(jQuery(&quot;#page_no&quot;).val() || 1, 10),
+            chapter_no: parseInt(jQuery(&quot;#chapter_no&quot;).val() || 1, 10)
+        };
+        initialData = initialData || formData;
+        return formData;
+    }
+
+    var resetPagination = function (){
+        jQuery(&#039;#chapter_no, #page_no&#039;).val(1);
+        navigationHistory = {1: 1};
+        autodiscover = false;
+        initialData = getData();
+    }
+
+    var switchToPreviousPage = function (e){
+        e.preventDefault();
+        if (jQuery(this).parent().hasClass(&#039;disabled&#039;)){
+            return false;
+        }
+
+        var currentPage = parseInt(jQuery(&quot;#page_no&quot;).val() || 1, 10);
+        var currentChapter = parseInt(jQuery(&quot;#chapter_no&quot;).val() || 1, 10);
+        // previous pages/chapters are stored in the navigationHistory
+        // navigationHistory is populated as the user requests next pages
+        if (currentPage == 1 &amp;&amp; currentChapter &gt; 1) {
+            var previousChapter = currentChapter - 1,
+                lastChapterPage = 1;
+            if (!(previousChapter in navigationHistory)){
+                var chapters = Object.keys(navigationHistory);
+                if (chapters.length &gt; 0){
+                    previousChapter = Math.max.apply(Math, chapters);
+                    lastChapterPage = navigationHistory[previousChapter];
+                } else {
+                    previousChapter = 1;
+                }
+            }
+            jQuery(&quot;#chapter_no&quot;).val(previousChapter);
+            jQuery(&quot;#page_no&quot;).val(lastChapterPage);
+        } else {
+            var prevPage = currentPage - 1;
+            jQuery(&#039;#page_no&#039;).val(prevPage &lt; 1 ? 1 : prevPage);
+        }
+        return jQuery(&#039;form#changelist-search&#039;).trigger(&#039;submit&#039;);
+    }
+
+    var switchToNextPage = function (e){
+        e.preventDefault();
+        if (jQuery(this).parent().hasClass(&#039;disabled&#039;)){
+            return false;
+        }
+
+        var currentPage = parseInt(jQuery(&quot;#page_no&quot;).val() || 1, 10);
+        jQuery(&#039;#page_no&#039;).val(currentPage + 1);
+        return jQuery(&#039;form#changelist-search&#039;).trigger(&#039;submit&#039;);
+    }
+
+    jQuery(document).ready(function($) {
+        var results_html = jQuery(&#039;table#result_list tbody&#039;);
+
+        if (results_html.length &gt; 0 &amp;&amp; results_html.html() === &quot;&quot;) {
+            populate_data(callback_url, getData());
+        }
+
+        jQuery(&quot;#datepicker_start, #datepicker_end&quot;).datepicker({
+            showOn: &quot;both&quot;,
+            buttonText: &quot;&quot;,
+        });
+
+        jQuery(&#039;.merlin-actions input#cancel&#039;).click(function() {
+            opener.dismissMerlinBrowserPopup(window, false);
+            return false;
+        });
+        jQuery(&#039;form#changelist-results&#039;).submit(function() {
+            var merlin_dict = construct_merlin_object(this);
+            if (merlin_dict) {
+                opener.dismissMerlinBrowserPopup(window, merlin_dict, field_name);
+            } else {
+                jQuery(&#039;.error&#039;).html(&quot;Please select an object.&quot;);
+            }
+            return false;
+        });
+
+        jQuery(&quot;form#changelist-search a#nav_older&quot;).click(switchToNextPage);
+        jQuery(&quot;form#changelist-search a#nav_newer&quot;).click(switchToPreviousPage);
+
+        jQuery(&quot;form#changelist-search input#search_string&quot;).parent()
+            .find(&#039;button&#039;).click(resetPagination);
+
+        jQuery(&#039;form#changelist-search&#039;).submit(function() {
+            populate_data(callback_url, getData());
+            return false;
+        });
+
+        jQuery(document).on(&quot;click&quot;, &#039;table#result_list tbody tr&#039;, function(){
+            jQuery(&#039;table#result_list tbody tr&#039;).removeClass(&#039;selected&#039;);
+            jQuery(this).addClass(&#039;selected&#039;).find(&#039;input[type=&quot;radio&quot;]&#039;).prop(&#039;checked&#039;, &#039;checked&#039;);
+        });
+    });
+}());</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

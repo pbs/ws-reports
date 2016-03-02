@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - deps_src/cmsplugin-profile/cmsplugin_profile/static/cmsplugin_profile/js/profilegrid.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>deps_src/cmsplugin-profile/cmsplugin_profile/static/cmsplugin_profile/js/profilegrid.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">63.04</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">436</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">48.49</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">4.33</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function(window, $) {
+    if (typeof PBS === &#039;undefined&#039;) {
+        window.PBS = {}
+    }
+
+    PBS.ProfileGrid = function(config) {
+        // list of items
+        var $grid = $(config.snippet),
+            // the items
+            $items = $grid.children(&#039;li&#039;),
+            // current expanded item&#039;s index
+            current = -1,
+            // position (top) of the expanded item
+            // used to know if the preview will expand in a different row
+            previewPos = -1,
+            // extra amount of pixels to scroll the window
+            scrollExtra = 20,
+            // extra margin when expanded (between preview overlay and the next items)
+            marginExpanded = 30,
+            $window = $(window),
+            winsize,
+            $body = $(&#039;html, body&#039;),
+            // transitionend events
+            transEndEventNames = {
+                &#039;WebkitTransition&#039;: &#039;webkitTransitionEnd&#039;,
+                &#039;MozTransition&#039;: &#039;transitionend&#039;,
+                &#039;OTransition&#039;: &#039;oTransitionEnd&#039;,
+                &#039;msTransition&#039;: &#039;MSTransitionEnd&#039;,
+                &#039;transition&#039;: &#039;transitionend&#039;
+            },
+            transEndEventName = transEndEventNames[Modernizr.prefixed(&#039;transition&#039;)],
+            // support for csstransitions
+            support = Modernizr.csstransitions,
+            // default settings
+            settings = {
+                speed: 350,
+                easing: &#039;ease&#039;
+            };
+
+        function init(config) {
+            // the settings..
+            settings = $.extend(true, {}, settings, config);
+
+            // preload all images
+            $grid.imagesLoaded(function() {
+
+                // save item´s size and offset
+                saveItemInfo(true);
+                // get window´s size
+                getWinSize();
+                // initialize some events
+                initEvents();
+
+            });
+
+        }
+
+        // add more items to the grid.
+        // the new items need to appended to the grid.
+        // after that call Grid.addItems(theItems);
+        function addItems($newitems) {
+            $items = $items.add($newitems);
+
+            $newitems.each(function() {
+                var $item = $(this);
+                $item.data({
+                    offsetTop: $item.offset().top,
+                    height: $item.find(&#039;&gt; a&#039;).height()
+                });
+            });
+
+            initItemsEvents($newitems);
+
+        }
+
+        // saves the item´s offset top and height (if saveheight is true)
+        function saveItemInfo(saveheight) {
+            $items.each(function() {
+                var $item = $(this);
+                $item.data(&#039;offsetTop&#039;, $item.offset().top);
+                if (saveheight) {
+                    $item.data(&#039;height&#039;, $item.find(&#039;&gt; a&#039;).height());
+                }
+            });
+        }
+
+        function initEvents() {
+
+            // when clicking an item, show the preview with the item´s info and large image.
+            // close the item if already expanded.
+            // also close if clicking on the item´s cross
+            initItemsEvents($items);
+
+            // on window resize get the window´s size again
+            // reset some values..
+            var old_width = winsize.width;
+            
+            $window.on(&#039;debouncedresize&#039;, function() {
+                scrollExtra = 0;
+                previewPos = -1;
+                // save item´s offset
+                saveItemInfo(true);
+                //Preview
+                getWinSize();
+                var preview = $.data(this, &#039;preview&#039;);
+
+                if (typeof preview != &#039;undefined&#039; &amp;&amp; winsize.width != old_width) {
+                    hidePreview();
+                    showPreview(preview.$item);
+                    old_width = winsize.width;
+                }
+
+            });
+
+        }
+
+        function initItemsEvents($items) {
+            $items.off(&#039;click&#039;).on(&#039;click&#039;, &#039;span.og-close&#039;, function() {
+                hidePreview();
+                return false;
+            }).children(&#039;a&#039;).off(&#039;click&#039;).on(&#039;click&#039;, function(e) {
+
+                var $item = $(this).parent();
+                // check if item already opened
+                current === $item.index() ? hidePreview() : showPreview($item);
+                return false;
+
+            });
+        }
+
+        function getWinSize() {
+            winsize = {
+                width: $window.width(),
+                height: $window.height()
+            };
+        }
+
+        function showPreview($item) {
+            var preview = $.data(this, &#039;preview&#039;),
+                // item´s offset top
+                position = $item.data(&#039;offsetTop&#039;);
+
+
+            scrollExtra = 0;
+
+            // if a preview exists and previewPos is different (different row) from item´s top then close it
+            if (typeof preview != &#039;undefined&#039;) {
+                if (position &gt; previewPos) {
+                    scrollExtra = preview.height;
+                }
+
+                hidePreview();
+            }
+
+            // update previewPos
+            previewPos = position;
+            // initialize new preview for the clicked item
+            preview = $.data(this, &#039;preview&#039;, new Preview($item));
+            // expand preview overlay
+            preview.open();
+
+        }
+
+        function hidePreview() {
+            current = -1;
+            var preview = $.data(this, &#039;preview&#039;);
+            preview.close();
+            $.removeData(this, &#039;preview&#039;);
+        }
+
+        // the preview obj / overlay
+        function Preview($item) {
+            this.$item = $item;
+            this.expandedIdx = this.$item.index();
+            this.create();
+            this.update();
+        }
+
+        Preview.prototype = {
+            create: function() {
+                // create Preview structure:
+
+                this.$title = $(&#039;&lt;h3&gt;&lt;/h3&gt;&#039;);
+                this.$description = $(&#039;&lt;p&gt;&lt;/p&gt;&#039;);
+                this.$href = $(&#039;&lt;a href=&quot;&quot;&gt;&lt;/a&gt;&#039;);
+                this.$additionalLinksLabel = $(&#039;&lt;span&gt;&lt;/span&gt;&#039;);
+                this.$addLinkA = $(&#039;&lt;a href=&quot;#&quot; target=&quot;&quot;&gt;&lt;/a&gt;&#039;);
+                this.$addLinkB = $(&#039;&lt;a href=&quot;&quot; target=&quot;&quot;&gt;&lt;/a&gt;&#039;);
+                this.$addLinkC = $(&#039;&lt;a href=&quot;&quot; target=&quot;&quot;&gt;&lt;/a&gt;&#039;);
+                this.$addLinkD = $(&#039;&lt;a href=&quot;&quot; target=&quot;&quot;&gt;&lt;/a&gt;&#039;);
+                this.$details = $(&#039;&lt;div class=&quot;og-details&quot;&gt;&lt;/div&gt;&#039;).append(this.$title, this.$description, this.$href);
+                this.$bottomDetails = $(&#039;&lt;div class=&quot;og-bottom-details&quot;&gt;&lt;/div&gt;&#039;).append(this.$additionalLinksLabel, this.$addLinkA, this.$addLinkB, this.$addLinkC, this.$addLinkD);
+                this.$fullimageCredit = $(&#039;&lt;span class=&quot;og-img-credit&quot;&gt;&lt;/span&gt;&#039;);
+                this.$loading = $(&#039;&lt;div class=&quot;og-loading&quot;&gt;&lt;/div&gt;&#039;);
+                this.$fullimage = $(&#039;&lt;div class=&quot;og-fullimg&quot;&gt;&lt;/div&gt;&#039;).append(this.$loading);
+                this.$fullimageWrapper = $(&#039;&lt;div class=&quot;og-fullimg-wrapper&quot;&gt;&lt;/div&gt;&#039;).append(this.$fullimage);
+                this.$closePreview = $(&#039;&lt;span class=&quot;og-close&quot;&gt;&lt;/span&gt;&#039;);
+                this.$previewInner = $(&#039;&lt;div class=&quot;og-expander-inner&quot;&gt;&lt;/div&gt;&#039;).append(this.$closePreview, this.$fullimageWrapper, this.$details, this.$bottomDetails);
+                this.$previewEl = $(&#039;&lt;div class=&quot;og-expander&quot;&gt;&lt;/div&gt;&#039;).append(this.$previewInner);
+                // append preview element to the item
+                this.$item.append(this.getEl());
+                // set the transitions for the preview and the item
+                if (support) {
+                    this.setTransition();
+                }
+            },
+            update: function($item) {
+
+                if ($item) {
+                    this.$item = $item;
+                }
+
+                // if already expanded remove class &quot;og-expanded&quot; from current item and add it to new item
+                if (current !== -1) {
+                    var $currentItem = $items.eq(current);
+                    $currentItem.removeClass(&#039;og-expanded&#039;);
+                    this.$item.addClass(&#039;og-expanded&#039;);
+                    // position the preview correctly
+                    this.positionPreview();
+                }
+
+                // update current value
+                current = this.$item.index();
+
+                // update preview´s content
+                var $itemEl = this.$item.children(&#039;a&#039;),
+                    eldata = {
+                        href: $itemEl.attr(&#039;href&#039;),
+                        largesrc: $itemEl.data(&#039;largesrc&#039;),
+                        largeimageCredit: $itemEl.data(&#039;largeimg-credit&#039;),
+                        title: $itemEl.data(&#039;title&#039;),
+                        description: $itemEl.data(&#039;description&#039;),
+                        callToActionText: ($itemEl.data(&#039;calltoactiontext&#039;) ? $itemEl.data(&#039;calltoactiontext&#039;) : $itemEl.attr(&#039;href&#039;)),
+                        additionalLinksLabel: $itemEl.data(&#039;additionallinkslabel&#039;),
+                        addLinkTextA: $itemEl.data(&#039;addlinktext1&#039;),
+                        addLinkUrlA: $itemEl.data(&#039;addlinkurl1&#039;),
+                        addLinkTargetA: $itemEl.data(&#039;addlinktarget1&#039;),
+                        addLinkTextB: $itemEl.data(&#039;addlinktext2&#039;),
+                        addLinkUrlB: $itemEl.data(&#039;addlinkurl2&#039;),
+                        addLinkTargetB: $itemEl.data(&#039;addlinktarget2&#039;),
+                        addLinkTextC: $itemEl.data(&#039;addlinktext3&#039;),
+                        addLinkUrlC: $itemEl.data(&#039;addlinkurl3&#039;),
+                        addLinkTargetC: $itemEl.data(&#039;addlinktarget3&#039;),
+                        addLinkTextD: $itemEl.data(&#039;addlinktext4&#039;),
+                        addLinkUrlD: $itemEl.data(&#039;addlinkurl4&#039;),
+                        addLinkTargetD: $itemEl.data(&#039;addlinktarget4&#039;)
+                    };
+                this.$title.text(eldata.title);
+                this.$description.html(eldata.description);
+
+                if (eldata.href.length) {
+                    this.$href.attr(&#039;href&#039;, eldata.href);
+                    this.$href.text(eldata.callToActionText);
+                    this.$href.show();
+                } else {
+                    this.$href.empty();
+                    this.$href.hide();
+                }
+                if (eldata.largeimageCredit) {
+                    this.$fullimageCredit.show().text(eldata.largeimageCredit);
+                } else {
+                    this.$fullimageCredit.hide();
+                }
+                this.$additionalLinksLabel.html(eldata.additionalLinksLabel);
+
+                var emptyLinks = 0;
+                if (eldata.addLinkTextA) {
+                    this.$addLinkA.show();
+                    this.$addLinkA.text(eldata.addLinkTextA);
+                    this.$addLinkA.attr(&#039;href&#039;, eldata.addLinkUrlA);
+                    this.$addLinkA.attr(&#039;target&#039;, eldata.addLinkTargetA);
+                } else {
+                    this.$addLinkA.hide();
+                    emptyLinks++;
+                }
+
+                if (eldata.addLinkTextB) {
+                    this.$addLinkB.show();
+                    this.$addLinkB.text(eldata.addLinkTextB);
+                    this.$addLinkB.attr(&#039;href&#039;, eldata.addLinkUrlB);
+                    this.$addLinkB.attr(&#039;target&#039;, eldata.addLinkTargetB);
+                } else {
+                    this.$addLinkB.hide();
+                    emptyLinks++;
+                }
+
+                if (eldata.addLinkTextC) {
+                    this.$addLinkC.show();
+                    this.$addLinkC.text(eldata.addLinkTextC);
+                    this.$addLinkC.attr(&#039;href&#039;, eldata.addLinkUrlC);
+                    this.$addLinkC.attr(&#039;target&#039;, eldata.addLinkTargetC);
+                } else {
+                    this.$addLinkC.hide();
+                    emptyLinks++;
+                }
+
+                if (eldata.addLinkTextD) {
+                    this.$addLinkD.show();
+                    this.$addLinkD.text(eldata.addLinkTextD);
+                    this.$addLinkD.attr(&#039;href&#039;, eldata.addLinkUrlD);
+                    this.$addLinkD.attr(&#039;target&#039;, eldata.addLinkTargetD);
+                } else {
+                    this.$addLinkD.hide();
+                    emptyLinks++;
+                }
+                if (emptyLinks == 4 &amp;&amp; !eldata.additionalLinksLabel) {
+                    this.$bottomDetails.hide();
+                } else {
+                    this.$bottomDetails.show();
+
+                }
+
+                var self = this;
+
+                // remove the current image in the preview
+                if (typeof self.$largeImg != &#039;undefined&#039;) {
+                    self.$largeImg.remove();
+                }
+
+                // preload large image and add it to the preview
+                if (self.$fullimage.is(&#039;:visible&#039;)) {
+                    this.$loading.show();
+                    $(&#039;&lt;img/&gt;&#039;).load(function() {
+                        var $img = $(this);
+                        if ($img.attr(&#039;src&#039;) === self.$item.children(&#039;a&#039;).data(&#039;largesrc&#039;)) {
+                            self.$loading.hide();
+                            self.$fullimage.find(&#039;img&#039;).remove();
+                            self.$largeImg = $img.fadeIn(350);
+                            self.$fullimage.append(self.$largeImg, self.$fullimageCredit);
+                        }
+                    }).attr(&#039;src&#039;, eldata.largesrc);
+                }
+
+            },
+            open: function() {
+
+                setTimeout($.proxy(function() {
+                    // set the height for the preview and the item
+                    this.setHeights();
+                    // scroll to position the preview in the right place
+                    this.positionPreview();
+                }, this), 25);
+
+            },
+            close: function() {
+
+                var self = this,
+                    onEndFn = function() {
+                        if (support) {
+                            $(this).off(transEndEventName);
+                        }
+                        self.$item.removeClass(&#039;og-expanded&#039;);
+                        self.$previewEl.remove();
+                    };
+
+                setTimeout($.proxy(function() {
+
+                    if (typeof this.$largeImg !== &#039;undefined&#039;) {
+                        this.$largeImg.fadeOut(&#039;fast&#039;);
+                    }
+                    this.$previewEl.css(&#039;height&#039;, 0);
+                    // the current expanded item (might be different from this.$item)
+                    var $expandedItem = $items.eq(this.expandedIdx);
+                    $expandedItem.css(&#039;height&#039;, &#039;&#039;).on(transEndEventName, onEndFn);
+
+                    if (!support) {
+                        onEndFn.call();
+                    }
+
+                }, this), 25);
+
+                return false;
+
+            },
+            calcHeight: function() {
+                var heightPreview = this.$item.find(&#039;.og-expander-inner&#039;).outerHeight(true),
+                    itemHeight = heightPreview + this.$item.data(&#039;height&#039;) + marginExpanded;
+                
+                this.height = heightPreview;
+                this.itemHeight = itemHeight;
+
+            },
+            setHeights: function() {
+
+                var self = this,
+                    onEndFn = function() {
+                        if (support) {
+                            self.$item.off(transEndEventName);
+                        }
+                        self.$item.addClass(&#039;og-expanded&#039;);
+                    };
+
+                this.calcHeight();
+                this.$previewEl.css(&#039;height&#039;, this.height);
+                this.$item.css(&#039;height&#039;, this.itemHeight).on(transEndEventName, onEndFn);
+
+                if (!support) {
+                    onEndFn.call();
+                }
+
+            },
+            positionPreview: function() {
+
+                // scroll page
+                // preview height + item height fits in window´s height
+                var position = this.$item.data(&#039;offsetTop&#039;),
+                    previewOffsetT = this.$previewEl.offset().top - scrollExtra,
+                    scrollVal;
+
+                if (window.matchMedia(&#039;(max-width: 767px)&#039;).matches) {
+                    scrollVal = previewOffsetT;
+                }
+                else {
+                    scrollVal = position;
+                }
+
+                $body.animate({
+                    scrollTop: scrollVal
+                }, settings.speed);
+            },
+            setTransition: function() {
+                this.$previewEl.css(&#039;transition&#039;, &#039;height &#039; + settings.speed + &#039;ms &#039; + settings.easing);
+                this.$item.css(&#039;transition&#039;, &#039;height &#039; + settings.speed + &#039;ms &#039; + settings.easing);
+
+            },
+            getEl: function() {
+                return this.$previewEl;
+            }
+        }
+
+        return {
+            init: init,
+            addItems: addItems
+        };
+    }
+})(window, jQuery);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

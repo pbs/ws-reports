@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - deps_src/celerity-airdates/cmsplugin_airdates/static/cmsplugin_airdates/js/frontend-airdates.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>deps_src/celerity-airdates/cmsplugin_airdates/static/cmsplugin_airdates/js/frontend-airdates.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">62.83</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">305</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">52.65</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">3.55</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">function Airdates(programID, callSign, channel_count, display, elem_id){
+    var that = this,
+        maxHeroShows = 1,
+        maxHeroAirdates = 3;
+
+    function setHeights(){
+        jQuery(&#039;#&#039;+elem_id+&#039; .airdates-details .left,#&#039;+elem_id+&#039; .airdates-details .right&#039;).css(&#039;height&#039;, &#039;auto&#039;);
+        jQuery(&#039;#&#039;+elem_id+&#039; .airdates-details .left,#&#039;+elem_id+&#039; .airdates-details .right&#039;).css(&#039;height&#039;,Math.max(
+            jQuery(&#039;#&#039;+elem_id+&#039; .airdates-details .left&#039;).height(),
+            jQuery(&#039;#&#039;+elem_id+&#039; .airdates-details .right&#039;).height()) + &quot;px&quot;);
+    }
+
+    this.localization = {
+
+        isLocalized : function(){
+            if(display == 1){
+                return true;
+            }else{
+                if (that.localization.getStoredStation()){
+                    return true;
+                }
+            }
+
+            return false;
+
+        },
+
+        getStoredStation : function(){
+            if(jQuery.cookie(&quot;pbsol.station&quot;)){
+                return jQuery.cookie(&quot;pbsol.station&quot;);
+            }
+
+            var sta_extended = jQuery.cookie(&quot;pbsol.sta_extended&quot;);
+
+            try{
+                // sta_extended looks like this :  z=98144#t=b#s=[&quot;KCTS&quot;,&quot;KBTC&quot;]#st=WA#co=US
+                // return first station as fallback
+                return jQuery.parseJSON(
+                    sta_extended.substring(
+                        sta_extended.indexOf(&quot;[&quot;),sta_extended.indexOf(&quot;#st=&quot;)
+                ))[0];
+            }catch(e){
+                return &quot;&quot;;
+            }
+        },
+
+        triggerGAEvent : function(eventType){
+
+            if(typeof _gaq !== &#039;undefined&#039;){
+                switch(eventType){
+                    case &quot;ViewedOverlay&quot; :
+                        _gaq.push([&#039;_setAccount&#039;, &#039;UA-1996666-4&#039;], [&#039;_trackEvent&#039;, &#039;local overlay&#039;, &#039;Viewed overlay&#039;, &#039;Viewed overlay&#039;]);
+                        break;
+                    case &quot;ClosedPopup&quot; :
+                        _gaq.push([&#039;_setAccount&#039;, &#039;UA-1996666-4&#039;], [&#039;_trackEvent&#039;, &#039;local overlay&#039;, &#039;Closed popup&#039;, &#039;Closed popup&#039;]);
+                        break;
+                    case &quot;ClickedLocalize&quot; :
+                        _gaq.push([&#039;_setAccount&#039;, &#039;UA-1996666-4&#039;], [&#039;_trackEvent&#039;, &#039;local overlay&#039;, &#039;Clicked localize&#039;, &#039;Clicked localize&#039;]);
+                        break;
+                }
+            }
+        },
+
+    };
+
+    this.stationCallsign = callSign ? callSign : this.localization.getStoredStation();
+    this.zip = &quot;&quot;;
+    this.state = &quot;&quot;;
+    this.stations = [];
+
+    this.ajax = {
+        getUpcoming : function(callback){
+            if(that.stationCallsign){
+                jQuery.ajax({
+                    url: &#039;/lb-tvss/programs/upcoming/&#039;+programID+&#039;/callsign/&#039;+that.stationCallsign+&quot;/&quot;,
+                    success: function (response) {
+                        if(typeof callback === &#039;function&#039;){
+                            callback.call(that, response);
+                        }
+
+                        jQuery(&#039;#&#039;+elem_id+&#039; .airdates-content&#039;).html(
+                            that.setHTML(that.constructProgramObj(response))
+                        );
+
+
+                        jQuery(&#039;#&#039;+elem_id+&#039;.airdates-container p&#039;).show();
+                        if(that.stationCallsign){
+                            jQuery(&#039;#&#039;+elem_id+&#039;.airdates-container.producer .station-callsign&#039;).each(function(){
+                                jQuery(this).html(that.stationCallsign);
+                            });
+
+                            jQuery(&#039;#&#039;+elem_id+&#039;.airdates-container.producer .pbs-localization&#039;).each(function(){
+                                jQuery(this).html(&quot;Change Station&quot;);
+                            });
+                        }
+
+                        setHeights();
+                    },
+                    error: function (response) {
+                        that.setHTML(null);
+                        if(that.stationCallsign){
+                            jQuery(&#039;#&#039;+elem_id+&#039; .airdates-container.producer .station-callsign&#039;).each(function(){
+                                jQuery(this).html(that.stationCallsign);
+                            });
+
+                            jQuery(&#039;#&#039;+elem_id+&#039; .airdates-container.producer .right a[href=#airdates_modal]&#039;).each(function(){
+                                jQuery(this).html(&quot;Change Station&quot;);
+                            });
+                        }
+                    }
+                });
+            }
+        }
+    };
+
+    this.constructProgramObj = function(data){
+        var i, programs = {};
+        if(!data || !data.upcoming_episodes.length){
+            return null;
+        }
+
+    	if (! data.program_id) {
+    	    for (i=0; i&lt;data.upcoming_episodes.length; i++) {
+    		data.upcoming_episodes[i].program_description = data.description;
+    	    }
+    	}
+
+    	data = data.upcoming_episodes;
+
+        for (i=0; i&lt;data.length; i++){
+
+            var p = data[i];
+            if(!programs[p.show_id]){
+                programs[p.show_id] = [];
+            }
+
+            programs[p.show_id].push(p);
+        }
+
+        return programs;
+    };
+
+    this.formatDay = function(dayStr, short){
+        var weekDays = [&#039;Sunday&#039;,&#039;Monday&#039;,&#039;Tuesday&#039;,&#039;Wednesday&#039;,&#039;Thursday&#039;,&#039;Friday&#039;,&#039;Saturday&#039;],
+            weekDaysShort = [&#039;Sun&#039;,&#039;Mon&#039;,&#039;Tues&#039;,&#039;Wed&#039;,&#039;Thur&#039;,&#039;Fri&#039;,&#039;Sat&#039;],
+            months = [&quot;January&quot;, &quot;February&quot;, &quot;March&quot;, &quot;April&quot;, &quot;May&quot;, &quot;June&quot;,
+                    &quot;July&quot;, &quot;August&quot;, &quot;September&quot;, &quot;October&quot;, &quot;November&quot;, &quot;December&quot; ],
+            monthsShort = [&quot;Jan&quot;, &quot;Feb&quot;, &quot;Mar&quot;, &quot;Apr&quot;, &quot;May&quot;, &quot;June&quot;,
+                    &quot;July&quot;, &quot;Aug&quot;, &quot;Sept&quot;, &quot;Oct&quot;, &quot;Nov&quot;, &quot;Dec&quot; ];
+
+        var s_year = dayStr.slice(0,4);
+        var s_month = parseInt(dayStr.slice(4,6)) - 1;   //months are 0 based, response gives 1 based
+        var s_day = dayStr.slice(6,8);
+
+        var date = new Date(s_year, s_month, s_day);
+        if(short){
+            return weekDaysShort[date.getDay()]+&#039;&lt;span class=&quot;separator&quot;&gt;,&lt;/span&gt; &lt;span&gt;&#039;+monthsShort[date.getMonth()]+&#039; &#039;+s_day+&#039;&lt;/span&gt;&#039;;    
+        }
+        return weekDays[date.getDay()]+&#039;&lt;span class=&quot;separator&quot;&gt;,&lt;/span&gt; &lt;span&gt;&#039;+months[date.getMonth()]+&#039; &#039;+s_day+&#039;&lt;/span&gt;&#039;;
+    };
+
+    this.formatHour = function(hourStr){
+        var h = parseInt(hourStr.slice(0,2), 10);
+        var m = parseInt(hourStr.slice(2,4), 10);
+        var append = &quot;&quot;;
+        if (h - 12 &gt;= 0){
+            append = &quot;PM&quot;;
+        }else{
+            append = &quot;AM&quot;;
+        }
+
+        if (h - 12 &gt; 0){
+            h = h - 12;
+        }
+
+        function paddMinutes(m){
+            if(m.toString().length &gt; 1){
+                return m;
+            }
+
+            return &quot;0&quot;+m;
+        }
+
+        return h+&quot;:&quot;+paddMinutes(m)+&quot; &quot;+append;
+    };
+
+    this.setHTML = function(data){
+        var HTML = &quot;&quot;, day, time, station, duration, abbreviate_tz = function(timezone) {
+                // US/Central CT
+                // US/Eastern ET
+                // US/Mountain MT
+                // US/Pacific PT
+                return timezone.split(&quot;/&quot;)[1][0] + &quot;T&quot;;
+            };
+
+        if(!data){
+            return &quot;&lt;p class=&#039;NA&#039;&gt;No results found.&lt;/p&gt;&quot;;
+        }
+        var iter = 0, showCount = 0;
+            cls = &#039;&#039;;
+
+        for (var i in data){
+            if (!data.hasOwnProperty(i)) continue;
+
+            if(iter &gt;= channel_count){
+                break;
+            }
+            if(iter &gt; maxHeroShows){
+                cls = &#039;hero-hide&#039;;
+            }
+            HTML += &quot;&lt;div class=&#039;show &quot;+cls+&quot;&#039;&gt;&quot;;
+                HTML += &quot;&lt;div class=&#039;details hero-hide&#039;&gt;&quot;;
+                    if(!data[i][0].episode_title &amp;&amp; !data[i][0].episode_description){
+            			HTML += (data[i][0].program_description ? &quot;&lt;p&gt;&quot;+data[i][0].program_description +&quot;&lt;/p&gt;&quot;: &quot;&lt;i&gt;Description not available&lt;/i&gt;&quot;);
+                    }else{
+
+                        HTML += (data[i][0].episode_title  ? &quot;&lt;h3&gt;&quot;+data[i][0].episode_title+&quot;&lt;/h3&gt;&quot; : &quot;&quot;);
+                        HTML += (data[i][0].episode_description ? &quot;&lt;p&gt;&quot;+data[i][0].episode_description +&quot;&lt;/p&gt;&quot;: &quot;&lt;i&gt;Description not available&lt;/i&gt;&quot;);
+                    }
+                HTML += &quot;&lt;/div&gt;&quot;;
+                for(var j=0; j&lt;data[i].length; j++){
+                    if(iter &gt;= channel_count){
+                        break;
+                    }
+                    timezone = data[i][j].feed.timezone;
+                    day = that.formatDay(data[i][j].day);
+                    dayShort = that.formatDay(data[i][j].day, true);
+                    time = that.formatHour(data[i][j].start_time)+&quot; &quot;+abbreviate_tz(timezone);
+                    station = data[i][j].feed.full_name;
+                    duration = data[i][j].minutes+&quot; min&quot;;
+                    HTML += &quot;&lt;div class=&#039;airdate-row hero-hide&#039;&gt;&quot;;
+                        HTML += &quot;&lt;span class=&#039;day&#039;&gt;&quot;+day+&quot;&lt;/span&gt;&quot;;
+                        HTML += &quot;&lt;span class=&#039;start-time&#039;&gt;&quot;+time+&quot;&lt;/span&gt;&quot;;
+                        HTML += &quot;&lt;span class=&#039;station&#039;&gt;&quot;+station+&quot;&lt;/span&gt;&quot;;
+                        HTML += &quot;&lt;span class=&#039;options&#039;&gt;&quot;+duration+&quot;&lt;/span&gt;&quot;;
+                    HTML += &quot;&lt;/div&gt;&quot;;
+                    if(iter &lt; maxHeroAirdates){
+                        HTML += &quot;&lt;div class=&#039;airdate-row hero-show&#039;&gt;&quot;;
+                            HTML += &quot;&lt;div class=&#039;clearfix&#039;&gt;&quot;;
+                                HTML += &quot;&lt;span class=&#039;day&#039;&gt;&quot;+dayShort+&quot;&lt;/span&gt;&quot;;
+                                HTML += &quot;&lt;span class=&#039;start-time&#039;&gt;&quot;+time+&quot;&lt;/span&gt;&quot;;
+                                HTML += (data[i][0].episode_title  ? &quot;&lt;h3 class=&#039;show-title&#039;&gt;&quot;+data[i][0].episode_title+&quot;&lt;/h3&gt;&quot; : &quot;&lt;h3 class=&#039;show-title&#039;&gt;&amp;nbsp;&lt;/h3&gt;&quot;);
+                            HTML += &quot;&lt;/div&gt;&quot;;
+                            HTML += &quot;&lt;div class=&#039;clearfix&#039;&gt;&quot;;
+                                HTML += &quot;&lt;span class=&#039;station&#039;&gt;&quot;+station+&quot;&lt;/span&gt;&quot;;
+                                HTML += &quot;&lt;span class=&#039;empty&#039;&gt;&lt;/span&gt;&quot;;
+                                HTML += &quot;&lt;span class=&#039;options&#039;&gt;&quot;+duration+&quot;&lt;/span&gt;&quot;;
+                            HTML += &quot;&lt;/div&gt;&quot;;
+                        HTML += &quot;&lt;/div&gt;&quot;;
+                    }
+                    iter++;
+
+                }
+            HTML += &quot;&lt;/div&gt;&quot;;
+
+        }
+
+        if(Object.keys(data).length &lt; maxHeroAirdates){
+            $(&#039;#&#039; + elem_id + &#039;.full-schedule-url&#039;).hide();
+        }
+
+        return HTML;
+    };
+
+    if(this.localization.isLocalized()){
+        this.ajax.getUpcoming();
+    }
+
+    jQuery(window).on(&#039;resize&#039;, function(){
+        if(jQuery(&quot;#airdates_modal&quot;).is(&quot;:visible&quot;)){
+            if(jQuery(&#039;body&#039;).width() &lt;= 600){
+                jQuery(&#039;body&#039;).css(&#039;overflow&#039;,&#039;hidden&#039;);
+            }else{
+                jQuery(&#039;body&#039;).css(&#039;overflow&#039;,&#039;visible&#039;);
+            }
+        }
+
+        setHeights();
+
+    });
+
+    jQuery(document).ready(function(){
+        setHeights();
+
+        jQuery(&#039;.pbs-localization&#039;).on(&#039;click&#039;, function(){
+            GlobalChrome.Localization.Init(true);
+
+            that.localization.triggerGAEvent(&quot;ViewedOverlay&quot;);
+        });
+        
+        jQuery(document).on(&#039;click&#039;, &#039;#pbs-modal-window .closeBtn&#039;, function(){
+            that.localization.triggerGAEvent(&quot;ClosedPopup&quot;);
+        });
+
+        jQuery(document).on(&#039;click&#039;, &#039;#pbs-modal-window .modalConfirmStation&#039;, function(){
+            that.stationCallsign = jQuery(modalId+&#039; .stationsList li.active&#039;).attr(&#039;id&#039;);
+
+            if(that.stationCallsign){
+                that.localization.triggerGAEvent(&quot;ClickedLocalize&quot;);
+                that.ajax.getUpcoming();
+            }
+        });
+
+    });
+}</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

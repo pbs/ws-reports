@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - deps_src/django-filer/filer/static/filer/js/popup_handling.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>deps_src/django-filer/filer/static/filer/js/popup_handling.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">63.26</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">68</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">21.59</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">0.76</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function($) {
+    dismissPopupAndReload = function(win) {
+        document.location.reload();
+        win.close();
+    };
+    dismissRelatedImageLookupPopup = function(win, chosenId, chosenThumbnailUrl, chosenDescriptionTxt, file_url) {
+        var name = windowname_to_id(win.name);
+        var img_name = name + &#039;_thumbnail_img&#039;;
+        var txt_name = name + &#039;_description_txt&#039;;
+        var clear_name = name + &#039;_clear&#039;;
+        var link_name = name + &#039;_link_to_file&#039;;
+        var elem = document.getElementById(name);
+        document.getElementById(name).value = chosenId;
+        var img_element = document.getElementById(img_name);
+        var use_full_image = img_element.attributes[&quot;data-use-full-image&quot;];
+        if (!use_full_image || !file_url) {
+            img_element.src = chosenThumbnailUrl;
+        } else {
+            img_element.src = file_url;
+        }
+        img_element.classList.remove(&quot;no-filer-image&quot;)
+        var description = document.getElementById(txt_name);
+        if (description) {
+            description.innerHTML = chosenDescriptionTxt;
+        }
+        document.getElementById(clear_name).style.display = &#039;inline&#039;;
+        var link = document.getElementById(link_name);
+        if (link &amp;&amp; file_url) {
+            link.href = file_url;
+        }
+        win.close();
+    };
+    dismissRelatedFolderLookupPopup = function(win, chosenId, chosenName) {
+        var id = windowname_to_id(win.name);
+        var id_name = id + &#039;_description_txt&#039;;
+        document.getElementById(id).value = chosenId;
+        document.getElementById(id_name).innerHTML = chosenName;
+        document.getElementById(id + &#039;_clear&#039;).style.display = &#039;inline&#039;;
+        win.close();
+    };
+    showRelatedFilerObjectLookupPopup = function(triggerlink){
+        if (typeof current_site !== &#039;undefined&#039; &amp;&amp; current_site == parseInt(current_site)){
+            if (triggerlink.href.indexOf(&quot;current_site=&quot;) == -1){
+                var new_link;
+                if (triggerlink.href.search(/\?/) &gt;= 0) {
+                    new_link = triggerlink.href + &#039;&amp;current_site=&#039; + current_site;
+                } else {
+                    new_link = triggerlink.href + &#039;?current_site=&#039; + current_site;
+                }
+                triggerlink.href = new_link;
+            }
+        }
+        return _showRelatedObjectLookupPopup(triggerlink)
+    }
+    _showRelatedObjectLookupPopup = function (triggeringLink) {
+    var name = triggeringLink.id.replace(/^lookup_/, &#039;&#039;);
+    name = id_to_windowname(name);
+    var href;
+    if (triggeringLink.href.search(/\?/) &gt;= 0) {
+        href = triggeringLink.href + &#039;&amp;_popup=1&#039;;
+    } else {
+        href = triggeringLink.href + &#039;?_popup=1&#039;;
+    }
+    var win = window.open(href, name, &#039;height=500,width=1120,resizable=yes,scrollbars=yes&#039;);
+    win.focus();
+    return false;
+    }
+})(jQuery);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

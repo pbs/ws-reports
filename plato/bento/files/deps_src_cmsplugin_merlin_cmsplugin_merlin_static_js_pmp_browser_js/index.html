@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - deps_src/cmsplugin-merlin/cmsplugin_merlin/static/js/pmp_browser.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>deps_src/cmsplugin-merlin/cmsplugin_merlin/static/js/pmp_browser.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">69.65</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">258</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">44.66</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">3.41</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function($) {
+
+    _pmp_browse = {
+        toWebObject: function(story){
+
+            function stripTags(text){
+                return $(&quot;&lt;div/&gt;&quot;).html(text).text();
+            }
+            return {
+                contentchannel: story.content_partner,
+                created_by: story.author,
+                description: stripTags(story.description),
+                image: story.image,
+                published: story.publish_date,
+                short_description: stripTags(story.short_description),
+                tags: story.tags,
+                text: stripTags(story.content),
+                title: story.title,
+                topic_titles: story.tags,
+                topics: story.tags,
+                url: story.original_url,
+                visible: true,
+                webobject_type: &quot;WebObject&quot;,
+            }
+        },
+        getSelectedStory: function(){
+            var story = {}
+            $(this.options.table + &quot; input[name=pmp_story]:checked&quot;)
+                .first().parents(&#039;tr&#039;).find(&#039;td&#039;).each(function(){
+                    $.each($(this).get(0).attributes, function (i, attr) {
+                        var data_rexpr = /^data\-(.+)(\-.*)?$/;
+                        if (data_rexpr.test(attr.name)){
+                            story[attr.name.replace(data_rexpr, &#039;$1&#039;)] = attr.value;
+                        }
+                    })
+                });
+            return story;
+        },
+        packAndDismiss: function(){
+            var self = this;
+            return function(ev) {
+                ev.preventDefault();
+                var story = self.getSelectedStory();
+                if (!story){
+                    self.setError(&quot;Please select an object.&quot;);
+                } else {
+                    self.setError(&quot;&quot;);
+                    opener.dismissMerlinBrowserPopup(
+                        window,
+                        self.toWebObject(story),
+                        self.options.field_name
+                    );
+                }
+                return false;
+            };
+        },
+        setError: function(msg){
+            $(this.options.errorBox).html(msg);
+        },
+        initOpts: function(requiredOpts) {
+            this.options = requiredOpts;
+            this.options = $.extend(this.options, {
+                toolbar: &#039;#toolbar&#039;,
+                table: &#039;#result_list tbody&#039;,
+                errorBox: &quot;.error&quot;,
+                loader: &quot;.spinner&quot;,
+                current_page: &quot;#current_page&quot;,
+                page_jumper: &quot;#page_jumper&quot;,
+                search_string: &quot;#search_string&quot;,
+                search_tag: &quot;#search_tag&quot;,
+                total_pages: &quot;#total_pages&quot;,
+                buttons: {
+                    next: &quot;#next_btn&quot;,
+                    prev: &quot;#prev_btn&quot;,
+                    go: &quot;#go_btn&quot;,
+                    reset: &quot;#reset_btn&quot;,
+                    search: &quot;#search_btn&quot;
+                }
+            });
+        },
+        initNavigation: function(){
+            var self = this;
+            var initial = {
+                text: $(self.options.search_string).val(),
+                tag: $(self.options.search_tag).val(),
+                page: parseInt($(self.options.current_page).val(), 10) || 1
+            };
+            $(self.options.buttons.reset).click(function(){
+                $(self.options.toolbar + &quot; input[type=text]&quot;).val(&#039;&#039;);
+                $(self.options.toolbar + &quot; select&quot;).val([]);
+                $(self.options.current_page).val(&#039;1&#039;);
+            });
+            $(self.options.buttons.next).click(function () {
+                $(self.options.search_string).val(initial.text);
+                $(self.options.search_tag).val(initial.tag);
+                $(self.options.current_page).val(initial.page + 1);
+            });
+            $(self.options.buttons.prev).click(function () {
+                $(self.options.search_string).val(initial.text);
+                $(self.options.search_tag).val(initial.tag);
+                $(self.options.current_page).val(initial.page - 1);
+            });
+            $(self.options.buttons.go).click(function () {
+                $(self.options.search_string).val(initial.text);
+                $(self.options.search_tag).val(initial.tag);
+                $(self.options.current_page).val(
+                    $(self.options.page_jumper).val()
+                );
+            });
+            $(self.options.buttons.search).click(function () {
+                if ($(self.options.search_string).val() !== initial.text ||
+                    $(self.options.search_tag).val() !== initial.tag){
+                    $(self.options.current_page).val(1);
+                    $(self.options.page_jumper).val(&#039;&#039;);
+                }
+            });
+            $(self.options.toolbar).submit(function() {
+                $(self.options.loader).addClass(&#039;loading&#039;);
+                var total = parseInt($(self.options.total_pages).text(), 10) || 1;
+                var current = parseInt($(self.options.current_page).val(), 10) || 1;
+                if (current &gt; total){
+                    current = total;
+                }
+                if (current &lt; 1){
+                    current = 1;
+                }
+                $(self.options.current_page).val(current);
+            });
+
+            $(self.options.page_jumper).keypress(function(event){
+                var keycode = (event.keyCode ? event.keyCode : event.which);
+                if(keycode == &#039;13&#039;){
+                    event.preventDefault();
+                    $(self.options.loader).addClass(&#039;loading&#039;);
+                    $(self.options.buttons.go).trigger(&#039;click&#039;);
+                    $(self.options.toolbar).submit();
+                }
+            });
+
+        },
+        initImages: function (default_image) {
+            $(this.options.table + &quot; td[data-image]&quot;).each(function () {
+                var img_url = $(this).attr(&#039;data-image&#039;);
+                $(this).html(&quot;&quot;);
+                if (img_url){
+                    $(&quot;&lt;img /&gt;&quot;)
+                        .addClass(&#039;pmp-story-img&#039;)
+                        .attr(&#039;src&#039;, img_url)
+                        .appendTo($(this));
+                } else {
+                    $(this).html(&#039;&lt;img src=&quot;&#039; + default_image +&#039;&quot; width=&quot;100&quot;&gt;&#039;);
+                }
+            });
+        },
+        fetchContentPartner: function () {
+            if (!this.options.urls.pmp_docs){
+                return;
+            }
+            var guids = [], self = this;
+            $(self.options.table + &quot; td[data-content_partner-url]&quot;).each(function () {
+                var guid = $(this).attr(&#039;data-content_partner-url&#039;);
+                if (guid &amp;&amp; guids.indexOf(guid) === -1){
+                    guids.push(guid);
+                }
+            });
+            if (guids.length === 0){
+                return;
+            }
+            $(self.options.loader).addClass(&#039;loading&#039;);
+            $.ajax({
+                url: self.options.urls.pmp_docs,
+                data: {&#039;pmp_guid&#039;: guids.join(&#039;;&#039;)},
+                success: function(data){
+                    if (!data){
+                        return;
+                    }
+                    var items = [];
+                    if (guids.length &gt; 1){
+                        if (!data.items){
+                            return;
+                        }
+                        items = data.items;
+                    } else {
+                        if (!data.attributes){
+                            return;
+                        }
+                        items = [data];
+                    }
+                    $.each(items, function(i, item){
+                        var allRequired = (
+                            item.attributes &amp;&amp;
+                            item.attributes.guid &amp;&amp;
+                            item.attributes.title
+                        );
+                        if (!allRequired){
+                            return;
+                        }
+                        var guid = item.attributes.guid,
+                            title = item.attributes.title,
+                            cellEls = $(
+                                self.options.table +
+                                &quot; td[data-content_partner-url=&#039;&quot;+ guid +&quot;&#039;]&quot;
+                            );
+                        cellEls
+                            .removeAttr(&#039;data-content_partner-url&#039;)
+                            .attr(&#039;data-content_partner&#039;, title)
+                            .html(title);
+                    });
+                },
+                complete: function(){
+                    $(self.options.loader).removeClass(&#039;loading&#039;);
+                }
+            });
+        },
+        initDatetimeTZAware: function(){
+
+            function _pad(no){
+                return no &lt; 10 ? &quot;0&quot; + no : no;
+            }
+
+            $(this.options.table + &quot; td[data-publish_date]&quot;).each(function () {
+                var date_str = $(this).text();
+                if (date_str){
+                    var date = new Date(date_str);
+                    $(this).text(
+                        &#039;&#039; + date.getFullYear() + &#039;-&#039; +
+                        _pad(date.getMonth() + 1) + &#039;-&#039; +
+                        _pad(date.getDate()) + &#039; &#039; +
+                        _pad(date.getHours()) + &#039;:&#039; +
+                        _pad(date.getMinutes()) + &#039;:&#039; +
+                        _pad(date.getSeconds())
+                    );
+                }
+            });
+        }
+    };
+
+    $(document).on(&quot;click&quot;, &#039;table#result_list tbody tr&#039;, function(){
+        $(&#039;table#result_list tbody tr&#039;).removeClass(&#039;selected&#039;);
+        $(this).addClass(&#039;selected&#039;).find(&#039;input[type=&quot;radio&quot;]&#039;).prop(&#039;checked&#039;, &#039;checked&#039;);
+    });
+
+    PMPBrowser = window.PMPBrowser || {
+        init: function(requiredOpts) {
+            _pmp_browse.initOpts(requiredOpts);
+            _pmp_browse.fetchContentPartner();
+            _pmp_browse.initDatetimeTZAware();
+            _pmp_browse.initImages(requiredOpts.default_image);
+            _pmp_browse.initNavigation();
+            $(&#039;#add-selected&#039;).click(_pmp_browse.packAndDismiss());
+            $(&#039;#cancel&#039;).click(function() {
+                opener.dismissMerlinBrowserPopup(window, false);
+                return false;
+            });
+        }
+    };
+
+}(jQuery));</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

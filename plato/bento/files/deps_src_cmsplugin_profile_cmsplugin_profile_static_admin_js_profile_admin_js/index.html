@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - deps_src/cmsplugin-profile/cmsplugin_profile/static/admin/js/profile_admin.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>deps_src/cmsplugin-profile/cmsplugin_profile/static/admin/js/profile_admin.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">70.31</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">478</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">47.28</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">5.05</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function($) {
+    var initial_title,
+        initial_description,
+        initial_show_title,
+        profile_added,
+        profile_deleted,
+        form_id,
+        all_profiles_initial_data, // profile-prefix -&gt; custom-profile-data
+        all_profiles_changes_flag, // profile-prefix -&gt; flag if profile has changes
+        current_profile_value_before_edit; // input-id -&gt; [input_type, saved_custom_data]
+
+    function clear_data_for_profile(profile_prefix) {
+        delete all_profiles_changes_flag[profile_prefix];
+        delete all_profiles_initial_data[profile_prefix];
+    }
+
+    function update_changed_status_for_profile(profile_prefix) {
+        var initial_data = all_profiles_initial_data[profile_prefix],
+            current_data = store_input_data(profile_prefix),
+            has_changed = profile_has_changes(initial_data, current_data);
+
+        all_profiles_changes_flag[profile_prefix] = has_changed;
+    }
+
+    function update_show_unsaved_warning() {
+        var current_title = $(&quot;#id_title&quot;).val(),
+            current_description = $(&quot;#id_description&quot;).val(),
+            current_show_title = $(&quot;#id_show_title_on_thumbnails&quot;).prop(&#039;checked&#039;),
+
+            has_unsaved_changes = profile_added || profile_deleted ||
+                current_title != initial_title ||
+                current_description != initial_description ||
+                current_show_title != initial_show_title ||
+                profiles_have_changes();
+
+        $(&quot;#warning_unsaved&quot;).css(&#039;display&#039;, (has_unsaved_changes ? &quot;block&quot; : &quot;none&quot;));
+    }
+
+    function isEmpty(field) {
+        return field.find(&#039;input[type=&quot;text&quot;], textarea&#039;).val() == &#039;&#039; ? true : false;
+    }
+
+    function addErrorClass(field) {
+        field.find(&#039;input[type=&quot;text&quot;], textarea&#039;).addClass(&#039;error&#039;);
+    }
+
+    function removeErrorClass(field) {
+        field.find(&#039;input[type=&quot;text&quot;], textarea&#039;).removeClass(&#039;error&#039;);
+    }
+
+    function removeAllErrorClasses() {
+        $(&#039;.has-error, .error&#039;).removeClass(&#039;has-error&#039;).removeClass(&#039;error&#039;);
+    }
+
+    function is_url_valid(value) {
+        has_spaces = value.indexOf(&quot; &quot;) != -1;
+        if (has_spaces) {
+            return false;
+        }
+        correct_prefix = value.startsWith(&quot;http://&quot;) || value.startsWith(&quot;https://&quot;) || value.startsWith(&quot;/&quot;);
+        return correct_prefix;
+    }
+
+    function checkValidLinks(form) {
+        var valid = true;
+
+        form.find(&#039;.profile-add-links&#039;).each(function(){
+            var self = $(this);
+
+            // remove all error classes from all links
+            self.find(&#039;.form-row&#039;).each(function(){
+                $(this).removeClass(&#039;mandatory has-error has-url-error&#039;)
+                    .find(&#039;input[type=&quot;text&quot;]&#039;).removeClass(&#039;error&#039;);;
+            });
+            // if the input is not empty, we make it mandatory
+            self.find(&#039;input[type=&quot;text&quot;]&#039;).each(function() {
+                if ($(this).val().length) {
+                    self.find(&#039;.form-row&#039;).addClass(&#039;mandatory&#039;);
+                }
+            });
+
+            self.find(&#039;input[id$=&quot;url&quot;]&#039;).each(function() {
+                value = $(this).val();
+                if (value.length &amp;&amp; !is_url_valid(value)) {
+                    self.find(&#039;.form-row.profile-add-link-url&#039;).addClass(&#039;has-url-error&#039;);
+                    self.find(&#039;.help-block-url&#039;).show();
+                    $(this).addClass(&#039;error&#039;);
+                    valid = false;
+                } else {
+                    self.find(&#039;.form-row.profile-add-link-url&#039;).removeClass(&#039;has-url-error&#039;);
+                    self.find(&#039;.help-block-url&#039;).hide();
+                    $(this).removeClass(&#039;error&#039;);
+                }
+            });
+
+        });
+
+        return valid;
+    }
+
+    function validateProfile(form) {
+        var valid = checkValidLinks(form),
+            mandatoryFields = form.find(&#039;.mandatory&#039;),
+            call_to_action = form.find(&#039;[id*=&quot;call_to_action_url&quot;]&#039;),
+            value = call_to_action.val();
+
+        mandatoryFields.each(function(idx, elem) {
+            if (isEmpty($(elem))) {
+                if ($(elem).parent(&#039;.profile-image-panel&#039;).length) {
+                    $(elem).parent(&#039;.profile-image-panel&#039;).addClass(&#039;has-error&#039;);
+                } else {
+                    $(elem).addClass(&#039;has-error&#039;);
+                }
+                addErrorClass($(elem));
+                valid = false;
+            } else {
+                removeErrorClass($(elem));
+                $(elem).removeClass(&#039;has-error&#039;);
+                $(elem).parent(&#039;.profile-image-panel&#039;).removeClass(&#039;has-error&#039;);
+            }
+        });
+
+        if (value.length &amp;&amp; !is_url_valid(value)) {
+            call_to_action.siblings(&#039;.help-block&#039;).html(&#039;Invalid URL!&#039;);
+            call_to_action.addClass(&#039;error&#039;).closest(&#039;.form-row&#039;).addClass(&#039;has-error&#039;);
+            valid = false;
+        } else {
+            call_to_action.siblings(&#039;.help-block&#039;).html(&#039;This field is mandatory!&#039;);
+            call_to_action.removeClass(&#039;error&#039;).closest(&#039;.form-row&#039;).removeClass(&#039;has-error&#039;);
+        }
+        return valid;
+    }
+
+    function setLimiter() {
+        var inputs = form_id.find(&#039;input[type=&quot;text&quot;], textarea&#039;);
+        inputs.inputlimiter({
+            remText: &#039;%n character%s left. &#039;,
+            limitText: &#039;%n character%s limit.&#039;,
+            limitTextShow: false,
+            remTextHideOnBlur: false,
+            lineReturnCount: 2,
+        });
+    }
+
+    function resizeIframe(toResizeTo, scrollToTop) {
+        var insideIframe = (window.location != window.parent.location ? true : false);
+        scrollToTop = (scrollToTop == false) ? false : true;
+
+        if (!insideIframe) {
+            return;
+        }
+
+        var documentHeight = $(&#039;body&#039;).outerHeight(true);
+
+        if (toResizeTo) {
+            documentHeight = Math.max($(&#039;body&#039;).outerHeight(true),
+                toResizeTo.outerHeight(true));
+        }
+
+        var margin = 20;
+        $(window.frameElement).css(&#039;height&#039;, (documentHeight + margin) + &#039;px&#039;);
+
+        // anchoring on the top of the iframe
+        // the classic version (with &lt;a id=&quot;anchor&quot;&gt;) does not work here due to iframe
+        if (scrollToTop) {
+            window.parent.$(&quot;body&quot;).animate({
+                scrollTop: $(window.frameElement).offset().top
+            }, &#039;fast&#039;);
+        }
+    };
+
+    function store_input_data(prefix) {
+        // Stores all the input data for a profile in a custom format.
+        var data = {};
+
+        $(&#039;input[name^=&quot;&#039; + prefix + &#039;&quot;]&#039;).each(function(index, e) {
+            input = $(this);
+            if (input.attr(&quot;type&quot;) === &quot;checkbox&quot;) {
+                type = &quot;checkbox&quot;;
+                value = input.prop(&#039;checked&#039;);
+            } else {
+                type = &quot;value&quot;;
+                value = input.val();
+            }
+            data[input.attr(&quot;id&quot;)] = [type, value];
+        });
+
+	$(&#039;select[name^=&quot;&#039; + prefix + &#039;&quot;]&#039;).each(function(index, e) {
+            input = $(this);
+            data[input.attr(&quot;id&quot;)] = [&quot;value&quot;, input.val()];
+        });
+
+        $(&#039;textarea[name^=&quot;&#039; + prefix + &#039;&quot;]&#039;).each(function(index, e) {
+            data[$(this).attr(&quot;id&quot;)] = [&quot;value&quot;, $(this).val()];
+        });
+
+        // Save the whole html, must be saved over the normal input values for images
+        $.each([&#039;thumbnail_image&#039;, &#039;detail_image&#039;], function(index, image_name) {
+            element = $(&quot;#id_&quot; + prefix + &quot;-&quot; + image_name);
+            input_value = element.val();
+            html = element.closest(&quot;div.profile-image-panel&quot;).html();
+            data[element.attr(&quot;id&quot;)] = [&quot;image_html&quot;, [html, input_value]];
+        });
+
+        return data;
+    }
+
+    function restore_input_data(inputs_data) {
+        // Restore the input data from a custom format.
+        $.each(inputs_data, function(key, data) {
+            type = data[0];
+            value = data[1];
+            element = $(&quot;#&quot; + key);
+            if (type === &quot;checkbox&quot;) {
+                element[0].checked = value;
+            } else if (type === &quot;image_html&quot;) {
+                html = value[0];
+                input_value = value[1]
+                element.closest(&quot;div.profile-image-panel&quot;).html(html);
+                element = $(&quot;#&quot; + key);
+                element[0].value = input_value;
+            } else {
+                element[0].value = value;
+            }
+        });
+    }
+
+    function profile_has_changes(initial_data, current_data) {
+        profile_changed = false;
+        $.each(initial_data, function(input_id, initial_full_val) {
+            current_full_val = current_data[input_id];
+
+            input_type = initial_full_val[0];
+            initial_val = initial_full_val[1];
+            current_val = current_full_val[1];
+
+            if (input_type === &quot;image_html&quot;) {
+                initial_id = initial_val[1];
+                current_id = current_val[1];
+                if (initial_id != current_id) {
+                    profile_changed = true;
+                }
+            } else {
+                if (initial_val != current_val) {
+                    profile_changed = true;
+                }
+            }
+        });
+        return profile_changed;
+    }
+
+    function profiles_have_changes() {
+        changes_exist = false;
+        $.each(all_profiles_changes_flag, function(profile_prefix, changed_flag) {
+            if (changed_flag) {
+                changes_exist = true;
+            }
+        });
+        return changes_exist;
+    }
+
+    //detect change on Title field
+    function onChangeTitle() {
+        $(document).on(&quot;change&quot;, &quot;#id_title&quot;, function(e) {
+            update_show_unsaved_warning();
+        });
+    }
+
+    //detect change on Description field
+    function onChangeDescription() {
+        $(document).on(&quot;change&quot;, &quot;#id_description&quot;, function(e) {
+            update_show_unsaved_warning();
+        });
+    }
+
+    //detect change on Show Title on Thumbnails field
+    function onChangeShowTitleOnThumbnail () {
+        $(document).on(&quot;change&quot;, &quot;#id_show_title_on_thumbnails&quot;, function(e) {
+            update_show_unsaved_warning();
+        });
+    }
+
+    //edit profile item
+    function editProfileItem () {
+        $(document).on(&#039;click&#039;, &#039;.profile-item-actions .edit-profile-item&#039;, function(e) {
+            e.preventDefault();
+            $(this).parent(&#039;.profile-item-actions&#039;).siblings().addClass(&#039;visible&#039;).closest(&#039;.inline-related&#039;).addClass(&#039;edit-mode&#039;);
+            $(this).closest(&#039;.grid-list&#039;).siblings(&#039;.overlay&#039;).addClass(&#039;visible&#039;);
+
+            prefix = $(this).data(&quot;profile-id-prefix&quot;);
+            current_profile_value_before_edit = store_input_data(prefix);
+            if (all_profiles_initial_data[prefix] === undefined) {
+                all_profiles_initial_data[prefix] = current_profile_value_before_edit;
+            }
+
+            resizeIframe($(&#039;.visible&#039;));
+            setLimiter();
+        });
+    }
+
+    // delete profile edit
+    function deleteProfileItem() {
+        $(document).on(&#039;click&#039;, &#039;.profile-item-actions .delete-profile-item&#039;, function(e) {
+            e.preventDefault();
+
+            profile_prefix = $(this).data(&quot;profile-id-prefix&quot;);
+            $(&#039;#&#039; + profile_prefix).hide();
+
+            delete_input = $(&#039;#id_&#039; + profile_prefix + &#039;-DELETE&#039;)[0];
+            if (delete_input === undefined) {
+                profile_div.remove();
+            } else {
+                delete_input.checked = true;
+            }
+            clear_data_for_profile(profile_prefix);
+            profile_deleted = true;
+
+            update_show_unsaved_warning();
+        });
+    }
+
+    //close profile item edit/add form without saving
+    function closeProfileItem() {
+        $(document).on(&#039;click&#039;, &#039;.grid-list .close-profile&#039;, function(e) {
+            e.preventDefault();
+
+            $(this).closest(&#039;.visible&#039;).removeClass(&#039;visible&#039;).closest(&#039;.inline-related&#039;).removeClass(&#039;edit-mode&#039;);
+            $(this).closest(&#039;.grid-list&#039;).siblings(&#039;.overlay&#039;).removeClass(&#039;visible&#039;);
+
+            profile_prefix = $(this).attr(&quot;data-profile-id-prefix&quot;);
+            profile = $(this).closest(&#039;.ui-widget.inline-related&#039;);
+            is_new = profile.closest(&#039;div.new-profile-form&#039;).length &gt; 0;
+            if (is_new) {
+                profile.remove();
+            } else {
+                restore_input_data(current_profile_value_before_edit);
+            }
+            removeAllErrorClasses();
+
+            resizeIframe();
+        });
+    }
+
+    // close profile item edit/add form with saving the updates
+    function doneProfileItem() {
+        $(document).on(&#039;click&#039;, &#039;.grid-list .done-profile&#039;, function(e) {
+            e.preventDefault();
+
+            if (validateProfile($(this).closest(&#039;.visible&#039;))) {
+                $(this).closest(&#039;.visible&#039;).removeClass(&#039;visible&#039;).closest(&#039;.inline-related&#039;).removeClass(&#039;edit-mode&#039;);
+                $(this).closest(&#039;.grid-list&#039;).siblings(&#039;.overlay&#039;).removeClass(&#039;visible&#039;);
+
+                prefix = $(this).attr(&quot;data-profile-id-prefix&quot;);
+                profile_preview = $(&quot;#&quot; + prefix);
+                new_profile_container = profile_preview.closest(&quot;.new-profile-form&quot;);
+                if (new_profile_container[0] !== undefined) {
+                    // Since we move the input fields, they value will be lost so save
+                    // and restore it after
+                    new_profile_data = store_input_data(prefix);
+                    profile_html = new_profile_container.html();
+                    $(profile_html).insertBefore($(&quot;.ui-widget.inline-related.empty-form&quot;));
+                    profile_preview = $(&quot;#&quot; + prefix);
+                    profile_preview[0].className = &quot;ui-widget inline-related complete&quot;;
+                    new_profile_container.html(&quot;&quot;);
+                    restore_input_data(new_profile_data);
+                    profile_added = true;
+                } else {
+                    update_changed_status_for_profile(prefix);
+                }
+
+                new_image_url = $(&quot;#id_&quot; + prefix + &quot;-thumbnail_image_link_to_file&quot;)[0].href;
+                profile_preview.css({
+                    &#039;background-color&#039;: &quot;##efefef&quot;,
+                    &#039;background-image&#039;: &quot;url(&quot; + new_image_url + &quot;)&quot;,
+                    &quot;background-repeat&quot;: &quot;no-repeat&quot;,
+                    &quot;background-position&quot;: &quot;center&quot;
+                });
+                profile_preview.css(&#039;background-size&#039;, &quot;contain&quot;);
+
+                update_show_unsaved_warning();
+                resizeIframe();
+            }
+
+        });
+    }
+
+    // add new profile item
+    function addNewProfileItem() {
+        $(document).on(&#039;click&#039;, &#039;#add_new_profile&#039;, function(e) {
+            var self = this;
+            new_form_index = $(&#039;.inline-related&#039;).length - 1;
+            profile_grid_id = $(&quot;#id_profile_set-__prefix__-profile_plugin&quot;).attr(&#039;value&#039;);
+            url = &#039;/admin/cmsplugin_profile/new_profile/&#039; + new_form_index + &#039;/&#039;;
+            if (profile_grid_id !== undefined)
+                url += &quot;?profilegrid_id=&quot; + profile_grid_id;
+            jQuery.ajax({
+                url: url,
+                success: function(response) {
+                    $(&#039;#profile_set-group-grid .new-profile-form&#039;).addClass(&#039;visible&#039;).append(response);
+                    $(&#039;.overlay&#039;).addClass(&#039;visible&#039;);
+                    total = $(&#039;#id_profile_set-TOTAL_FORMS&#039;);
+                    total.val(parseInt(total.val(), 10) + 1);
+                    setLimiter();
+                },
+                error: function(response) {},
+                complete: function(response) {
+                    resizeIframe($(&#039;.visible&#039;));
+                }
+            });
+        });
+    }
+
+    // add new additional links to profile item
+    function addNewAdditionalLink() {
+        $(document).on(&#039;click&#039;, &#039;.add-profile-link&#039;, function(e) {
+            link = $(e.currentTarget);
+            prefix = link.attr(&quot;data-prefix&quot;);
+            current = parseInt(link.attr(&quot;data-current&quot;), 10);
+            next_link = $(&quot;#&quot; + prefix + current + &quot;container&quot;);
+            if (next_link != undefined) {
+                next_link.show();
+                link.attr(&quot;data-current&quot;, current + 1);
+                is_last_link = $(&quot;#&quot; + prefix + (current + 1) + &quot;container&quot;)[0] === undefined;
+                if (is_last_link) {
+                    $(this).closest(&#039;p&#039;).hide();
+                }
+            }
+            resizeIframe($(this).closest(&#039;.visible&#039;), false);
+        });
+    }
+
+    function attachEvents() {
+        onChangeTitle();
+        onChangeDescription();
+        onChangeShowTitleOnThumbnail();
+
+        addNewProfileItem();
+        editProfileItem();
+        deleteProfileItem();
+        closeProfileItem();
+        doneProfileItem();
+
+        addNewAdditionalLink();
+    }
+
+    function init() {
+        initial_title = $(&quot;#id_title&quot;).val(),
+        initial_description = $(&quot;#id_description&quot;).val(),
+        initial_show_title = $(&quot;#id_show_title_on_thumbnails&quot;).prop(&#039;checked&#039;),
+        profile_added = false,
+        profile_deleted = false,
+        form_id = $(&#039;#profilegrid_form&#039;),
+        all_profiles_initial_data = {}, // profile-prefix -&gt; custom-profile-data
+        all_profiles_changes_flag = {}, // profile-prefix -&gt; flag if profile has changes
+        current_profile_value_before_edit = {}; // input-id -&gt; [input_type, saved_custom_data]
+
+
+        //make entire grid sortable
+        $(&quot;.grid-list&quot;).sortable({
+            items: &quot;&gt; .inline-related&quot;,
+            cancel: &quot;.edit-mode&quot;,
+            update: function(event, ui) {
+                $(&#039;.order_field input&#039;).each(function(i) {
+                    $(this).attr(&#039;value&#039;, i + 1)
+                });
+            }
+        });
+
+        setLimiter();
+        attachEvents();
+
+    }
+
+    $(document).ready(function() {
+        // init all functions
+        init();
+    });
+})(jQuery || django.jQuery);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

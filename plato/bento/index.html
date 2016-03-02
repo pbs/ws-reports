@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - JavaScript Introspection</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <script>
+    var __options = {"title":"Bento code report","flags":{"complexity":{"logicalor":true,"switchcase":true,"forin":false,"trycatch":false,"newmi":true},"jshint":{"globals":{"angular":false,"jQuery":true},"options":{"node":true,"browser":true,"esnext":true,"bitwise":true,"camelcase":false,"curly":true,"eqeqeq":true,"immed":true,"indent":4,"latedef":true,"newcap":true,"noarg":true,"quotmark":false,"undef":true,"unused":false,"strict":true,"trailing":true,"smarttabs":true,"sub":true}}}}
+  </script>
+
+  <link href="assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="assets/css/plato.css" rel="stylesheet">
+  <link href="assets/css/plato-overview.css" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li class="active">
+        <a href="index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>Bento code report</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <h1 class="col-md-12">Summary</h1>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Total/Average Lines <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code" data-original-title="SLOC" data-container="body"></i></h2>
+      <p class="stat">4621 / 140</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Average Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index" data-container="body"></i></a></h2>
+      <p class="stat">72.73</p>
+    </div>
+  </div>
+</div>
+<div class="container historical">
+  <div class="row">
+    <div class="col-md-6">
+      <div id="chart_historical_sloc" class="chart js-chart"></div>
+    </div>
+    <div class="col-md-6">
+      <div id="chart_historical_maint" class="chart js-chart"></div>
+    </div>
+  </div>
+</div>
+
+
+<div class="container overview">
+  <div class="row">
+    <h2 class="col-md-12">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index" data-container="body"></i></a></h2>
+    <div class="col-md-12"><div id='chart_maintainability' class='chart js-chart'></div></div>
+  </div>
+  <div class="row">
+    <h2 class="col-md-12">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code" data-original-title="SLOC" data-container="body"></i></h2>
+    <div class="col-md-12"><div id='chart_sloc' class='chart js-chart'></div></div>
+  </div>
+  <div class="row">
+    <h2 class="col-md-12">Estimated errors in implementation <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+    <div class="col-md-12"><div id='chart_bugs' class='chart js-chart'></div></div>
+  </div>
+  
+  <div class="row">
+    <h2 class="col-md-12">Lint errors</h2>
+    <div class="col-md-12"><div id='chart_lint' class='chart js-chart'></div></div>
+  </div>
+  
+</div>
+
+<div class="container">
+  <div class="row">
+    <h1 class="col-md-12">Files</h1>
+  </div>
+
+  <div class="row">
+    <div class="span12 group-header">
+      <div class="btn-group">
+        <button type="button" id="button-complexity" class="btn btn-default complexity">complexity</button>
+        <button type="button" id="button-sloc" class="btn btn-default sloc">sloc</button>
+        <button type="button" id="button-bugs" class="btn btn-default bugs">est errors</button>
+        
+        <button type="button" id="button-lint" class="btn btn-default lint">lint errors</button>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    &nbsp;
+  </div>
+
+  <div class="row">
+    <ul class="file-list list-unstyled">
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_celerity_airdates_cmsplugin_airdates_static_cmsplugin_airdates_js_airdates_js/index.html">deps_src/celerity-airdates/cmsplugin_airdates/static/cmsplugin_airdates/js/airdates.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="13"
+              data-sloc="438"
+              data-bugs="3.58"
+              data-complexity="51"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_celerity_airdates_cmsplugin_airdates_static_cmsplugin_airdates_js_frontend_airdates_js/index.html">deps_src/celerity-airdates/cmsplugin_airdates/static/cmsplugin_airdates/js/frontend-airdates.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="16"
+              data-sloc="305"
+              data-bugs="3.55"
+              data-complexity="40"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_celerity_airdates_cmsplugin_airdates_static_cmsplugin_airdates_js_jquery_cookie_js/index.html">deps_src/celerity-airdates/cmsplugin_airdates/static/cmsplugin_airdates/js/jquery.cookie.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="1"
+              data-sloc="62"
+              data-bugs="0.60"
+              data-complexity="15"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_celerity_airdates_cmsplugin_airdates_static_cmsplugin_airdates_js_videolist_js/index.html">deps_src/celerity-airdates/cmsplugin_airdates/static/cmsplugin_airdates/js/videolist.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="9"
+              data-sloc="52"
+              data-bugs="0.41"
+              data-complexity="7"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_celerity_eventcalendar_eventcalendar_static_js_eventcalendar_js/index.html">deps_src/celerity-eventcalendar/eventcalendar/static/js/eventcalendar.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="5"
+              data-sloc="168"
+              data-bugs="2.27"
+              data-complexity="19"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_celerity_photogallery_photogallery_static_admin_photogallery_js_collapse_js/index.html">deps_src/celerity-photogallery/photogallery/static/admin/photogallery/js/collapse.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="2"
+              data-sloc="30"
+              data-bugs="0.31"
+              data-complexity="3"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_celerity_photogallery_photogallery_static_admin_photogallery_js_jquery_fix_js/index.html">deps_src/celerity-photogallery/photogallery/static/admin/photogallery/js/jquery_fix.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="2"
+              data-sloc="2"
+              data-bugs="0.01"
+              data-complexity="2"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_celerity_photogallery_photogallery_static_admin_photogallery_js_photos_inline_formset_js/index.html">deps_src/celerity-photogallery/photogallery/static/admin/photogallery/js/photos-inline-formset.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="34"
+              data-sloc="939"
+              data-bugs="15.17"
+              data-complexity="63"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_celerity_photogallery_photogallery_static_photogallery_js_galleria_bento_js/index.html">deps_src/celerity-photogallery/photogallery/static/photogallery/js/galleria.bento.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="28"
+              data-sloc="368"
+              data-bugs="4.55"
+              data-complexity="32"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_celerity_photogallery_photogallery_static_photogallery_js_photogallery_js/index.html">deps_src/celerity-photogallery/photogallery/static/photogallery/js/photogallery.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="10"
+              data-sloc="8"
+              data-bugs="0.05"
+              data-complexity="2"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_celerity_photogallery_photogallery_static_photogallery_js_promotion_js/index.html">deps_src/celerity-photogallery/photogallery/static/photogallery/js/promotion.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="1"
+              data-sloc="52"
+              data-bugs="0.37"
+              data-complexity="3"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_cms_newsletter_plugin_newsletter_static_newsletter_js_newsletter_js/index.html">deps_src/cms-newsletter-plugin/newsletter/static/newsletter/js/newsletter.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="16"
+              data-sloc="90"
+              data-bugs="0.94"
+              data-complexity="15"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_cmsplugin_filer_cmsplugin_filer_image_static_admin_js_advanced_panel_text_additions_js/index.html">deps_src/cmsplugin-filer/cmsplugin_filer_image/static/admin/js/advanced_panel_text_additions.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="1"
+              data-sloc="13"
+              data-bugs="0.10"
+              data-complexity="1"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_cmsplugin_filer_cmsplugin_filer_image_static_admin_js_caption_formatting_js/index.html">deps_src/cmsplugin-filer/cmsplugin_filer_image/static/admin/js/caption_formatting.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="1"
+              data-sloc="6"
+              data-bugs="0.02"
+              data-complexity="1"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_cmsplugin_filer_cmsplugin_filer_image_static_admin_js_event_tracking_js/index.html">deps_src/cmsplugin-filer/cmsplugin_filer_image/static/admin/js/event_tracking.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="2"
+              data-sloc="24"
+              data-bugs="0.13"
+              data-complexity="3"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_cmsplugin_filer_cmsplugin_filer_image_static_admin_js_jquery_no_conflict_js/index.html">deps_src/cmsplugin-filer/cmsplugin_filer_image/static/admin/js/jquery-no-conflict.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="0"
+              data-sloc="5"
+              data-bugs="0.04"
+              data-complexity="1"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_cmsplugin_filer_cmsplugin_filer_image_static_admin_js_link_options_js/index.html">deps_src/cmsplugin-filer/cmsplugin_filer_image/static/admin/js/link_options.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="8"
+              data-sloc="37"
+              data-bugs="0.18"
+              data-complexity="3"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_cmsplugin_filer_cmsplugin_filer_image_static_admin_js_popup_handling_override_js/index.html">deps_src/cmsplugin-filer/cmsplugin_filer_image/static/admin/js/popup_handling_override.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="5"
+              data-sloc="95"
+              data-bugs="0.71"
+              data-complexity="11"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_cmsplugin_filer_cmsplugin_filer_image_static_admin_js_popup_helper_image_js/index.html">deps_src/cmsplugin-filer/cmsplugin_filer_image/static/admin/js/popup_helper_image.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="1"
+              data-sloc="9"
+              data-bugs="0.04"
+              data-complexity="1"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_cmsplugin_merlin_cmsplugin_merlin_static_js_admin_cove_player_js/index.html">deps_src/cmsplugin-merlin/cmsplugin_merlin/static/js/admin-cove-player.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="2"
+              data-sloc="13"
+              data-bugs="0.08"
+              data-complexity="2"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_cmsplugin_merlin_cmsplugin_merlin_static_js_jquery_patch_js/index.html">deps_src/cmsplugin-merlin/cmsplugin_merlin/static/js/jquery_patch.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="1"
+              data-sloc="10"
+              data-bugs="0.04"
+              data-complexity="4"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_cmsplugin_merlin_cmsplugin_merlin_static_js_merlin_browser_js/index.html">deps_src/cmsplugin-merlin/cmsplugin_merlin/static/js/merlin_browser.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="23"
+              data-sloc="245"
+              data-bugs="2.76"
+              data-complexity="39"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_cmsplugin_merlin_cmsplugin_merlin_static_js_pbs_player_js/index.html">deps_src/cmsplugin-merlin/cmsplugin_merlin/static/js/pbs_player.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="30"
+              data-sloc="53"
+              data-bugs="0.42"
+              data-complexity="9"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_cmsplugin_merlin_cmsplugin_merlin_static_js_pmp_browser_js/index.html">deps_src/cmsplugin-merlin/cmsplugin_merlin/static/js/pmp_browser.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="13"
+              data-sloc="258"
+              data-bugs="3.41"
+              data-complexity="24"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_cmsplugin_profile_cmsplugin_profile_static_admin_js_profile_admin_js/index.html">deps_src/cmsplugin-profile/cmsplugin_profile/static/admin/js/profile_admin.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="51"
+              data-sloc="478"
+              data-bugs="5.05"
+              data-complexity="37"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_cmsplugin_profile_cmsplugin_profile_static_cmsplugin_profile_js_profilegrid_js/index.html">deps_src/cmsplugin-profile/cmsplugin_profile/static/cmsplugin_profile/js/profilegrid.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="13"
+              data-sloc="436"
+              data-bugs="4.33"
+              data-complexity="27"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_django_filer_filer_static_filer_js_popup_handling_js/index.html">deps_src/django-filer/filer/static/filer/js/popup_handling.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="20"
+              data-sloc="68"
+              data-bugs="0.76"
+              data-complexity="9"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/deps_src_django_robots_robots_static_admin_js_lazyFilteredSelectMultiple_js/index.html">deps_src/django-robots/robots/static/admin/js/lazyFilteredSelectMultiple.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="14"
+              data-sloc="43"
+              data-bugs="0.49"
+              data-complexity="2"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/hostedbento_lunchbox_static_admin_js_change_form_js/index.html">hostedbento/lunchbox/static/admin/js/change_form.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="15"
+              data-sloc="141"
+              data-bugs="1.18"
+              data-complexity="21"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/hostedbento_lunchbox_static_admin_js_fix_jquery_js/index.html">hostedbento/lunchbox/static/admin/js/fix_jquery.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="2"
+              data-sloc="1"
+              data-bugs="0.00"
+              data-complexity="1"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/hostedbento_lunchbox_static_admin_js_pbsprovided_filtered_select_js/index.html">hostedbento/lunchbox/static/admin/js/pbsprovided_filtered_select.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="16"
+              data-sloc="81"
+              data-bugs="0.89"
+              data-complexity="11"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/hostedbento_lunchbox_static_admin_js_placeholder_for_page_js/index.html">hostedbento/lunchbox/static/admin/js/placeholder_for_page.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="11"
+              data-sloc="42"
+              data-bugs="0.29"
+              data-complexity="3"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/hostedbento_lunchbox_static_admin_js_pmp_partners_widget_js/index.html">hostedbento/lunchbox/static/admin/js/pmp_partners_widget.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="7"
+              data-sloc="49"
+              data-bugs="0.40"
+              data-complexity="5"
+          ></span>
+        </div>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/javascript" src="assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="assets/scripts/plato-overview.js"></script>
+<script type="text/javascript" src="assets/scripts/plato-sortable-file-list.js"></script>
+</body>
+</html>
