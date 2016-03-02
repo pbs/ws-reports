@@ -3,6 +3,7 @@
 
 // nodejs api
 var proc = require('child_process');
+var execSync = require('sync-exec');
 
 //vendor
 var appRoot = require('app-root-path').path;
@@ -33,7 +34,7 @@ exports.runPlato = function(project, projectsDir){
     ];
     cmd += ' ' + args.join(' ');
     console.log(cmd);
-    proc.execSync(cmd, {
+    execSync(cmd, {
         cwd: projectRoot
     });
 };

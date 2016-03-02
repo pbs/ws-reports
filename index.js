@@ -2,6 +2,7 @@
 
 'use strict';
 var proc = require('child_process');
+var execSync = require('sync-exec');
 
 var reports = require('./src/plato-reports');
 
@@ -25,11 +26,11 @@ var projectsDir = 'projects_src';
 
 if(require.main == module){
     wsProjects.forEach(function(project){
-        proc.execSync('rm -rf ' + projectsDir + ' && mkdir ' + projectsDir);
+        execSync('rm -rf ' + projectsDir + ' && mkdir ' + projectsDir);
         var cloneCmd = (project.clone instanceof Array ?
                         project.clone.join(' && ') :
                         project.clone);
-        proc.execSync(cloneCmd, {cwd: projectsDir});
+        execSync(cloneCmd, {cwd: projectsDir});
         reports.runPlato(project, projectsDir);
     });
 
