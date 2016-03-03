@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - old_gc.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>old_gc.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">71.54</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">753</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">80.61</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">7.37</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">//create PBS namespace
+if (typeof pbs == &quot;undefined&quot; || !pbs) {
+    var pbs = {};
+}
+pbs.namespace = function() {
+    var a = arguments,
+        o = null,
+        i, j, d;
+    for (i = 0; i &lt; a.length; i = i + 1) {
+        d = a[i].split(&quot;.&quot;);
+        o = pbs;
+        for (j = (d[0] == &quot;pbs&quot;) ? 1 : 0; j &lt; d.length; j = j + 1) {
+            o[d[j]] = o[d[j]] || {};
+            o = o[d[j]];
+        }
+    }
+    return o;
+}
+
+pbs.namespace(&#039;chrome&#039;);
+
+//console var, used for logging.
+//console is undefined in IE or any Firefox that doesn&#039;t have Firebug installed.
+if (typeof console == &quot;undefined&quot;) {
+    this.console = {
+        log: function() {}
+    };
+}
+
+pbs.chrome.bindReady = function(handler) {
+
+    var called = false
+
+    function ready() {
+
+        if (called) {
+            return
+        }
+
+        called = true;
+
+        handler();
+
+    }
+
+    if (document.addEventListener) { // native event
+        //document.addEventListener(&quot;DOMContentLoaded&quot;, ready, false)
+        var $ = pbs.chrome.jquery;
+        $(document).ready(function () {
+            ready();
+        });
+
+    } else if (document.attachEvent) { // IE
+
+        try {
+            var isFrame = window.frameElement != null
+        } catch (e) {}
+
+        // IE, the document is not inside a frame
+        if (document.documentElement.doScroll &amp;&amp; !isFrame) {
+            function tryScroll() {
+                if (called) return
+                try {
+                    document.documentElement.doScroll(&quot;left&quot;);
+                    if (typeof pbs.chrome.readyList != &#039;undefined&#039; &amp;&amp; pbs.chrome.readyList.length &gt; 0) ready()
+                    else settimeout(tryScroll, 20)
+                } catch (e) {
+                    setTimeout(tryScroll, 10)
+                }
+            }
+            tryScroll()
+        }
+
+        // IE, the document is inside a frame
+        document.attachEvent(&quot;onreadystatechange&quot;, function() {
+            if (document.readyState === &quot;complete&quot;) {
+                ready()
+            }
+        })
+    }
+
+    // Old browsers
+    if (window.addEventListener){
+        //window.addEventListener(&#039;load&#039;, ready, false)
+    } else if (window.attachEvent) {
+        window.attachEvent(&#039;onload&#039;, ready)
+    } else {
+        var fn = window.onload // very old browser, copy old onload
+        window.onload = function() { // replace by new onload and call the old one
+            fn &amp;&amp; fn()
+            ready()
+        }
+    }
+}
+
+pbs.chrome.readyList = []
+
+pbs.chrome.onReady = function(handler) {
+    function executeHandlers() {
+        for (var i = 0; i &lt; pbs.chrome.readyList.length; i++) {
+            pbs.chrome.readyList[i]()
+        }
+    }
+
+    if (!pbs.chrome.readyList.length) { // set handler on first run
+        pbs.chrome.bindReady(executeHandlers)
+    }
+
+    pbs.chrome.readyList.push(handler)
+
+}
+//main class definition
+pbs.chrome.Class = (function() {
+    var initializing = false,
+        fnTest = /xyz/.test(function() {xyz;}) ? /\b_super\b/ : /.*/;
+    // The base Class implementation (does nothing)
+    this.Class = function() {};
+
+    // Create a new Class that inherits from this class
+    Class.extend = function(prop) {
+        var _super = this.prototype;
+
+        // Instantiate a base class (but only create the instance,
+        // don&#039;t run the init constructor)
+        initializing = true;
+        var prototype = new this();
+        initializing = false;
+
+        // Copy the properties over onto the new prototype
+        for (var name in prop) {
+            // Check if we&#039;re overwriting an existing function
+            prototype[name] = typeof prop[name] == &quot;function&quot; &amp;&amp; typeof _super[name] == &quot;function&quot; &amp;&amp; fnTest.test(prop[name]) ? (function(name, fn) {
+                return function() {
+                    var tmp = this._super;
+
+                    // Add a new ._super() method that is the same method
+                    // but on the super-class
+                    this._super = _super[name];
+
+                    // The method only need to be bound temporarily, so we
+                    // remove it when we&#039;re done executing
+                    var ret = fn.apply(this, arguments);
+                    this._super = tmp;
+
+                    return ret;
+                };
+            })(name, prop[name]) : prop[name];
+        }
+
+        // The dummy class constructor
+
+        function Class() {
+            // All construction is actually done in the init method
+            if (!initializing &amp;&amp; this.init) this.init.apply(this, arguments);
+        }
+
+        // Populate our constructed prototype object
+        Class.prototype = prototype;
+
+        // Enforce the constructor to be what we expect
+        Class.constructor = Class;
+
+        // And make this class extendable
+        Class.extend = arguments.callee;
+
+        return Class;
+    };
+})();
+
+pbs.chrome.get_server_data = function(self, url, callback, callback_name) {
+    //retrieve widget data from the server. call success or error methods
+    //pass context to be used with ajax response. default context is header.
+    //we need current class instance
+    var jxhr = pbs.chrome.jquery.ajax({
+        url: url,
+        dataType: &#039;jsonp&#039;,
+        jsonp: &#039;callback&#039;,
+        crossDomain: true,
+        cache: false,
+        beforeSend: function(xhr) {
+            //add before send logic here if required
+        },
+        success: function(data) {
+            //call the success method by passing the context and the data returned
+            if (typeof(callback) == &quot;function&quot;) callback.call(self, data);
+        },
+        error: function(data) {
+            //call the error method by passing the context and the error returned
+            self.data_error.call(self, data);
+        },
+        complete: function(data) {
+
+        }
+    });
+    return jxhr;
+}
+
+pbs.chrome.utils = (function() {
+    /**
+     * Public methods in the util module
+     */
+    return {
+        /**
+         * Check if a value is an integer.
+         *
+         * @argument number {string} - The value to be validated
+         * @returns {True | False}
+         */
+        isInteger: function(number) {
+            return /^-?\d+$/.test(number);
+        },
+        /**
+         * Check if a value is a valid zip code.
+         *
+         * You can either specify an input element to validate it&#039;s value, or
+         * a string to be validated. If you specify an input element this
+         * function will try to show specififc errors on the fieldset.zipcode
+         * parent of the element
+         *
+         * @argument inputElement {jQuery | string} - The element / value to be validated
+         * @returns {True | False}
+         */
+        isZipCode: function(inputElement) {
+            var value = pbs.chrome.jquery(inputElement).val() || inputElement;
+            if (value === &#039;&#039;) {
+                return false;
+            } else if (!this.isInteger(value)) {
+                pbs.chrome.jquery(inputElement)
+                    .parents(&quot;fieldset.pbs-zipcode&quot;)
+                    .append(&#039;&lt;p class=&quot;pbs-error&quot;&gt;Zipcode is not numeric&lt;/p&gt;&#039;);
+                return false;
+            } else if (value.length &lt;= 4) {
+                pbs.chrome.jquery(inputElement)
+                    .parents(&quot;fieldset.pbs-zipcode&quot;)
+                    .append(&#039;&lt;p class=&quot;pbs-error&quot;&gt;Zipcode to short&lt;/p&gt;&#039;);
+                return false;
+            } else {
+                // This is a valid zip code
+                return true;
+            }
+        },
+        /**
+         * Trim leading and trailing whitespaces from a string.
+         *
+         * @argument string {string} - The string to be trimmed
+         * @returns {string}
+         */
+        trim: function(string) {
+            return string.replace(/^\s+|\s+$/g, &quot;&quot;);
+        },
+        /**
+         * Trim leading whitespaces from a string.
+         *
+         * @argument string {string} - The string to be trimmed
+         * @returns {string}
+         */
+        ltrim: function(string) {
+            return string.replace(/^\s+/, &quot;&quot;);
+        },
+        /**
+         * Trim trailing whitespaces from a string.
+         *
+         * @argument string {string} - The string to be trimmed
+         * @returns {string}
+         */
+        rtrim: function(string) {
+            return string.replace(/\s+$/, &quot;&quot;);
+        },
+        /**
+         * Check if a value represents a valid email address.
+         *
+         * @argument value {string} - The value to be validated
+         * @returns {True | False}
+         */
+        isEmail: function(value) {
+            var re = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+            if (this.trim(value).match(re)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    };
+}());
+
+pbs.chrome.BaseWidget = Class.extend({
+    options: {
+        pbs_search_url: &quot;http://www.pbs.org/search/&quot;
+    },
+    //list containing actions to be executed before/after widget load
+    _actions: {},
+    init: function() {
+        return;
+    },
+    addEvent: function(type, listener) {
+        // Store event handler (listener) of type(type) for various events in actions list
+
+        //Check for a named property for provided event type in actions,
+        //and if not, creates one containing an array
+        if (typeof this._actions[type] == &quot;undefined&quot;) {
+            this._actions[type] = [];
+        }
+        this._actions[type].push(listener);
+    },
+    executeEvents: function(type) {
+        // Executes event handlers with a given type if found in actions list
+        //type parameter is a string
+
+        //Check actions object for event handlers, if found, execute them.
+        if (this._actions[type] instanceof Array) {
+            var listeners = this._actions[type];
+            for (var i = 0, len = listeners.length; i &lt; len; i++) {
+                try {
+                    listeners[i].call(this);
+                } catch (err) {
+                    console.log(err);
+                }
+            }
+        }
+    },
+    removeEvents: function(type) {
+        //Remove handlers of type provided from _actions array
+
+        if (this._actions[type] instanceof Array) {
+            var listeners = this._actions[type];
+            for (var i = 0, len = listeners.length; i &lt; len; i++) {
+                listeners.splice(i, 1);
+            }
+        }
+    },
+    build_url: function(url_parameters) {
+        //Appends params to current url from options
+        var url = this.options.url + &quot;?&quot; + pbs.chrome.jquery.param(url_parameters);
+        return url;
+    },
+    data_success: function(widget) {
+        //construct widget based on data retunred by the server
+        // Override data_success for adding to options info needed for event handling
+        //And for executing post actions
+        //execute pre events
+
+        var self = this;
+        pbs.chrome.jquery.extend(self.options, widget);
+        self.executeEvents(&#039;pre&#039;);
+        self.resource_string = self.build_resources(widget.media);
+
+        self.widget = self.data_to_template(self.options.template, widget.data);
+        self.render(self.widget, self.resource_string);
+
+        //Execute post events
+        pbs.chrome.jquery(document).ready(function () {
+            self.executeEvents(&#039;post&#039;);
+            //Unregister post events
+            self.removeEvents(&#039;post&#039;);
+        });
+    },
+    data_error: function(error) {
+        //TODO: add error handling
+        return true;
+    },
+
+    data_to_template: function(template, data) {
+        //replace variables in template with the data from the response
+        for (var item in data) {
+            var search_for = new RegExp(&#039;{{&#039; + item + &#039;}}&#039;, &quot;gi&quot;);
+            template = template.replace(search_for, data[item]);
+        }
+
+        return template;
+    },
+    build_resources: function(media) {
+        //build the data resources string
+        //to be refactored when we get also the resource type on the data response
+
+        var resource_string = &#039;&#039;;
+        var ie_string = &#039;&#039;;
+        var css_include_template = &#039;&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;{{source}}&quot; /&gt;&#039;;
+        var js_include_template = &#039;&lt;script type=&quot;text/javascript&quot; src=&quot;{{source}}&quot;&gt;&lt;/script&gt;&#039;;
+
+        for (var item in media) {
+            if (media[item].is_ie == 1) {
+                ie_string = css_include_template.replace(&#039;{{source}}&#039;, media[item].name);
+            } else if (media[item].type == &#039;js&#039;) {
+                resource_string += js_include_template.replace(&#039;{{source}}&#039;, media[item].name);
+            } else {
+                resource_string += css_include_template.replace(&#039;{{source}}&#039;, media[item].name);
+            }
+        }
+
+        if (ie_string &amp;&amp; (pbs.chrome.jquery.browser.msie &amp;&amp; parseInt(pbs.chrome.jquery.browser.version) &lt; 9)) {
+            resource_string += ie_string;
+        }
+
+        return resource_string;
+    },
+    show: function() {
+        //default show action for all widgets. render on complete
+        var jxhr = pbs.chrome.get_server_data(this, this.options.url, this.data_success, &quot;data_success&quot;);
+    }
+});
+
+pbs.chrome.HeaderWidget = pbs.chrome.BaseWidget.extend({
+    init: function(options) {
+        //merge options passed from config to defined options
+        pbs.chrome.jquery.extend(this.options, options, {
+            how: &quot;prepend&quot;,
+            widget: &#039;header&#039;
+        });
+    },
+    data_success: function(widget) {
+        this._super(widget);
+    },
+    render: function(widget, resources) {
+        /*
+         Render method is at widget level because different widgets can render in
+         different way and keeping this at base class level would induce complexity
+         in that method.
+         Widgets should know how to render themselves.
+        */
+        //inject resources, render widget
+
+        pbs.chrome.jquery(document).ready(function () {
+            pbs.chrome.jquery(&quot;head&quot;).append(resources);
+            //TODO: investigate how to to this dynamically
+            pbs.chrome.jquery(&quot;body&quot;).prepend(widget);
+        });
+    },
+    show: function() {
+        //Add key and widget parameters to widget api url provided in options property
+        this.options.url = this.build_url({
+            key: this.options.key,
+            widget: this.options.widget
+        });
+
+        //Register actions for attaching the click event for the search buttons on post actions list
+        this.addEvent(&#039;post&#039;, function(e) {
+            this._do_search();
+        });
+
+        //Register localization event on post actions list
+        this.addEvent(&#039;post&#039;, function(e) {
+            this._localize();
+        });
+
+        //Register GA event handling
+        this.addEvent(&#039;post&#039;, function(e) {
+            this._add_GA_navigation();
+        });
+
+        //Register event for template validation
+        this.addEvent(&#039;pre&#039;, function(e) {
+            this.validate_search_form()
+        });
+
+        //Show search form on lower breakpoints
+        this.addEvent(&#039;post&#039;, function(e) {
+            this.show_search_form()
+        });
+
+        //Show navigation on lower breakpoints
+        this.addEvent(&#039;post&#039;, function(e) {
+            this.show_navigation()
+        });
+
+        //Add breakpoint classes to IE8
+        this.addEvent(&#039;post&#039;, function(e) {
+            this.add_ie8_classes()
+        });
+
+        /* The form used for search both on local and global search services needs to be
+         capable to work both with POST and GET. However, on GET we want to just append our
+         query term to a more complex url that already contains some GET params, so we just
+         reconstruct the url and use redirects instead. */
+        this.addEvent(&#039;post&#039;, function(e) {
+            this._handle_search_form_submit()
+        });
+
+        this._super();
+    },
+    add_ie8_classes: function function_name () {
+
+        var $ = pbs.chrome.jquery,
+            widget = $(&#039;#pbs_dh&#039;),
+            nav = widget.find(&quot;#pbs_dh_nav ul li&quot;),
+            doc_width = $(document).width();
+
+        var add_breakpoint_classes = function () {
+
+            widget.removeClass(&#039;width_768_1024 width_600_768 width_480_600 width_320_480 width_320&#039;);
+
+            widget.addClass(&#039;width_768_1024&#039;);
+
+            if ((doc_width &lt; 768) &amp;&amp; (doc_width &gt;= 600)) {
+                widget.addClass(&#039;width_768_1024 width_600_768&#039;);
+            }
+            if ((doc_width &lt; 600) &amp;&amp; (doc_width &gt;= 480)) {
+                widget.addClass(&#039;width_768_1024 width_600_768 width_480_600&#039;);
+
+            }
+            if ((doc_width &lt; 480) &amp;&amp; (doc_width &gt; 320)) {
+                widget.addClass(&#039;width_768_1024 width_600_768 width_480_600 width_320_480&#039;);
+
+            }
+            if (doc_width &lt;= 320) {
+                widget.addClass(&#039;width_768_1024 width_600_768 width_480_600 width_320_480 width_320&#039;);
+
+            }
+        }
+
+        if ($.browser.msie &amp;&amp; (parseInt($.browser.version) &lt; 9) ) {
+
+            add_breakpoint_classes();
+        }
+
+        //console.log(s())
+        $(nav[0]).addClass(&#039;first&#039;);
+        $(nav[1]).addClass(&#039;second&#039;);
+    },
+    show_navigation: function function_name () {
+        var nav_dropdown = pbs.chrome.jquery(&#039;#pbs_btn_dropdown&#039;),
+            nav_elements = pbs.chrome.jquery(&#039;#pbs_dh_nav ul&#039;),
+            search_button = pbs.chrome.jquery(&#039;#pbs_lens&#039;),
+            search_form = pbs.chrome.jquery(&#039;#pbs_dh_search&#039;);
+
+        nav_dropdown.click(function (e) {
+            var class_active = nav_dropdown.attr(&#039;class&#039;);
+            search_button.removeClass(&#039;active&#039;);
+            search_form.removeClass(&#039;active&#039;);
+
+            if (!class_active || class_active == &#039;&#039;) {
+                pbs.chrome.jquery(this).addClass(&#039;active&#039;);
+                nav_elements.addClass(&#039;active&#039;);
+
+            } else {
+                pbs.chrome.jquery(this).removeClass(&#039;active&#039;);
+                nav_elements.removeClass(&#039;active&#039;);
+            }
+
+            e.preventDefault();
+        });
+    },
+    show_search_form: function () {
+        var search_button = pbs.chrome.jquery(&#039;#pbs_lens&#039;);
+            search_form = pbs.chrome.jquery(&#039;#pbs_dh_search&#039;),
+            nav_dropdown = pbs.chrome.jquery(&#039;#pbs_btn_dropdown&#039;),
+            nav_elements = pbs.chrome.jquery(&#039;#pbs_dh_nav ul&#039;);
+
+        search_button.click(function (e) {
+            var class_active = search_button.attr(&#039;class&#039;);
+            nav_dropdown.removeClass(&#039;active&#039;);
+            nav_elements.removeClass(&#039;active&#039;);
+
+            if (!class_active || class_active == &#039;&#039;) {
+                pbs.chrome.jquery(this).addClass(&#039;active&#039;);
+                search_form.addClass(&#039;active&#039;);
+
+            } else {
+                pbs.chrome.jquery(this).removeClass(&#039;active&#039;);
+                search_form.removeClass(&#039;active&#039;);
+
+            }
+
+            e.preventDefault();
+        });
+    },
+    _handle_search_form_submit: function(e) {
+
+        var self = this;
+
+        pbs.chrome.jquery(&quot;#pbs_distribution_search_form&quot;).submit(function() {
+
+            //Add GA to search box click/enter
+            self._add_GA_search(this, &#039;GlobalChrome_Header&#039;, &#039;Search&#039;);
+
+            var form = pbs.chrome.jquery(this);
+            var method = form.attr(&#039;method&#039;);
+
+            if (method !== &#039;POST&#039;) {
+                var search_term = pbs.chrome.jquery.trim(pbs.chrome.jquery(&quot;#pbs_distribution_search_box&quot;, this).val());
+                document.location = form.attr(&#039;action&#039;) + encodeURIComponent(search_term);
+                return false;
+            }
+            return true;
+        });
+    },
+    _do_search: function(e) {
+        this._click_search(pbs.chrome.jquery(&#039;#global_search_btn&#039;),
+        this.options.data.global_search_url,
+            &#039;GET&#039;);
+        if (pbs.chrome.jquery.trim(this.options.data.local_search_url) != &#039;&#039;) {
+            this._click_search(pbs.chrome.jquery(&#039;#local_search_btn&#039;),
+            this.options.data.local_search_url,
+            this.options.data.method);
+        }
+    },
+    validate_search_form: function() {
+        if (pbs.chrome.jquery.trim(this.options.data.local_search_url) == &#039;&#039;) {
+            var search_for = new RegExp(&#039;&lt;input type=&quot;button&quot; class=&quot;search_btn&quot; id=&quot;local_search_btn&quot; value=&quot;Search This Site&quot; /&gt;&#039;, &quot;gi&quot;);
+            this.options.template = this.options.template.toString().replace(search_for, &#039;&#039;)
+        }
+    },
+    _click_search: function(button, action, method) {
+        //Handle click event for search buttons
+        var self = this;
+        if (button.length &gt; 0) {
+            button.click(function() {
+                pbs.chrome.jquery(this.form)
+                    .attr(&#039;action&#039;, action)
+                    .attr(&#039;method&#039;, method);
+                pbs.chrome.jquery(this.form).submit();
+            });
+        }
+    },
+    _add_GA_search: function(form, category, action) {
+        // Add Google Analytics event for search buttons click/search box enter
+        var clicked_search_url = pbs.chrome.jquery(form).attr(&#039;action&#039;);
+        var label = pbs.chrome.jquery(&#039;#local_search_btn&#039;).attr(&#039;value&#039;);
+        if (clicked_search_url == this.options.data.global_search_url) {
+            label = pbs.chrome.jquery(&#039;#global_search_btn&#039;).attr(&#039;value&#039;);
+        }
+        if (typeof _gaq == &#039;undefined&#039;) console.log(&quot;_gaq is undefined&quot;);
+        else _gaq.push([&#039;_setAccount&#039;, this.options.data.GA_code], [&#039;_trackEvent&#039;, category, action, label]);
+
+    },
+    _add_GA_navigation: function() {
+        var self = this;
+        //Static links clicks
+        pbs.chrome.jquery(&#039;#pbs_dh&#039;).find(&#039;.ga&#039;).bind(&#039;click&#039;, function() {
+            var text = pbs.chrome.jquery(this).attr(&#039;title&#039;) || pbs.chrome.jquery(this).text();
+            var label = text + &#039; | &#039; + pbs.chrome.jquery(this).attr(&#039;href&#039;);
+            if( pbs.chrome.jquery(this).parent().hasClass(&#039;donate-btn&#039;) ){
+                var station = pbs.chrome.jquery(&#039;#pbs_loc&#039;).text() || &#039;PBS&#039;;
+                label = text + &#039; | &#039; + station + &#039; | &#039; + window.location.href;
+            }
+            if (typeof _gaq == &#039;undefined&#039;) console.log(&quot;_gaq is undefined&quot;);
+            else _gaq.push([&#039;_setAccount&#039;, self.options.data.GA_code], [&#039;_trackEvent&#039;, &#039;GlobalChrome_Header&#039;, &#039;Link&#039;, label]);
+        });
+    },
+    _localize: function() {
+        var self = this;
+    }
+});
+
+pbs.chrome.Chrome = Class.extend({
+    options: {
+        jquery_url: &#039;http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js&#039;,
+        url: &#039;@GC_JS_API_URL@&#039;,
+        //url: &#039;http://costin-chrome.pbs.org:8000/&#039;,
+        // url: &#039;http://doru.pbs.org:8000/&#039;,
+        widgets_location: &#039;getwidgets/&#039;
+    },
+    init: function() {
+        /*
+         load jquery and execute rest of calls in the jquery_loaded callback
+         being async loaded we do not know when jquery has actually loaded so
+         the callback is where we are certain that it is loaded.
+        */
+
+        this.load_script(this.options.jquery_url, this.jquery_loaded);
+    },
+    load_script: function(url, callback) {
+        /*
+        load a javascript file from a specified location
+        execute callback function passed once the loading is complete
+        returns script object
+        */
+        var self = this;
+        //create script dom object and set properties for it
+        var script = document.createElement(&quot;script&quot;);
+        script.type = &quot;text/javascript&quot;;
+
+        //execute callback once the script is available (onload and readyState for IE)
+        if (typeof script.readyState === &#039;undefined&#039;) {
+            script.onload = function() {
+                callback.call(self);
+            };
+        } else { // IE LAST! onload is activex so we need to check even if activex is not enabled.
+            script.onreadystatechange = function() {
+                if (script.readyState === &quot;loaded&quot; || script.readyState === &quot;complete&quot;) {
+                    script.onreadystatechange = null;
+                    callback.call(self);
+                }
+            };
+        };
+
+        script.src = url;
+        document.getElementsByTagName(&quot;head&quot;)[0].appendChild(script);
+        return script;
+    },
+    jquery_loaded: function() {
+        /* JQuery is loaded. set jQuery to pbs.chrome.jquery by calling noConflict
+          and releasing the $ and jQuery pointers for other existing versions to use
+          All jquery methods must from here on use pbs.chrome.jquery internally and not the
+          original pointers in order to avoid version conflicts.
+        */
+        pbs.chrome.jquery = jQuery.noConflict(true);
+
+        if (typeof PBS_CHROME_CONFIG.api_key != &#039;undefined&#039;) {
+            var widgets_list_url = this.build_url(this.options.url + this.options.widgets_location, {
+                key: PBS_CHROME_CONFIG.api_key
+            });
+
+            pbs.chrome.get_server_data(this, widgets_list_url, this.get_widgets_success, &#039;getwidgets_success&#039;);
+        }
+    },
+    get_widgets_success: function(data) {
+        if (typeof PBS_CHROME_CONFIG.widget_type != &#039;undefined&#039;) {
+            for (var widget in data.widgets) {
+                var found = false;
+                switch (PBS_CHROME_CONFIG.widget_type.toLowerCase()) {
+                    case &#039;header&#039;:
+
+                        var header = new pbs.chrome.HeaderWidget({
+                            url: data.widgets[widget].url,
+                            key: PBS_CHROME_CONFIG.api_key
+                        });
+                        header.show();
+                        found = true;
+                        break;
+                }
+                if (found) break;
+            }
+        } else {
+            for (var widget in data.widgets) {
+                switch (data.widgets[widget].type.toLowerCase()) {
+                    case &#039;header&#039;:
+                        var header = new pbs.chrome.HeaderWidget({
+                            url: data.widgets[widget].url,
+                            key: PBS_CHROME_CONFIG.api_key
+                        });
+                        header.show();
+                        break;
+                }
+            }
+        }
+    },
+    data_error: function(error) {
+        //TODO: add error handling
+        return true;
+    },
+    build_url: function(url, url_parameters) {
+        //Appends params to current url from options
+        if (url.indexOf(&quot;getwidgets&quot;) &gt;= 0){
+            url = url + url_parameters.key + &quot;/&quot;;
+        }
+        else {
+            url = url + &quot;?&quot; + pbs.chrome.jquery.param(url_parameters);
+        }
+
+        return url;
+    }
+})
+
+var chrome = new pbs.chrome.Chrome()</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

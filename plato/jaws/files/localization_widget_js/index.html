@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - localization_widget.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>localization_widget.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">62.64</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">689</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">63.63</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">6.93</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/*globals window, PBS, JAWS, document, escape, Ajax, GA_obj, GTMDataLayer, setTimeout, console, location, hide_forced_localization, unescape*/
+if (!window.JAWS) {
+    window.JAWS = {};
+}
+// fix for ie
+if (!window.console) {
+    window.console = {
+        log : function () {
+            &#039;use strict&#039;;
+        },
+        warn : function () {
+            &#039;use strict&#039;;
+        },
+        error : function () {
+            &#039;use strict&#039;;
+        }
+    };
+}
+JAWS.Localization = (function () {
+    &#039;use strict&#039;;
+    var staExtended,
+        redirect_to,
+        // serverUrl = &#039;http://jaws-dev.pbs.org:8080/&#039;,
+        serverUrl = &#039;@SITE_URL@&#039;,
+        donate_url = &#039;http://www.pbs.org/donate/&#039;,
+        kidsCookie,
+        stationCookie,
+        trackingCategory = &quot;Auto-localization overlay&quot;,
+        filesLoaded = false,
+        setOnce = false,
+        localizationType,
+        modalOverlay,
+        modalFind,
+        post_data = {},
+        modalList,
+        bodyElem = document.querySelector(&#039;body&#039;),
+        localizationUrl = serverUrl + &#039;localization/&#039;,
+        localizationZip = localizationUrl + &#039;member/zip-code/&#039;,
+        zipCode,
+        donate,
+        localizationData = {},
+        // localizationCss = [serverUrl + &#039;static/css/localization.css&#039;],
+        localizationCss = [&#039;@LOCALIZATION_CSS_URL@&#039; + &#039;css/localization.css&#039;],
+        ajax;
+    /***************************/
+    /* START Helping functions */
+    /***************************/
+    if(typeof trackEvent == &#039;undefined&#039;){
+        // tracking functions
+        window.trackEvent = function(target, action, label) {
+            if (typeof GTMDataLayer !== &quot;undefined&quot;) {
+                GTMDataLayer.push({
+                    &#039;event&#039; : &#039;GlobalChrome&#039;,
+                    &#039;category&#039; : target,
+                    &#039;action&#039; : action,
+                    &#039;label&#039; : label
+                });
+            }
+        }
+    }
+
+
+    // cookie related functions
+    function getDomainName(hostName) {
+        return hostName.substring(hostName.lastIndexOf(&quot;.&quot;, hostName.lastIndexOf(&quot;.&quot;) - 1));
+    }
+
+    function createCookie(name, value, days) {
+        var expires = &quot;&quot;,
+            domain = &quot;.pbs.org&quot;,
+            date;
+
+        if (days) {
+            date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            expires = &quot;; expires=&quot; + date.toGMTString();
+        }
+        if (window.location.hostname !== &quot;&quot;) {
+            domain = getDomainName(window.location.hostname);
+        }
+
+        document.cookie = name + &quot;=&quot; + value + expires + &quot;; path=/; domain=&quot; + domain;
+    }
+
+    function readCookie(name) {
+        var nameEQ = name + &quot;=&quot;,
+            ca = document.cookie.split(&#039;;&#039;),
+            i,
+            c;
+
+        for (i = 0; i &lt; ca.length; i += 1) {
+            c = ca[i];
+            while (c.charAt(0) === &#039; &#039;) {
+                c = c.substring(1, c.length);
+            }
+            if (c.indexOf(nameEQ) === 0) {
+                return c.substring(nameEQ.length, c.length);
+            }
+        }
+        return null;
+    }
+
+    function eraseCookie(name) {
+        createCookie(name, &quot;&quot;, -1);
+    }
+
+    function isInteger(number) {
+        var regex = /^-?\d+$/;
+        return regex.test(number);
+    }
+    /*************************/
+    /* END Helping functions */
+    /*************************/
+    // cookie monster
+    function cookieMonster(station) {
+        var pbsKidsImage = document.createElement(&#039;iframe&#039;);
+        pbsKidsImage.src = &#039;http://pbskids.org/localization/p.gif?pbs.station=&#039; + station;
+        pbsKidsImage.style.display = &#039;none&#039;;
+        document.body.appendChild(pbsKidsImage);
+    }
+
+    // localize user
+    function localizeUser(stationData) {
+        createCookie(&#039;pbsol.common.name&#039;, stationData.common_name, 356);
+        createCookie(&#039;pbsol.station&#039;, stationData.station, 356);
+        // set favorite station on pbs profile
+        if (window.PBS &amp;&amp; PBS.Profile) {
+            PBS.Profile.favoriteStations.add(stationData.station, stationData.zipCode);
+        }
+    }
+
+    function setDonateLink(donateLink){
+        var donateBtn = document.querySelector(&quot;.donate-btn&quot;);
+        if(donateBtn &amp;&amp; donateLink){
+            donateBtn.href = donateLink;
+        }
+    }
+
+    //set station logo for header
+    function setStationLogo(name, url, img_url) {
+        var stationName = document.querySelector(&#039;#pbs_loc_name&#039;),
+            img;
+
+        if(stationName){
+            img = stationName.querySelector(&#039;img&#039;);
+        }
+
+        if (!img) {
+            img = document.createElement(&#039;img&#039;);
+        }
+        img.src = img_url + &#039;.resize.160x78.png&#039;;
+        img.alt = name;
+
+        if (stationName) {
+            stationName.querySelector(&#039;span&#039;).innerHTML = name;
+            stationName.appendChild(img);
+            stationName.title = name;
+            stationName.href = url;
+            stationName.className = &quot;localize&quot;;
+        }
+    }
+
+    // change station logo
+    function changeStationLogo(logo) {
+        var logoHolder = document.querySelector(&#039;.modalStationImage&#039;);
+        logoHolder.innerHTML = &#039;&lt;img src=&quot;http://image.pbs.org/station-images/StationColorProfiles/color/&#039; + logo + &#039;.png.resize.106x106.png&quot; alt=&quot;&quot;&gt;&#039;;
+    }
+
+    function closest(el, fn) {
+        return el &amp;&amp; (
+            fn(el) ? el : closest(el.parentNode, fn)
+        );
+    }
+    // select station
+    function selectStation(evt) {
+        var stationItems = document.querySelectorAll(&#039;#autoStationsList .stationItem&#039;),
+            that = evt.target,
+            stationId,
+            stationElem;
+
+        Array.prototype.forEach.call(stationItems, function (el) {
+            el.jwRemoveClass(&#039;active&#039;);
+        });
+        // hightlight the current station item
+        stationElem = closest(that, function(el){return el.tagName.toLowerCase() === &#039;li&#039;;});
+        stationId = stationElem.id;
+        stationElem.jwAddClass(&quot;active&quot;);
+
+        changeStationLogo(stationId);
+    }
+
+    // toggles station elements
+    function toggleElements(state) {
+        var noStations = document.querySelectorAll(&#039;.localizationStationListNoStations&#039;),
+            hasStations = document.querySelectorAll(&#039;.localizationStationList&#039;);
+        if (!state) {
+            Array.prototype.forEach.call(noStations, function (el) {
+                el.jwRemoveClass(&#039;none&#039;);
+            });
+            Array.prototype.forEach.call(hasStations, function (el) {
+                el.jwAddClass(&#039;none&#039;);
+            });
+        } else if (state) {
+            Array.prototype.forEach.call(noStations, function (el) {
+                el.jwAddClass(&#039;none&#039;);
+            });
+            Array.prototype.forEach.call(hasStations, function (el) {
+                el.jwRemoveClass(&#039;none&#039;);
+            });
+        }
+    }
+
+    // Add stations
+    function addStations(data) {
+        var station,
+            stationHTML = &#039;&#039;,
+            stationsLength = Object.keys(data).length,
+            modalList = document.querySelector(&#039;#pbs-modal-window.pbs-stastions-list&#039;),
+            stationsSection = document.querySelector(&#039;#autoSelectStation&#039;),
+            stations = document.querySelector(&#039;#autoStationsList&#039;),
+            stationItems,
+            index;
+
+        toggleElements(true);
+        modalList.jwRemoveClass(&#039;oneStation&#039;);
+        modalList.jwRemoveClass(&#039;twoStation&#039;);
+
+        switch (stationsLength) {
+        case 0:
+            toggleElements(false);
+            trackEvent(trackingCategory, &#039;No Stations for Zip&#039;, &#039;viewed step&#039;);
+            break;
+        case 1:
+            modalList.jwAddClass(&#039;oneStation&#039;);
+            break;
+        case 2:
+            modalList.jwAddClass(&#039;twoStation&#039;);
+            break;
+        }
+        if (stationsLength &gt; 0){
+            trackEvent(trackingCategory, &#039;Confirm Station&#039;, &#039;Viewed Overlay&#039;);
+        }
+        for (index = 0; index &lt; data.length; index += 1) {
+            if (index === 0 &amp;&amp; data[index].flagship !== &#039;&#039;) {
+                changeStationLogo(data[index].flagship);
+                if (!setOnce &amp;&amp; localizationType === &#039;forced&#039;) {
+                    localizeUser({
+                        &#039;common_name&#039;: data[index].common_name_short,
+                        &#039;station&#039;: data[index].flagship,
+                        &#039;zipCode&#039;: zipCode
+                    });
+                    setOnce = true;
+                }
+            }
+
+            stationHTML += &#039;&lt;li id=&quot;&#039; + data[index].flagship + &#039;&quot; class=&quot;stationItem&#039; + (index === 0 ? &#039; active&#039; : &#039;&#039;) + &#039;&quot; data-donate_url=&quot;&#039; + data[index].membership_url + &#039;&quot; data-common_name=&quot;&#039; + data[index].common_name_short + &#039;&quot; data-zipcode=&quot;&#039; + zipCode + &#039;&quot;&gt;&#039;;
+            stationHTML += &#039;&lt;h3&gt;&lt;strong class=&quot;commonName&quot;&gt;&#039; + data[index].common_name + &#039;&lt;/strong&gt;&lt;strong class=&quot;shortCommonName&quot;&gt;&#039; + data[index].common_name_short + &#039;&lt;/strong&gt;&lt;/h3&gt;&#039;;
+            stationHTML += &#039;&lt;span&gt;&#039; + data[index].address + &#039;&lt;/span&gt;&#039;;
+            stationHTML += &#039;&lt;/li&gt;&#039;;
+        }
+        stations.innerHTML = stationHTML;
+        stationsSection.jwRemoveClass(&#039;none&#039;);
+        stationItems = stations.querySelectorAll(&#039;.stationItem&#039;);
+
+        // add event listeners for station items
+        Array.prototype.forEach.call(stationItems, function (el) {
+            el.addEventListener(&#039;click&#039;, selectStation);
+        });
+    }
+
+    // CSS SCRIPTS CALL FUNCTION
+    function loadStylesheets(urls) {
+        var link;
+
+        Array.prototype.forEach.call(urls, function (key) {
+            link = document.createElement(&quot;link&quot;);
+            link.rel = &quot;stylesheet&quot;;
+            link.type = &quot;text/css&quot;;
+            link.href = key;
+            document.head.appendChild(link);
+        });
+
+        filesLoaded = true;
+    }
+
+    // INSERT CONTENT
+    function insertContent(html) {
+        var container;
+
+        if (typeof html === &quot;undefined&quot;) {
+            throw &quot;No html has specified&quot;;
+        }
+
+        container = document.querySelector(&quot;#jaws_localization&quot;);
+        if (!container) {
+            container = document.createElement(&quot;div&quot;);
+            container.className = &quot;pbs-cleanslate&quot;;
+            container.id = &quot;jaws_localization&quot;;
+        }
+
+        container.innerHTML = html;
+
+        document.body.insertBefore(container, document.body.firstChild);
+    }
+
+
+    // switch between modals
+    function switchModals(state) {
+        var localization_widget;
+        // modals
+        modalFind = document.querySelector(&#039;#pbs-modal-window.pbs-find-stations&#039;);
+        modalList = document.querySelector(&#039;#pbs-modal-window.pbs-stastions-list&#039;);
+        switch (state) {
+        case &#039;list&#039;:
+            modalFind.jwAddClass(&#039;none&#039;);
+            modalList.jwRemoveClass(&#039;none&#039;);
+            break;
+        case &#039;find&#039;:
+            modalList.jwAddClass(&#039;none&#039;);
+            modalFind.jwRemoveClass(&#039;none&#039;);
+            trackEvent(trackingCategory, &#039;Find Station&#039;, &#039;viewed step&#039;);
+            break;
+        default:
+            modalList.jwAddClass(&#039;none&#039;);
+            modalFind.jwAddClass(&#039;none&#039;);
+            localization_widget = document.querySelector(&#039;#jaws_localization&#039;);
+            localization_widget.parentNode.removeChild(localization_widget);
+            bodyElem.style.overflow = &#039;auto&#039;;
+        }
+    }
+
+    // close stations modal
+    function close(evt) {
+        var that = evt.target,
+            selectedStation = document.querySelector(&#039;#autoStationsList .stationItem.active&#039;),
+            stationList = Array.prototype.slice.call(document.getElementById(&#039;autoStationsList&#039;).children);
+
+        function callback(){
+            if(redirect_to){
+                window.location.href = redirect_to;
+            }else{
+                location.reload();
+            }
+        }
+        if (that.getAttribute(&#039;class&#039;) === &#039;closeBtn&#039;) {
+            // autolocalization
+            if (localizationType === &#039;forced&#039;) {
+                if(selectedStation){
+                    trackEvent(trackingCategory, &#039;Close&#039;, selectedStation.getAttribute(&#039;id&#039;) + &#039; - &#039; + parseInt(stationList.indexOf(selectedStation) + 1));
+                }
+                else{
+                    if(document.querySelector(&#039;#autoStationsList .stationItem&#039;))
+                        trackEvent(trackingCategory, &#039;Find Station&#039;, &#039;Close&#039;);
+                    else
+                        trackEvent(trackingCategory, &#039;No Stations for Zip&#039;, &#039;Close&#039;);
+                    evt.preventDefault();
+                    callback();
+                    return false;
+                }
+                // reload
+                evt.preventDefault();
+                callback();
+            }
+            if (localizationType === &#039;manual&#039;) {
+                if(selectedStation){
+                    trackEvent(trackingCategory, &#039;Close&#039;, selectedStation.getAttribute(&#039;id&#039;) + &#039; - &#039; + parseInt(stationList.indexOf(selectedStation) + 1));
+                }
+                else{
+                    if(document.querySelector(&#039;#autoStationsList .stationItem&#039;) || document.querySelector(&#039;.localizationStationListNoStations&#039;).offsetHeight == 0)
+                        trackEvent(trackingCategory, &#039;Find Station&#039;, &#039;Close&#039;);
+                    else
+                        trackEvent(trackingCategory, &#039;No Stations for Zip&#039;, &#039;Close&#039;);
+                        //trackEvent(trackingCategory, &#039;Find Station&#039;, &#039;Close&#039;);
+                }
+                switchModals();
+            }
+            if(redirect_to){
+                window.location.href = redirect_to;
+            }
+        }
+
+        if (that.getAttribute(&#039;id&#039;) === &#039;confirmStation&#039;) {
+            //the following code will assure that the page doesn&#039;t go in infinite loop
+            //there&#039;s another piece of code somewhere that fires the click event
+            //lvl 100 wizard magic, event.detail means how many times the button has been pressed, 0 means it has been triggered by code
+            if(evt.detail == 0){
+            //here be dragons - lvl 101 dark elven magic - hack for IE 11, touch event
+                if(evt.pointerId != 1)
+                    return;
+            }
+            trackEvent(trackingCategory, &#039;Confirm&#039;, selectedStation.getAttribute(&#039;id&#039;) + &#039; - &#039; + parseInt(stationList.indexOf(selectedStation) + 1));
+
+            localizeUser({
+                &#039;common_name&#039; : selectedStation.getAttribute(&#039;data-common_name&#039;),
+                &#039;station&#039; : selectedStation.getAttribute(&#039;id&#039;),
+                &#039;zipCode&#039; : selectedStation.getAttribute(&#039;data-zipcode&#039;)
+            });
+
+            var confirmEvent; // The custom event that will be created
+
+            if (document.createEvent) {
+                confirmEvent = document.createEvent(&quot;HTMLEvents&quot;);
+                confirmEvent.initEvent(&quot;confirmStationEvent&quot;, true, true);
+            } else {
+                confirmEvent = document.createEventObject();
+                confirmEvent.eventType = &quot;confirmStationEvent&quot;;
+            }
+
+            confirmEvent.eventName = &quot;confirmStationEvent&quot;;
+            confirmEvent.data = {&quot;link&quot;: selectedStation.getAttribute(&#039;data-donate_url&#039;), &quot;confirmBtn&quot;: &quot;#&quot; + that.getAttribute(&#039;id&#039;), &quot;donate&quot;: donate};
+
+            var donate_location = &quot;@PBS_DONATE_URL@&quot;;
+
+            if (document.createEvent) {
+                that.dispatchEvent(confirmEvent);
+                if(donate == &quot;Donate&quot; &amp;&amp; location.href.indexOf(donate_location) != -1)
+                    return;
+            } else {
+                that.fireEvent(&quot;on&quot; + confirmEvent.eventType, confirmEvent);
+                if(donate == &quot;Donate&quot; &amp;&amp; location.href.indexOf(donate_location) != -1)
+                    return;
+            }
+            // reload
+            evt.preventDefault();
+            callback();
+        }
+    }
+
+    // localize by state
+    function localizeState() {
+        var state = document.querySelector(&#039;#regionSelect&#039;).value,
+            stateError = document.querySelector(&#039;#regionSelect&#039;).parentElement.querySelector(&#039;.errorMsg&#039;),
+            ajax;
+        stateError.jwAddClass(&quot;none&quot;);
+
+        if (state !== &#039;&#039;) {
+            trackEvent(trackingCategory, &#039;Find Station&#039;, &quot;Search by state - &quot; + state);
+            ajax = new Ajax({
+                url : localizationUrl + &#039;member/state/&#039; + state + &#039;/&#039;,
+                type : &#039;JSONP&#039; // GET, POST, JSON, JSONP
+            }, function (data) {
+                addStations(data.stations_list);
+                switchModals(&#039;list&#039;);
+            });
+        } else {
+            stateError.jwRemoveClass(&quot;none&quot;);
+            return false;
+        }
+    }
+
+    // localize by zip
+    function localizeZip() {
+        var zipValue = document.querySelector(&#039;#zipInput&#039;).value,
+            zipError = document.querySelector(&#039;#zipInput&#039;).parentElement.querySelector(&#039;.errorMsg&#039;),
+            zipCode = document.querySelector(&#039;#zipInput&#039;),
+            isValidZip = /(^\d{5}$)/.test(zipValue),
+            ajax;
+
+        zipError.jwAddClass(&quot;none&quot;);
+
+        if (zipValue === &quot;&quot;) {
+            zipError.innerHTML = &quot;Please enter a valid zip code&quot;;
+            zipError.jwRemoveClass(&quot;none&quot;);
+            return false;
+        }
+
+        if (!isValidZip) {
+            if (!isInteger(zipValue)) {
+                zipError.innerHTML = &#039;Zipcode is not numeric&#039;;
+                zipError.jwRemoveClass(&quot;none&quot;);
+                return false;
+            }
+
+            if (zipValue.toString().length &lt;= 4) {
+                zipError.innerHTML = &#039;Zipcode too short&#039;;
+                zipError.jwRemoveClass(&quot;none&quot;);
+                return false;
+            }
+        } else {
+            trackEvent(trackingCategory, &#039;Find Station&#039;, &quot;Search by zip - &quot; + zipValue);
+            ajax = new Ajax({
+                url : localizationUrl + &#039;member/zip-code/&#039; + zipValue + &#039;/&#039;,
+                type : &#039;JSONP&#039; // GET, POST, JSON, JSONP
+            }, function (data) {
+                addStations(data.stations_list);
+                switchModals(&#039;list&#039;);
+                zipCode = zipValue;
+            });
+        }
+    }
+
+    // Create the stations overlay
+    function createOverlay(state) {
+        var closeBtn,
+            confirmBtn,
+            moreStations,
+            searchByZip,
+            searchByState,
+            backBtn;
+        // insert the stations overlay
+        if (localizationData.localization_overlay !== &#039;&#039;) {
+            insertContent(localizationData.localization_overlay);
+
+            // the first station logo
+            if (localizationData.stations_list.length &gt; 0) {
+                // add stations to the overlay
+                addStations(localizationData.stations_list);
+            }
+            // close the modal
+            closeBtn = document.querySelectorAll(&#039;.closeBtn&#039;);
+            moreStations = document.querySelector(&#039;#moreStations&#039;);
+            confirmBtn = document.querySelector(&#039;#confirmStation&#039;);
+            modalOverlay = document.querySelector(&#039;#pbs-modal-overlay&#039;);
+            searchByZip = document.querySelector(&#039;#searchByZip&#039;);
+            searchByState = document.querySelector(&#039;#serchByRegion&#039;);
+            backBtn = document.querySelector(&#039;#backButton&#039;);
+            // close buttons event listener
+            Array.prototype.forEach.call(closeBtn, function (el) {
+                el.addEventListener(&#039;click&#039;, close);
+            });
+            // confirm button event listener
+            confirmBtn.addEventListener(&#039;click&#039;, close);
+            // more stations button event listener
+            moreStations.addEventListener(&#039;click&#039;, function (evt) {
+                var errors = document.querySelectorAll(&quot;.errorMsg&quot;),
+                    i;
+                for (i = 0; i &lt; errors.length; i += 1) {
+                    errors[i].jwAddClass(&quot;none&quot;);
+                }
+                switchModals(&#039;find&#039;);
+                document.querySelector(&#039;#autoStationsList .active&#039;).jwRemoveClass(&#039;active&#039;);
+                trackEvent(trackingCategory, &#039;More Stations&#039;, &#039;&#039;);
+                evt.preventDefault();
+            });
+            // zip code
+            searchByZip.addEventListener(&#039;click&#039;, localizeZip);
+            // state
+            searchByState.addEventListener(&#039;click&#039;, localizeState);
+            // back button
+            backBtn.addEventListener(&#039;click&#039;, function (evt) {
+                switchModals(&#039;find&#039;);
+                evt.preventDefault();
+            });
+            // select correct modal
+            switchModals(state);
+            bodyElem.style.overflow = &#039;hidden&#039;;
+        }
+    }
+
+    // autolocalization
+    function autolocalize() {
+        var url = localizationUrl + &#039;true/&#039;,
+            ajax;
+        if (stationCookie) {
+            url += &quot;?callsign=&quot; + stationCookie;
+        } else {
+            if (post_data &amp;&amp; post_data.extended) {
+                url += &#039;?extended=&#039; + JSON.stringify(post_data);
+            }
+        }
+
+        ajax = new Ajax({
+            url : url,
+            type : &#039;JSONP&#039; // GET, POST, JSON, JSONP
+        }, function (data) {
+            localizationData = data;
+            localizationType = &#039;forced&#039;;
+            zipCode = data.zip;
+            var callsign = localizationData.stations_list[0].common_name_short;
+
+            // prevents other overlays such as lightboxes this sesion
+            createCookie(&quot;pbs.preventOverlays&quot;, 1, 0);
+
+            createOverlay(&#039;list&#039;);
+
+        });
+    }
+
+    // manual localization
+    function init(popup_location, redirect_url) {
+        redirect_to = redirect_url || null;
+        popup_location = popup_location || &#039;&#039;; // optional parameter
+        donate = popup_location;
+        trackingCategory = &quot;See more Stations – Localization Overlay&quot;;
+        var url = localizationUrl + &#039;true/&#039;,
+            ajax;
+
+        if (stationCookie) {
+            if (post_data &amp;&amp; post_data.extended) {
+                url += &#039;?extended=&#039; + JSON.stringify(post_data);
+            } else {
+                url += &quot;?callsign=&quot; + stationCookie;
+            }
+            if (popup_location == &#039;Donate&#039; || popup_location == &#039;TVSchedules&#039;) {
+                url += &#039;&amp;popup_location=&#039; + popup_location;
+            }
+        }
+        else {
+            if (popup_location == &#039;Donate&#039; || popup_location == &#039;TVSchedules&#039;) {
+                url += &#039;?popup_location=&#039; + popup_location;
+            }
+        }
+
+        ajax = new Ajax({
+            url : url,
+            type : &#039;JSONP&#039; // GET, POST, JSON, JSONP
+        }, function (data) {
+            localizationData = data;
+            localizationType = &#039;manual&#039;;
+            zipCode = data.zip;
+            if (staExtended) {
+	            createOverlay(&#039;list&#039;);
+            } else {
+                createOverlay(&#039;find&#039;);
+            }
+        });
+    }
+
+    staExtended = readCookie(&#039;pbsol.sta_extended&#039;);
+    kidsCookie = readCookie(&#039;pbskids.localized&#039;);
+    stationCookie = readCookie(&#039;pbsol.station&#039;);
+
+    function processStaExtendedCookie(key) {
+        var cookieData = staExtended,
+            cookieArray = decodeURIComponent(cookieData).split(&#039;#&#039;),
+            regex = new RegExp(&quot;^&quot; + key + &quot;=&quot;, &quot;g&quot;),
+            data;
+
+        Array.prototype.forEach.call(cookieArray, function (v) {
+            if (regex.test(v)) {
+                var temp = v.split(&#039;=&#039;);
+                data = temp[1];
+                data = data.replace(&#039;[&#039;, &#039;&#039;);
+                data = data.replace(&#039;]&#039;, &#039;&#039;);
+                data = data.replace(/&quot;/g, &#039;&#039;);
+                data = data.split(&#039;,&#039;);
+            }
+        });
+
+        return data;
+    }
+
+    if (staExtended) {
+        post_data.extended = {
+            zip: processStaExtendedCookie(&quot;z&quot;)[0],
+            state: processStaExtendedCookie(&quot;st&quot;)[0],
+            stations: processStaExtendedCookie(&quot;s&quot;)
+        };
+    }
+
+    // localize
+    if (!window.hide_forced_localization) {
+        if (!window.skipAutoLocalization) {
+            if (staExtended &amp;&amp; !stationCookie) {
+                autolocalize();
+            }
+        }
+    }
+    if (stationCookie) {
+        post_data.callsign = stationCookie;
+        ajax = new Ajax({
+            url : localizationUrl + &quot;false/?callsign=&quot; + stationCookie,
+            type : &#039;JSONP&#039; // GET, POST, JSON, JSONP
+        }, function (data) {
+            var site_address = data.station.site_address || data.station.stationfinder_url;
+            setStationLogo(data.station.short_name, site_address, data.station.logo_url);
+            setDonateLink(data.station.membership_url);
+        });
+    }
+    if (stationCookie &amp;&amp; stationCookie !== kidsCookie) {
+        cookieMonster(stationCookie);
+        createCookie(&#039;pbskids.localized&#039;, stationCookie, 30);
+    }
+    // load necesarry files
+    if (!filesLoaded) {
+        loadStylesheets(localizationCss);
+    }
+    return {
+        init : init
+    };
+}());
+// This needs to be deleted after we will make the changes in PBS ACTIVATE, VideoPortal and PBS projects
+var GlobalChrome = {
+    &#039;Localization&#039; : {
+        &#039;Init&#039; : function () {
+            &#039;use strict&#039;;
+            JAWS.Localization.init();
+        }
+    }
+};</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>
