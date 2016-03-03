@@ -1,7 +1,6 @@
 #!/usr/bin/node
 
 'use strict';
-var proc = require('child_process');
 var execSync = require('sync-exec');
 
 var reports = require('./src/plato-reports');
@@ -33,7 +32,5 @@ if(require.main == module){
         execSync(cloneCmd, {cwd: projectsDir});
         reports.runPlato(project, projectsDir);
     });
-
-    var today = (new Date()).toLocaleDateString();
 }
 
