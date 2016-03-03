@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - js/jquery.pbs.user.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>js/jquery.pbs.user.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">64.37</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">336</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">40.29</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.84</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/*globals document, jQuery, window, PBS, jwSettings, jwplayer, $*/
+// check if global PBS object exists
+
+if (!window.PBS) {
+    window.PBS = {};
+}
+
+PBS.User = (function () {
+    &#039;use strict&#039;;
+    var userData = {},
+        videosInPage,
+        playlistVideos,
+        currentPage = document.querySelector(&#039;.pageContainer&#039;).getAttribute(&#039;id&#039;);
+
+	// returns is logged in
+    function isLoggedIn() {
+        return userData.has_uid;
+    }
+    // adds bubble for the add to watchlist videos
+    function addWatchlistCount(total) {
+        if ($(&#039;.bubble&#039;).length === 0) {
+            $(&#039;.bubbleHolder&#039;).append(&#039;&lt;span class=&quot;bubble&quot;&gt;&#039; + total + &#039;&lt;/span&gt;&#039;);
+        }
+    }
+	// sing in user template
+    function userInfoTemplate(data) {
+        var template = &#039;&#039;;
+        template += &#039;&lt;div class=&quot;userContainer&quot;&gt;&#039;;
+        if (data.profile_photo_url) {
+            template += &#039;&lt;img src=&quot;&#039; + data.profile_photo_url + &#039;&quot;/&gt;&#039;;
+        }
+            template += &#039;&lt;div class=&quot;userInfo&quot;&gt;&#039;;
+                template += &#039;Welcome, &lt;strong&gt;&#039; + data.profile_display_name + &#039;&amp;nbsp;&amp;nbsp;&#039;;
+            if (data.has_plus_membership) {
+                template += &#039;&lt;span class=&quot;inline-plus user-plus&quot;&gt;&lt;/span&gt;&#039;;
+            }
+                template += &#039;&lt;/strong&gt;&#039;;
+            template += &#039;&lt;/div&gt;&#039;;
+            template += &#039;&lt;div class=&quot;socialContainer&quot;&gt;&#039;;
+                template += &#039;&lt;span class=&quot;sign-out&quot;&gt;&lt;a href=&quot;javascript:PBS.Profile.logOut();&quot;&gt;Sign Out&lt;/a&gt;&lt;/span&gt;&#039;;
+            template += &#039;&lt;/div&gt;&#039;;
+        template += &#039;&lt;/div&gt;&#039;;
+
+        return template;
+    }
+    // add the help message
+	function addHelpMessage() {
+        var target = document.querySelector(&#039;#kidsShop&#039;),
+            message = document.querySelector(&#039;#mvodVideoIssues&#039;);
+
+        if (!message) {
+            if (target) {
+                target.insertAdjacentHTML(&#039;beforebegin&#039;, &#039;&lt;h5 id=&quot;mvodVideoIssues&quot;&gt;Having problems with Passport videos? Get support at &lt;a href=&quot;http://help.pbs.org&quot; target=&quot;_blank&quot;&gt;help.pbs.org&lt;/a&gt;.&lt;/h5&gt;&#039;);
+            }
+        }
+    }
+    // toggle favorite/featured programs carousel
+    function toggleFavorite(show) {
+        var showFeaturedHome = $(&quot;#showFeaturedHome&quot;),
+            showFavoriteHome = $(&quot;#showFavoriteHome&quot;),
+            favoritePrograms = $(&quot;#favoriteProgramsContainer&quot;),
+            featuredPrograms = $(&quot;#featuredProgramsContainer&quot;);
+
+        if (show) {
+            favoritePrograms.show();
+            featuredPrograms.hide();
+            showFeaturedHome.addClass(&quot;linkAvailable&quot;);
+            showFavoriteHome.removeClass(&quot;linkAvailable&quot;);
+        } else {
+            favoritePrograms.hide();
+            featuredPrograms.show();
+            showFeaturedHome.removeClass(&quot;linkAvailable&quot;);
+            showFavoriteHome.addClass(&quot;linkAvailable&quot;);
+        }
+    }
+
+    /*globals window*/
+    function homePage(data) {
+        var showFeaturedHome = $(&quot;#showFeaturedHome&quot;),
+            showFavoriteHome,
+            continue_watching = data.continue_watching,
+            favorite_programs = data.favorite_programs;
+
+        //  add continue watching videos
+        if (continue_watching) {
+            $(&#039;#continueWatchingHome&#039;).html(continue_watching);
+        }
+        // add favorite programs
+        // if (favorite_programs) {
+        //     $(&#039;#featuredFavoriteProgramsContainer h2&#039;).append(&#039;&lt;span id=&quot;showFavoriteHome&quot; class=&quot;linkAvailable&quot;&gt;Favorite Programs&lt;/span&gt;&#039;);
+        //     $(&#039;#favoriteProgramsContainer&#039;).html(favorite_programs);
+        // }
+        showFavoriteHome = $(&quot;#showFavoriteHome&quot;);
+
+        showFavoriteHome.on(&quot;click&quot;, function () { toggleFavorite(true); });
+        showFeaturedHome.on(&quot;click&quot;, function () { toggleFavorite(false); });
+
+        toggleFavorite(false);
+    }
+    // update the favorite program / only program page
+    function programPage(data) {
+        var currentProgram = $(&#039;.pageContainer&#039;).data(&#039;program&#039;),
+            favorite_programs_slugs = data.favorite_program_slugs;
+
+        // update the favorite program
+        if (currentProgram !== &#039;&#039;) {
+            if (favorite_programs_slugs.indexOf(currentProgram) !== -1) {
+                $(&#039;#programFavAnchorRemove&#039;).css(&#039;display&#039;, &#039;block&#039;);
+                $(&#039;#programFavAnchor&#039;).hide();
+            }
+        }
+    }
+    // update the add to favorite signs for in page video items
+    function updateFavoriteVideos(data) {
+        var elem = $(&quot;.videoList&quot;).find(&quot;[data-id=&#039;&quot; + data + &quot;&#039;]&quot;).find(&#039;.nav-icon&#039;);
+
+        if (elem.length &gt; 0) {
+            elem.removeClass(&#039;plus&#039;)
+                .addClass(&#039;minus&#039;)
+                .html(&#039;&amp;nbsp;&#039;);
+        }
+    }
+    // update favorite video / only video page
+    function videoPage(data) {
+        var currentVideo = (window.location.pathname).replace(/\D/g, &#039;&#039;),
+            favorite_videos = userData.favorite_video_ids,
+            total_favorite_videos = favorite_videos.length;
+
+        if ($(&#039;#hdNotification&#039;).length &gt; 0) {
+            $(&#039;#hdNotification&#039;).hide();
+        }
+        if (total_favorite_videos &gt; 0) {
+            if (favorite_videos.indexOf(currentVideo.toString()) !== -1) {
+                $(&#039;#pageDescription .watchlistAdd&#039;).find(&#039;span&#039;)
+                    .html(&#039;&amp;nbsp;&#039;)
+                    .removeAttr(&#039;class&#039;)
+                    .addClass(&#039;nav-icon minus&#039;);
+            } else {
+                if (PBS.hasOwnProperty(&#039;videoPage&#039;)) {
+                    PBS.videoPage.setAddToWatchlistParams(true);
+                }
+            }
+        }
+    }
+    // watchlist page
+    function watchlistPage() {
+        $(&#039;#loggedIn&#039;).show();
+        $(&quot;#notLoggedIn&quot;).hide();
+    }
+
+    function updateUserData(data) {
+        var userTemplate = userInfoTemplate(data),
+            favorite_videos = userData.favorite_video_ids,
+            total_favorite_videos = favorite_videos.length;
+
+        if (total_favorite_videos &gt; 0) {
+            addWatchlistCount(total_favorite_videos);
+        }
+
+		// add user info (name, picture, sing in/out)
+        $(&#039;.userInfo&#039;).html(userTemplate);
+    }
+
+    function processFavoriteVideosData() {
+        var favorite_videos = userData.favorite_video_ids,
+            videoId,
+            key,
+            inPageIds = [];
+
+        videosInPage = $(&#039;.videoItem&#039;);
+
+		if (userData.hasOwnProperty(&#039;favorite_video_ids&#039;)) {
+            if (favorite_videos.length &gt; 0 &amp;&amp; currentPage !== &#039;watchlist&#039;) {
+                // get all the video ids from the current page
+                if (videosInPage.length &gt; 0) {
+                    videosInPage.each(function (index, obj) {
+                        inPageIds[index] = $(obj).data(&#039;id&#039;);
+                    });
+
+                    // get the index of the video item that need to be updated
+                    for (key in inPageIds) {
+                        if (inPageIds.hasOwnProperty(key)) {
+                            videoId = inPageIds[key].toString();
+                            if (favorite_videos.indexOf(videoId) !== -1) {
+                                updateFavoriteVideos(videoId);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    function updatePage(data) {
+        switch (currentPage) {
+        case &#039;home&#039;:
+            homePage(data);
+            break;
+        case &#039;video&#039;:
+            videoPage(data);
+            break;
+        case &#039;individualProgram&#039;:
+            programPage(data);
+            break;
+        case &#039;watchlist&#039;:
+            watchlistPage();
+            break;
+        }
+        PBS.MobileWeb.alternateContainerClass();
+    }
+
+    function createPlayList(ids) {
+        var currentVideoId = (window.location.pathname).replace(/\D/g, &#039;&#039;),
+            currentIndex = ids.indexOf(currentVideoId),
+            totalVideos = ids.length,
+            playlistTemplate = &#039;&#039;,
+            target = document.querySelector(&#039;#frame&#039;),
+            playlist = document.querySelector(&#039;#playlistHandler&#039;);
+
+        if (playlist) {
+            playlist.parentNode.removeChild(playlist);
+        }
+
+        if (currentIndex !== -1 &amp;&amp; totalVideos &gt; 1) {
+            playlistTemplate += &#039;&lt;div id=&quot;playlistHandler&quot; &#039; + ((currentIndex === 0) ? &#039;class=&quot;noPrev&quot;&#039; : &#039;&#039;) + &#039;&gt;&#039;;
+            if (currentIndex !== 0) {
+                playlistTemplate += &#039;&lt;a href=&quot;javascript:redirectAtEndOfPlaylist=false; playlistDirectionForward = false; PBS.videoPage.loadNewVideo(&#039; + ids[currentIndex - 1] + &#039;);&quot; id=&quot;prevInPlaylist&quot; class=&quot;navigatePlaylist flLeft&quot;&gt;&lt;span class=&quot;blueArrow-left&quot;&gt;&lt;/span&gt; Prev&lt;span class=&quot;hide break480&quot;&gt;ious&lt;/span&gt; &lt;span class=&quot;hide break768&quot;&gt;Video&lt;/span&gt;&lt;/a&gt;&#039;;
+            }
+            playlistTemplate += &#039;&lt;span class=&quot;boldText&quot;&gt;&lt;span class=&quot;break320&quot;&gt;Playing &lt;/span&gt;&lt;span class=&quot;hide break600&quot;&gt;your &lt;a href=&quot;/watchlist/&quot;&gt;Watchlist &lt;/a&gt;&lt;/span&gt;&lt;/span&gt;: Video &#039;;
+            playlistTemplate += &#039;&lt;span id=&quot;currentInPlaylist&quot;&gt;&#039; + (currentIndex + 1) +  &#039;&lt;/span&gt; of &#039;;
+            playlistTemplate += &#039;&lt;span id=&quot;totalInPlaylist&quot;&gt;&#039; + totalVideos + &#039;&lt;/span&gt;&#039;;
+            if ((currentIndex + 1) !== totalVideos) {
+                playlistTemplate += &#039;&lt;a href=&quot;javascript: playlistDirectionForward=true; PBS.videoPage.loadNewVideo(&#039; + ids[currentIndex + 1] + &#039;)&quot; id=&quot;nextInPlaylist&quot; class=&quot;navigatePlaylist flRight&quot;&gt;Next &lt;span class=&quot;hide break768&quot;&gt;Video&lt;/span&gt;&lt;span class=&quot;blueArrow-right&quot;&gt;&lt;/span&gt;&lt;/a&gt;&#039;;
+            }
+            playlistTemplate += &#039;&lt;/div&gt;&#039;;
+
+            target.insertAdjacentHTML(&#039;afterend&#039;, playlistTemplate);
+
+            if ( currentIndex + 1 === totalVideos ) {
+               redirectAtEndOfPlaylist = true;
+            } else {
+                redirectAtEndOfPlaylist = false;
+            }
+        }
+    }
+    function removePlaylist() {
+        var playlist = document.querySelector(&#039;#playlistHandler&#039;);
+        if ( playlist )
+            playlist.parentNode.removeChild(playlist); // because IE11 does not just support .remove();
+    }
+
+    function playNextInPlaylist() {
+        if (!Array.isArray(playlistVideos)) {
+            return;
+        }
+        var currentVideoId = (window.location.pathname).replace(/\D/g, &#039;&#039;),
+            currentIndex = playlistVideos.indexOf(currentVideoId),
+            totalVideos = playlistVideos.length;
+
+        if ((currentIndex + 1) !== totalVideos &amp;&amp; playlistVideos[currentIndex + 1]) {
+            PBS.videoPage.loadNewVideo(playlistVideos[currentIndex + 1]);
+        }
+        else {
+           // reached the end of playlist
+           window.location.href = &quot;/watchlist/&quot;;
+        }
+    }
+
+    function playPrevInPlaylist() {
+        if (!Array.isArray(playlistVideos)) {
+            return;
+        }
+        var currentVideoId = (window.location.pathname).replace(/\D/g, &#039;&#039;),
+            currentIndex = playlistVideos.indexOf(currentVideoId),
+            totalVideos = playlistVideos.length;
+
+        if ((currentIndex - 1) !== totalVideos &amp;&amp; playlistVideos[currentIndex -1]) {
+            PBS.videoPage.loadNewVideo(playlistVideos[currentIndex -1]);
+        } else {
+           // reached the begining of playlist or the video is undefined
+           window.location.href = &quot;/watchlist/&quot;;
+        }
+    }
+
+
+
+    function init() {
+        $.ajax({
+            url: &#039;/userdata/&#039;,
+            data : (currentPage === &#039;home&#039; ? { &#039;p&#039; : &#039;home&#039; } : {})
+        }).done(function (data) {
+            if (data.has_uid) {
+                // add help message for members that have a plus membership
+                if (data.hasOwnProperty(&#039;has_plus_membership&#039;) &amp;&amp; data.has_plus_membership) {
+                    addHelpMessage();
+                } else if (currentPage === &#039;home&#039; &amp;&amp; $(&#039;.expiringHome&#039;)) {
+                    $(&#039;.expiringHome&#039;).show();
+                }
+                userData = data;
+                updateUserData(data);
+                // update content based on the current page
+                updatePage(data);
+                if (currentPage !== &#039;video&#039;) {
+                    processFavoriteVideosData(data);
+                }
+                if (currentPage === &#039;video&#039;) {
+                    if ( PBS.Helper.getUrlVar(&#039;playlist&#039;) &amp;&amp; typeof jwSettings !== &#039;undefined&#039;) {
+                        if (jwSettings.playerType === &#039;portal&#039; &amp;&amp; data.favorite_video_ids.length &gt; 0) {
+                            createPlayList(data.favorite_video_ids);
+                            playlistVideos = data.favorite_video_ids;
+                        } else {
+                            removePlaylist();
+                        }
+                    } else {
+                        removePlaylist();
+                    }
+                }
+            } else {
+                $(&#039;.socialContainer&#039;).html(&#039;&lt;span class=&quot;sign-in&quot;&gt;&lt;a href=&quot;javascript:PBS.Profile.signIn(\&#039;LNK\&#039;, \&#039;Nav Link\&#039;, \&#039;sign-in\&#039;);&quot;&gt;Sign In&lt;/a&gt;&lt;/span&gt;&#039;);
+                if (currentPage === &#039;home&#039; &amp;&amp; $(&#039;.expiringHome&#039;)) {
+                    $(&#039;.expiringHome&#039;).show();
+                }
+            }
+        }).error(function (data) {
+            $(&#039;.socialContainer&#039;).html(&#039;&lt;span class=&quot;sign-in&quot;&gt;&lt;a href=&quot;javascript:PBS.Profile.signIn(\&#039;LNK\&#039;, \&#039;Nav Link\&#039;, \&#039;sign-in\&#039;);&quot;&gt;Sign In&lt;/a&gt;&lt;/span&gt;&#039;);
+        });
+    }
+
+    init();
+
+    return {
+        init : init,
+        isLoggedIn : isLoggedIn,
+        processFavoriteVideosData : processFavoriteVideosData,
+        playNextInPlaylist : playNextInPlaylist,
+        playPrevInPlaylist : playPrevInPlaylist
+    };
+
+}());</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>
