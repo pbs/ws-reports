@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - js/jquery.pbs.videoPage.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>js/jquery.pbs.videoPage.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">61.75</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">478</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">40.78</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">5.45</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/*globals PBS, $, window, history, station_portal_short_common, STATIC_URL, document*/
+/*jslint regexp: true*/
+
+if (!window.PBS) {
+    window.PBS = {};
+}
+
+PBS.videoPage = (function () {
+    &#039;use strict&#039;;
+    var PROGRAM, TITLE, AIRDATE, EXPIREDATE, RATING,
+        DESCRIPTION, FUNDER, POSTER, ALLOW, RELATED_LINKS, LEARNMORE,
+        CHANGECONTENT, CHAPTERS, VIDEOID, ITUNES, DVD, ISFAVORITE, DURATION, IS_MVOD,
+        SELECTORS = {
+            title : &#039;#pageDescription .title&#039;,
+            program : &#039;#pageDescription .program a&#039;,
+            airDate : &#039;#pageDescription .airDate&#039;,
+            duration : &#039;#pageDescription .duration&#039;,
+            expirationDate : &#039;#pageDescription .expireDate&#039;,
+            rating : &#039;#pageDescription .rating&#039;,
+            description : &#039;#pageDescription .description&#039;,
+            nola : &#039;#pageDescription .videoAd&#039;,
+            embedSection : &#039;#embed-video&#039;,
+            embedTitle : &#039;#embed-video .embed-title&#039;,
+            embedDescription : &#039;#embed-video .embed-description&#039;,
+            chaptersCarousel : &#039;#chapterCarouselHolder&#039;,
+            chaptersCarouselImage : &#039;#chapterCarouselPoster&#039;,
+            watchListAdd : &#039;#pageDescription .watchlistAdd&#039;,
+            relatedLinks : &#039;#pageDescription .episodeLinks&#039;,
+            relatedContent : &#039;#relatedVideos&#039;,
+            iTunes : &#039;#iTunesLink&#039;,
+            buyDVD : &#039;#buyDVDLink&#039;,
+            videoProblem : &#039;#videoProblemModalWindow&#039;,
+            mvod : &#039;#mvod_container&#039;
+        },
+        LOCATION = window.location.protocol + &#039;//&#039; +
+        window.location.hostname +
+        window.location.pathname +
+        window.location.search,
+        CURRENTID = (window.location.pathname).replace(/\D/g, &#039;&#039;),
+        SHORT_DESC,
+        GATRACKVIDEOLABEL;
+
+    function setAddToWatchlistParams(state) {
+        $(SELECTORS.watchListAdd).find(&#039;a&#039;)
+                                .attr(&#039;data-videoid&#039;, VIDEOID)
+                                .attr(&#039;data-title&#039;, TITLE)
+                                .attr(&#039;data-programtitle&#039;, PROGRAM);
+
+        if (state) {
+            $(SELECTORS.watchListAdd).find(&#039;span&#039;)
+                                .html(&#039;ADD&#039;)
+                                .removeAttr(&#039;class&#039;)
+                                .addClass(&#039;nav-icon plus&#039;);
+        }
+    }
+
+    function replaceIfValid(selector, val, extra) {
+
+        if (val) {
+            if (!$(selector).is(&#039;:visible&#039;)) {
+                $(selector).show();
+            }
+            $(selector).html(extra + val);
+        } else {
+            $(selector).hide();
+        }
+    }
+
+    function nolaGenerator() {
+        var iframe,
+            ord = Math.random() * 1000000000000,
+            nolaAd,
+            src;
+
+        src = &#039;/js_nola.html/?ord=&#039; + ord +
+                &#039;&amp;nola_root=&#039; + FUNDER.nola_root +
+                &#039;&amp;nola_episode=&#039; + FUNDER.nola_episode;
+
+        iframe = document.createElement(&#039;IFRAME&#039;);
+        iframe.id = &#039;nola_iframe&#039;;
+        iframe.setAttribute(&#039;src&#039;, src);
+        document.body.appendChild(iframe);
+
+        $(&#039;#nola_iframe&#039;).load(function () {
+            nolaAd = $(&#039;#nola_iframe&#039;).contents().find(&#039;body&#039;).html();
+            $(SELECTORS.nola).html(nolaAd);
+            $(&#039;#nola_iframe&#039;).remove();
+        });
+    }
+
+    function generateRelatedLinks(links) {
+        var link,
+            html = &#039;&#039;;
+
+        for (link in links) {
+            if (links.hasOwnProperty(link)) {
+                html += &#039;&lt;li&gt;&lt;a href=&quot;&#039; + links[link].url + &#039;&quot;&gt;&#039; +
+                            links[link].title + &#039;&lt;/a&gt;&lt;/li&gt;&#039;;
+            }
+        }
+
+        $(SELECTORS.relatedLinks).html(html);
+    }
+
+    function generateLearMore(related) {
+        var template = &#039;&lt;h3&gt;LEARN MORE&lt;/h3&gt;&#039;;
+        $.ajax({
+            type: &#039;GET&#039;,
+            url: &#039;/js_video_learn_more/&#039;,
+            data: {
+                results: JSON.stringify(related)
+            },
+            contentType: &#039;application/json; charset=utf-8&#039;,
+            success: function (data) {
+                $(SELECTORS.relatedContent).html(template + data);
+            }
+        });
+    }
+
+    function updateEmbedCarousel(chapters) {
+        // delete current chapter plugin
+        if (chapters) {
+            $(&#039;.chapter-carousel&#039;).chapterCarousel.destroy();
+        }
+        // load new carousel data if exists
+        $.ajax({
+            type: &#039;GET&#039;,
+            url: &#039;/chapter_carousel/&#039;,
+            data: {
+                chapters: JSON.stringify(chapters)
+            },
+            contentType: &#039;application/json; charset=utf-8&#039;,
+            success: function (data) {
+                $(SELECTORS.chaptersCarousel).show();
+                $(SELECTORS.chaptersCarousel).html(data);
+                $(SELECTORS.embedTitle).html(TITLE);
+                $(SELECTORS.embedDescription).html(SHORT_DESC);
+                // update embed text
+                PBS.Helper.updateEmbedDimensions(&#039;#embed-video&#039;, VIDEOID);
+            }
+        });
+    }
+
+    function reportVideoProblem() {
+        var obj = {
+                id : (window.location.pathname).replace(/\D/g, &#039;&#039;),
+                title : $(&#039;h2.title&#039;).html()
+            };
+        // initiate video playback feedback modal window plugin
+        if (!$(SELECTORS.videoProblem).hasClass(&#039;initiated&#039;)) {
+            $(SELECTORS.videoProblem).modalPlayBack();
+        }
+        // get the new
+        $.fn.modalPlayBack.getData(obj);
+        // show modal window
+        $.fn.modalPlayBack.show();
+    }
+
+    function metaUpdater() {
+        var station = (station_portal_short_common || &#039;PBS&#039;),
+            pageTitle = &#039;Video: &#039; + TITLE + &#039; | Watch &#039; + PROGRAM +
+                        &#039; Online | &#039; + station + &#039; Video&#039;,
+            pageDesc = DESCRIPTION + &#039; Watch online: &#039; + TITLE + &#039; from &#039; +
+                        PROGRAM + &#039;. On demand, streaming video from &#039; +
+                        station,
+            newPageUrl = window.location.protocol + &#039;//&#039; +
+                                window.location.hostname +
+                                window.location.pathname +
+                                window.location.search;
+
+        // update page title
+        document.title = pageTitle;
+        // remove and update page meta description
+        $(&#039;meta[name=description]&#039;).remove();
+        $(&#039;head&#039;).append(&#039;&lt;meta name=&quot;description&quot; content=&quot;&#039; +
+                                                    pageDesc + &#039;&quot;&gt;&#039;);
+        // Facebook og meta update
+        $(&#039;meta[property=&quot;og:title&quot;]&#039;).remove();
+        $(&#039;meta[property=&quot;og:description&quot;]&#039;).remove();
+        $(&#039;meta[property=&quot;og:url&quot;]&#039;).remove();
+        $(&#039;meta[property=&quot;og:image&quot;]&#039;).remove();
+        $(&#039;meta[property=&quot;og:image:secure_url&quot;]&#039;).remove();
+        $(&#039;head&#039;).append(&#039;&lt;meta property=&quot;og:title&quot; content=&quot;&#039; +
+                                                        pageTitle + &#039;&quot;&gt;&#039;);
+        $(&#039;head&#039;).append(&#039;&lt;meta property=&quot;og:description&quot; content=&quot;&#039; +
+                                                        pageDesc + &#039;&quot;&gt;&#039;);
+        $(&#039;head&#039;).append(&#039;&lt;meta property=&quot;og:url&quot; content=&quot;&#039; +
+                                                        newPageUrl + &#039;&quot;&gt;&#039;);
+        $(&#039;head&#039;).append(&#039;&lt;meta property=&quot;og:image&quot; content=&quot;&#039; +
+                                                        POSTER + &#039;&quot;&gt;&#039;);
+        $(&#039;head&#039;).append(&#039;&lt;meta property=&quot;og:image:secure_url&quot; content=&quot;&#039; +
+                                POSTER.replace(&#039;http&#039;, &#039;https&#039;) + &#039;&quot;&gt;&#039;);
+        // Twitter meta update
+        $(&#039;meta[property=&quot;twitter:image&quot;]&#039;).remove();
+        $(&#039;head&#039;).append(&#039;&lt;meta property=&quot;twitter:image&quot; content=&quot;&#039; +
+                                                    POSTER + &#039;&quot;&gt;&#039;);
+        //  track page view events
+        PBS.GA.trackPageview();
+        PBS.UGA.trackPageView();
+    }
+
+    function getGATrackVideoLabel() {
+        var trackLabel = PROGRAM + &#039; | &#039; + TITLE + &#039; | &#039; + VIDEOID;
+        return trackLabel;
+    }
+
+    function embedShare() {
+        PBS.GA.trackEvent(&#039;Video - Portal&#039;, &#039;Embed Menu&#039;, GATRACKVIDEOLABEL);
+    }
+
+    function facebookShare() {
+        PBS.GA.trackEvent(&#039;Video - Portal&#039;, &#039;Facebook Post&#039;,
+                                                            GATRACKVIDEOLABEL);
+        window.open(&#039;http://www.facebook.com/sharer.php?u=&#039; +
+                                LOCATION, &#039;&#039;,
+                                &#039;width=420,height=320,location=0,menubar=0,&#039; +
+                                &#039;scrollbars=0,status=1,resizable=0&#039;);
+    }
+
+    function twitterShare() {
+        PBS.GA.trackEvent(&#039;Video - Portal&#039;, &#039;Twitter Post&#039;, GATRACKVIDEOLABEL);
+        window.open(&#039;http://twitter.com/share?text=&#039; +
+                                encodeURIComponent(TITLE) +
+                                &#039;&amp;url=&#039; + LOCATION, &#039;&#039;,
+                                &#039;width=420,height=320,location=0,menubar=0,&#039; +
+                                &#039;scrollbars=0,status=1,resizable=0&#039;);
+    }
+
+    function emailShare() {
+        PBS.GA.trackEvent(&#039;Video - Portal&#039;, &#039;Email Sent&#039;, GATRACKVIDEOLABEL);
+        window.location.href = &#039;mailto:?body=I thought you might like this : &#039; +
+                            LOCATION;
+    }
+
+    function googleShare() {
+        PBS.GA.trackEvent(&#039;Video - Portal&#039;, &#039;Google+ Post&#039;, GATRACKVIDEOLABEL);
+        window.open(&#039;https://plus.google.com/share?url=&#039; +
+                    LOCATION, &#039;&#039;,
+                    &#039;width=420,height=320,location=0,menubar=0,&#039; +
+                    &#039;scrollbars=0,status=1,resizable=0&#039;);
+    }
+
+    function updateBuyLinks(type) {
+        if (type === &#039;itunes&#039;) {
+            $(SELECTORS.iTunes).find(&#039;a&#039;).attr(&#039;href&#039;, ITUNES);
+            PBS.GA.trackEvent(&#039;Video - Portal&#039;, &#039;iTunes&#039;, GATRACKVIDEOLABEL);
+        }
+        if (type === &#039;dvd&#039;) {
+            $(SELECTORS.buyDVD).find(&#039;a&#039;).attr(&#039;href&#039;, DVD);
+            PBS.GA.trackEvent(&#039;Video - Portal&#039;, &#039;shopPBS&#039;, GATRACKVIDEOLABEL);
+        }
+    }
+
+    function passThroughIts(file, type, size) {
+        var ext = file.split(&#039;.&#039;).pop();
+        return file + &#039;.&#039; + type + &#039;.&#039; + size + &#039;.&#039; + ext;
+    }
+
+    function updateVideoContent() {
+        var chapterPoster = &#039;&#039;, showPlusSign = &#039;&#039;;
+
+        $(SELECTORS.title).html(TITLE);
+        $(SELECTORS.program).html(PROGRAM);
+        $(SELECTORS.description).html(DESCRIPTION);
+
+        PBS.MobileWeb.truncateText(&#039;#description&#039;, true);
+
+        if (IS_MVOD) {
+            showPlusSign = &#039;&lt;div class=&quot;inline-plus inList&quot;&gt;&lt;/div&gt;&#039;;
+        } else {
+            showPlusSign = &#039;&#039;;
+        }
+
+        replaceIfValid(SELECTORS.mvod, showPlusSign, &#039;&#039;);
+        replaceIfValid(SELECTORS.airDate, AIRDATE, &#039;Aired: &#039;);
+        replaceIfValid(SELECTORS.expirationDate, EXPIREDATE, &#039;Expires: &#039;);
+        replaceIfValid(SELECTORS.rating, RATING, &#039;Rating: &#039;);
+        replaceIfValid(SELECTORS.duration, DURATION, &#039;&#039;);
+
+        // Update page metadata
+        metaUpdater();
+        // Funder ad
+        if (FUNDER.underwriting) {
+            replaceIfValid(SELECTORS.nola, FUNDER.underwriting);
+        } else {
+            nolaGenerator();
+        }
+        // Related links
+        if (RELATED_LINKS.length &gt; 0) {
+            $(SELECTORS.relatedLinks).parent().removeClass(&#039;none&#039;);
+            generateRelatedLinks(RELATED_LINKS);
+        } else {
+            $(SELECTORS.relatedLinks).parent().addClass(&#039;none&#039;);
+        }
+        // embed chapters
+        // close the embed section
+        $(SELECTORS.embedSection).hide();
+        if (ALLOW &amp;&amp; CHAPTERS.length &gt; 0) {
+            $(SELECTORS.chaptersCarouselImage).hide();
+        } else {
+            chapterPoster = passThroughIts(POSTER, &#039;fit&#039;, &#039;344x192&#039;);
+            $(SELECTORS.chaptersCarousel).html(&#039;&#039;);
+            // update embed text
+            PBS.Helper.updateEmbedDimensions(&#039;#embed-video&#039;, VIDEOID);
+            $(SELECTORS.chaptersCarouselImage)
+                                            .show()
+                                            .html(&#039;&lt;img src=&quot;&#039; +
+                                                    chapterPoster +
+                                                    &#039;&quot; alt=&quot;&#039; + TITLE + &#039;&quot;&gt;&#039;);
+        }
+        // update the data form the embed carousel
+        updateEmbedCarousel(CHAPTERS);
+
+        // related content
+        if (LEARNMORE.length &gt; 0) {
+            generateLearMore(LEARNMORE);
+            $(SELECTORS.relatedContent).show();
+        } else {
+            $(SELECTORS.relatedContent).hide();
+        }
+
+        // buy links
+        if (DVD) {
+            $(SELECTORS.buyDVD).show();
+        } else {
+            $(SELECTORS.buyDVD).hide();
+        }
+        if (ITUNES) {
+            $(SELECTORS.iTunes).show();
+        } else {
+            $(SELECTORS.iTunes).hide();
+        }
+        // add to watchlist
+        setAddToWatchlistParams();
+    }
+
+    function dateFormat(timestamp) {
+        var date = new Date(timestamp * 1000),
+            month = date.getMonth() + 1, // because getMonth returns [0-11]
+            day = date.getDate(),
+            year = date.getFullYear(),
+            newFormat;
+
+        // format month 2 digits
+        month = (month &lt; 10 ? &#039;0&#039; + month : month);
+        day = (day &lt; 10 ? &#039;0&#039; + day : day);
+
+        newFormat = month + &#039;/&#039; + day + &#039;/&#039; + year;
+
+        return (year &lt; 1980) ? null : newFormat;
+    }
+
+    function timeFormat(time) {
+        if (time === 0) {
+            return;
+        }
+        var hours = Math.floor(time / 3600),
+            minutes = parseInt(time / 60, 10) % 60,
+            seconds = time % 60;
+
+        hours = (hours &lt; 10 ? &#039;0&#039; + hours : hours);
+        minutes = (minutes &lt; 10 ? &#039;0&#039; + minutes : minutes);
+        seconds = (seconds &lt; 10 ? &#039;0&#039; + seconds : seconds);
+
+        return ((hours &gt; 0 ? hours + &#039;:&#039; : &#039;&#039;) + minutes + &#039;:&#039; + seconds);
+    }
+
+    function setData(data) {
+        var headerAd = $(&#039;#headerAd img&#039;),
+            station;
+        PROGRAM = data.program.title || &#039;&#039;;
+        TITLE = data.title || &#039;&#039;;
+        AIRDATE = (data.airdate ? dateFormat(data.airdate) : null);
+        EXPIREDATE = (data.expiredate ? dateFormat(data.expiredate) : null);
+        RATING = data.rating || &#039;&#039;;
+        DESCRIPTION = data.description || &#039;&#039;;
+        SHORT_DESC = data.short_description || &#039;&#039;;
+        FUNDER = data.funder_data || &#039;&#039;;
+        POSTER = data.image_url || &#039;&#039;;
+        ALLOW = data.allow_embed || &#039;&#039;;
+        ITUNES = data.itunes_link || &#039;&#039;;
+        DVD = data.dvd_link || &#039;&#039;;
+        CHAPTERS = data.chapters || null;
+        RELATED_LINKS = data.related_links || null;
+        LEARNMORE = data.related_content || null;
+        ISFAVORITE = data.is_favorite || false;
+        VIDEOID = data.contentID || null;
+        DURATION = (data.duration ? timeFormat(data.duration) : null);
+        GATRACKVIDEOLABEL = getGATrackVideoLabel();
+        LOCATION = window.location.protocol + &#039;//&#039; +
+                            window.location.hostname +
+                            window.location.pathname +
+                            window.location.search;
+        IS_MVOD = data.mvod.is_mvod;
+        if (CHANGECONTENT) {
+            updateVideoContent();
+
+            // reset companion ad
+            if (headerAd.length !== 0) {
+                if (headerAd.attr(&#039;src&#039;).indexOf(&#039;companion_AD&#039;) &lt; 0) {
+                    $(&#039;#headerAd&#039;).html(&#039; &lt;a href=&quot;http://www.pbs.org/anywhere/home/&quot; target=&quot;_blank&quot; id=&quot;singleHeadBanner&quot;&gt;&lt;img src=&quot;&#039; + STATIC_URL + &#039;img/banners/F01_PBS_anywhere_728x90.jpg&quot; alt=&quot;PBS Anywhere&quot; width=&quot;720&quot; height=&quot;90&quot;&gt;&lt;/a&gt;&#039;);
+                    // must add event handle again
+                    $(&#039;#singleHeadBanner&#039;).on(&#039;click&#039;, function () {
+                        PBS.GA.trackEvent(&#039;Video Portal Events&#039;, &#039;Header Banner&#039;, &#039;PBS Anywhere&#039;);
+                    });
+                }
+            }
+        }
+    }
+
+    function loadNewVideo(id, fromPopState, ignoreUrlVars) {
+        PBS.User.init();
+
+        if ( typeof (ignoreUrlVars) === undefined ) {
+            ignoreUrlVars = false;
+        }
+        VIDEOID = id;
+        var portPath = &quot;&quot;;
+
+        // push new state into history (propper browsers)
+        if (history.pushState) {
+            if (!fromPopState) {
+                if ( !ignoreUrlVars ) {
+                    history.pushState({videoId: id}, id, &#039;/video/&#039; + id + &#039;/&#039;  +
+                                                            window.location.search);
+                } else {
+                    history.pushState({videoId: id}, id, &#039;/video/&#039; + id );
+                }
+            }
+        } else {
+            // fallback for IE9
+            if ( window.location.port ) portPath = &quot;:&quot; + window.location.port;
+            window.location.href =  window.location.protocol + &#039;//&#039; +
+                                    window.location.hostname +
+                                    portPath +
+                                    &#039;/video/&#039; + id + &quot;/&quot; + window.location.search;
+        }
+
+        // scroll to the top of the page
+        $(&#039;html, body&#039;).animate({ scrollTop: 0 }, &#039;fast&#039;);
+        PBS.jwPlayer.reloadPlayer(false);
+        CHANGECONTENT = true;
+    }
+
+    // IF THE BROWSER SUPPORTS history.pushState
+    if (history.pushState) {
+        // Store the initial content so we can revisit it later
+        history.replaceState({videoId : CURRENTID}, &#039;&#039;, &#039;/video/&#039; +
+                                    CURRENTID + &#039;/&#039; + window.location.search);
+
+        // Revert to a previously saved state
+        window.addEventListener(&#039;popstate&#039;, function (event) {
+            if (event.state) {
+                if (event.state.videoId) {
+                    loadNewVideo(event.state.videoId, true);
+                }
+            }
+        });
+    }
+
+    $(document).on(&#039;click&#039;, SELECTORS.iTunes, function (e) {
+        PBS.videoPage.updateBuyLinks(&#039;itunes&#039;);
+    });
+
+    $(document).on(&#039;click&#039;, SELECTORS.buyDVD, function (e) {
+        PBS.videoPage.updateBuyLinks(&#039;dvd&#039;);
+    });
+
+    return {
+        setData : setData,
+        loadNewVideo : loadNewVideo,
+        embedShare : embedShare,
+        facebookShare : facebookShare,
+        twitterShare : twitterShare,
+        emailShare : emailShare,
+        googleShare : googleShare,
+        updateBuyLinks : updateBuyLinks,
+        reportVideoProblem : reportVideoProblem,
+        setAddToWatchlistParams : setAddToWatchlistParams
+    };
+}());</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>
