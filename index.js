@@ -26,6 +26,10 @@ var wsProjects = [
     {
         name: 'mordor',
         clone: 'git clone -b LUN-2933 git@github.com:pbs/mordor.git mordor'
+    },
+    {
+        name: 'themes',
+        clone: 'git clone -b LUN-2886 git@github.com:pbs/lunchbox_themes.git themes'
     }
 ];
 
