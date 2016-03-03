@@ -15,10 +15,18 @@ var wsProjects = [
             'python setup.py bento_pkgs_clone -s deps_src'
         ]
     },
-    // {
-    //     name: 'Videportal',
-    //     clone: 'git clone git@github.com:pbs/mobileweb.git Videportal'
-    // }
+    {
+        name: 'videportal',
+        clone: 'git clone -b LUN-2933 git@github.com:pbs/mobileweb.git videportal'
+    },
+    {
+        name: 'jaws',
+        clone: 'git clone -b LUN-2933 git@github.com:pbs/jaws.git jaws'
+    },
+    {
+        name: 'mordor',
+        clone: 'git clone -b LUN-2933 git@github.com:pbs/mordor.git mordor'
+    }
 ];
 
 var projectsDir = 'projects_src';
