@@ -44,5 +44,6 @@ if(require.main == module){
         execSync(cloneCmd, {cwd: projectsDir});
         reports.runPlato(project, projectsDir);
     });
+    reports.pushToGithub();
 }
 

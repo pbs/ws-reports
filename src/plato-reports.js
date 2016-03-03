@@ -18,7 +18,7 @@ function globToRegex(glob){
             .replace(/\*\*/g, '*.') + ')';
 }
 
-function pushToGithub(){
+exports.pushToGithub = function(){
     var cmd = format(
             'git config user.name {bamboo_GIT_USER_NAME} &&' +
             'git config user.email {bamboo_GIT_USER_EMAIL} &&'+
@@ -37,7 +37,7 @@ function pushToGithub(){
     execSync(cmd, {
         cwd: appRoot
     });
-}
+};
 
 exports.runPlato = function(project, projectsDir){
     var projectRoot = appRoot + '/' + projectsDir + '/' + project.name;
@@ -57,5 +57,4 @@ exports.runPlato = function(project, projectsDir){
     execSync(cmd, {
         cwd: projectRoot
     });
-    pushToGithub();
 };
