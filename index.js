@@ -9,7 +9,7 @@ var wsProjects = [
     {
         name: 'bento',
         clone: [
-            'git clone -b LUN-2933 git@github.com:pbs/lunchbox.git bento',
+            'git clone git@github.com:pbs/lunchbox.git bento',
             'cd bento',
             'mkdir deps_src',
             'python setup.py bento_pkgs_clone -s deps_src'
@@ -17,19 +17,19 @@ var wsProjects = [
     },
     {
         name: 'videoportal',
-        clone: 'git clone -b LUN-2933 git@github.com:pbs/mobileweb.git videoportal'
+        clone: 'git clone git@github.com:pbs/mobileweb.git videoportal'
     },
     {
         name: 'jaws',
-        clone: 'git clone -b LUN-2933 git@github.com:pbs/jaws.git jaws'
+        clone: 'git clone git@github.com:pbs/jaws.git jaws'
     },
     {
         name: 'mordor',
-        clone: 'git clone -b LUN-2933 git@github.com:pbs/mordor.git mordor'
+        clone: 'git clone git@github.com:pbs/mordor.git mordor'
     },
     {
         name: 'themes',
-        clone: 'git clone -b LUN-2886 git@github.com:pbs/lunchbox_themes.git themes'
+        clone: 'git clone git@github.com:pbs/lunchbox_themes.git themes'
     }
 ];
 
