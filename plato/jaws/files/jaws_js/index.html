@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - jaws.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>jaws.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">58.71</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">276</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">54.44</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.35</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/*globals PBS_CHROME_CONFIG, console, document, window, navigator, setInterval, Ajax*/
+if (!window.JAWS) {
+    var JAWS = {};
+}
+
+JAWS.main = (function() {
+    // this is the key for the api
+    var key = JAWS.api_key || PBS_CHROME_CONFIG.api_key,
+        apiDomain = &#039;@SITE_URL@&#039; + &quot;getwidgets/&quot;,
+        // apiDomain = &quot;http://jaws-dev.pbs.org:8080/getwidgets/&quot;,
+        overrides = PBS_CHROME_CONFIG.widgets,
+        widgetData = {};
+
+    if (window.apiDomain) {
+        apiDomain = window.apiDomain;
+    }
+
+    // CSS SCRIPTS CALL FUNCTION
+    function loadStylesheets(urls) {
+        var key,
+            link;
+
+        for (var i=0; i&lt;urls.length; i++) {
+            link = document.createElement(&quot;link&quot;);
+            link.rel = &quot;stylesheet&quot;;
+            link.type = &quot;text/css&quot;;
+            link.href = urls[i];
+            document.head.appendChild(link);
+        }
+    }
+
+    //we&#039;re doing this in order to not have the localization js twice
+    //it will work on qa env as long as the airdates bento widget is included from prod
+    function exists(url){
+        scripts = document.getElementsByTagName(&quot;script&quot;);
+        for(var i=0;i&lt;scripts.length; i++){
+            scr = scripts[i];
+            if(scr.src == url &amp;&amp; url == &quot;http://d2ok2u3bz752mp.cloudfront.net/js/localization.js&quot;)
+                return true;
+        }
+        return false;
+    }
+
+    // JS SCRIPTS CALL FUNCTION
+    function loadScripts(urls, callback) {
+        var key;
+
+        for (var i=0; i&lt;urls.length; i++) {
+            if(!exists(urls[i])){
+                var script = document.createElement(&quot;script&quot;);
+
+                script.src = urls[i];
+                script.async = false; // keep this to false
+                document.head.appendChild(script);
+
+                if (callback) {
+                    script.onload = callback;
+                    script.onreadystatechange = function() {
+                        if (script.readyState === &quot;loaded&quot; ||
+                                                script.readyState === &quot;complete&quot;) {
+                            callback();
+                        }
+                    };
+                }
+            }
+        }
+    }
+
+    // INSERT FUNCTION
+    function insertContent(type, selector, html) {
+        var container,
+            location,
+            inLineScripts,
+            inLineScript;
+
+        if (typeof html === &quot;undefined&quot;) {
+            throw &quot;No html has specified&quot;;
+        }
+
+        if (type === &quot;body&quot;) {
+            container = document.createElement(&quot;div&quot;);
+            container.className = &quot;pbs-cleanslate&quot;;
+
+            if (selector !== &quot;&quot;) {
+                container.id = selector;
+            }
+            container.innerHTML = html;
+
+            document.body.insertBefore(container, document.body.firstChild);
+        }
+
+        if (type === &quot;iframe&quot;) {
+            location = document.querySelector(selector);
+
+            if (location) {
+                location.innerHTML = html;
+            } else {
+                console.error(&quot;Could not find the element with the id of &#039;&quot; +
+                                                            selector + &quot;&#039;&quot;);
+            }
+        }
+
+        if (type === &quot;inline&quot;) {
+            location = document.querySelector(selector);
+            if (location) {
+                location.innerHTML = html;
+
+                inLineScripts = location.getElementsByTagName(&quot;script&quot;);
+
+                if (inLineScripts.length &gt; 0) {
+                    for (index = 0; index &lt; inLineScripts.length; index++) {
+                        if(!inLineScripts[index].hasAttribute(&quot;src&quot;)){
+                            eval(inLineScripts[index].innerHTML);
+                        }
+                        else{
+                            var src = inLineScripts[index].getAttribute(&quot;src&quot;);
+                            var elem = inLineScripts[index];
+                            elem.parentNode.removeChild(elem);
+                            index--;
+                            JAWS.main.loadScripts([src]);
+                        }
+                    }
+                }
+            } else {
+                console.error(&quot;Could not find the element with the id of &#039;&quot; +
+                                                            selector + &quot;&#039;&quot;);
+            }
+        }
+    }
+	// LOAD WIDGETS
+    function loadWidgets(widgets) {
+        var selector,
+            key;
+
+        for (key in widgets) {
+            if (overrides &amp;&amp; overrides.hasOwnProperty(key)) {
+                selector = overrides[key].placeholder;
+            } else  {
+                selector = &quot;jaws_&quot; + key;
+            }
+            if (widgets.hasOwnProperty(key)) {
+                // this is temporary, we&#039;ll figure something out :D
+                if (widgets[key].hasOwnProperty(&quot;data&quot;)) {
+                    widgetData[key] = widgets[key].data;
+                }
+                switch (widgets[key].type) {
+                    // Handle body widgets
+                    case &quot;body&quot; :
+                        // load html
+                        if (widgets[key].hasOwnProperty(&quot;html&quot;)) {
+                            insertContent(&quot;body&quot;, selector, widgets[key].html);
+                        }
+                        // load css
+                        if (widgets[key].hasOwnProperty(&quot;css&quot;)) {
+                            loadStylesheets(widgets[key].css);
+                        }
+                        // load js
+                        if (widgets[key].hasOwnProperty(&quot;js&quot;) &amp;&amp; widgets[key].js !== &quot;&quot;) {
+                            loadScripts(widgets[key].js);
+                        }
+                        break;
+                        // Handle iframe widgets
+                    case &quot;iframe&quot; :
+                    // load html if there is a selector and the widget has html
+                        if (selector &amp;&amp; widgets[key].hasOwnProperty(&quot;html&quot;)) {
+                            insertContent(&quot;iframe&quot;, selector, widgets[key].html);
+                        }
+                        break;
+                    // Handle inline widgets
+                    case &quot;inline&quot; :
+                        if (selector &amp;&amp; widgets[key].hasOwnProperty(&quot;html&quot;)) {
+                            insertContent(&quot;inline&quot;, selector, widgets[key].html);
+                        }
+                        break;
+                    // Handle inline widgets
+                    case &quot;script&quot; :
+                        if (widgets[key].hasOwnProperty(&quot;js&quot;) &amp;&amp; widgets[key].js !== &quot;&quot;) {
+                            loadScripts(widgets[key].js);
+                        }
+                        break;
+                }
+            }
+        }
+    }
+
+    function getWidgetData(widget) {
+        var data;
+
+        if (widgetData.hasOwnProperty(widget)) {
+            data = widgetData[widget];
+        }
+
+        return data;
+    }
+
+    function receiveMessage(event) {
+        if(event.origin.indexOf(&quot;jaws&quot;) &gt;= 0){
+            var selector = event.data.selector,
+                iframe = document.getElementById(selector),
+                height = event.data.height || null;
+            if(navigator.userAgent.match(/MSIE 9/i)) {
+                height = event.data.split(&quot;|&quot;)[0];
+                iframe = document.getElementsByClassName(event.data.split(&quot;|&quot;)[1])[0];
+            }
+
+            //this is magic when coming from other widgets(what&#039;s on, what&#039;s on kids)
+            //we&#039;re talking about tvss widget here
+            if(!iframe){
+                iframe = document.getElementById(&quot;whatson_frame&quot;);
+            }
+            if(!iframe){
+                iframe = document.getElementById(&quot;whatsonkids_frame&quot;);
+            }
+            if(!iframe){
+                iframe = document.getElementById(&quot;airdates_frame&quot;);
+            }
+            iframe.style.height = height + &quot;px&quot;;
+        }
+    }
+
+    function sendMessage(){
+        if(navigator.userAgent.match(/iPad/i)){
+            setInterval(function(){
+                var frame = document.getElementById(&#039;tvss_frame&#039;);
+                if(!frame){
+                    frame = document.getElementById(&#039;whatson_frame&#039;);
+                }
+                if(!frame){
+                    frame = document.getElementById(&#039;whatsonkids_frame&#039;);
+                }
+                if(!frame){
+                    frame = document.getElementById(&#039;airdates_frame&#039;);
+                }
+                var frameParent = frame.parentNode,
+                    win = frame.contentWindow;
+                win.postMessage({
+                    &#039;width&#039; : frameParent.offsetWidth
+                }, &quot;*&quot;);
+            }, 50);
+        }
+    }
+
+    // GET USER WIDGETS AND SETTINGS
+    function init() {
+        if (!document.location.origin) {
+          document.location.origin = document.location.protocol + &quot;//&quot; + document.location.hostname + (document.location.port ? &#039;:&#039; + document.location.port: &#039;&#039;);
+        }
+
+        var ajax = new Ajax({
+            url : apiDomain + key + &quot;/?referrer=&quot; + document.location.origin + document.location.pathname ,
+            type : &quot;JSONP&quot;, // GET, POST, JSON, JSONP
+        }, function(data) {
+            if (Object.keys(data.widgets).length &gt; 0) {
+                loadWidgets(data.widgets);
+                sendMessage();
+            }
+        });
+    }
+
+    // Mozilla, Opera and webkit nightlies currently support this event
+    if (document.addEventListener) {
+        document.addEventListener(&quot;DOMContentLoaded&quot;, init);
+        window.addEventListener(&quot;message&quot;, receiveMessage, false);
+        // If IE event model is used
+    } else {
+        document.attachEvent(&quot;onreadystatechange&quot;, init);
+        window.attachEvent(&#039;onmessage&#039;,receiveMessage);
+    }
+
+    return {
+        loadScripts : loadScripts,
+        loadStylesheets : loadStylesheets,
+        insertContent : insertContent,
+        getWidgetData : getWidgetData
+    };
+
+}());</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

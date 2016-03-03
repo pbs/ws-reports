@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - header.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>header.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">62.23</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">168</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">25.54</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">1.39</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/*globals console, _gaq*/
+if (!window.JAWS) {
+    var JAWS = {};
+}
+
+function forceLocalizationDonate(event){
+    if (!readCookie(&#039;pbsol.station&#039;)){
+        if(event.preventDefault) event.preventDefault();
+        JAWS.Localization.init(&#039;Donate&#039;);
+    }
+}
+
+JAWS.Header = (function() {
+    // retrieve informations about the plugin from jaws
+    var headerOpts = JAWS.main.getWidgetData(&quot;header&quot;),
+        searchInput = document.querySelector(&quot;#header_query&quot;),
+        pbsLogo = document.querySelector(&quot;#pbs_loc_name&quot;),
+        headerLinks = document.querySelectorAll(&quot;#pbs_dh a&quot;),
+        searchForm = document.querySelector(&quot;#pbs_distribution_search_form&quot;),
+        btnLocal = document.querySelector(&quot;#btnLocalSearch&quot;),
+        btnGlobal = document.querySelector(&quot;#btnGlobalSearch&quot;),
+        btnSearchDropdown = document.querySelector(&quot;#pbs_lens&quot;),
+        searchDropdown = document.querySelector(&quot;#pbs_dh_search&quot;),
+        btnMenuDropdown = document.querySelector(&quot;#pbs_btn_dropdown&quot;),
+        pbsDropdown = document.querySelector(&quot;#pbs_dropdown&quot;);
+        btnDonate = document.querySelector(&quot;.donate-btn&quot;);
+
+    if(headerOpts.local_search_url)
+        searchInput.setAttribute(&quot;data-type&quot;, &quot;local&quot;);
+
+    // tracking functions
+    function trackEvent(target, action, label) {
+        if (typeof GTMDataLayer !== &quot;undefined&quot;) {
+            GTMDataLayer.push({
+                &#039;event&#039; : &#039;GlobalChrome&#039;,
+                &#039;category&#039; : target,
+                &#039;action&#039; : action,
+                &#039;label&#039; : label
+            });
+        }
+    }
+
+    function submitSearch(evt) {
+        var _this = evt.currentTarget,
+            _type = _this.getAttribute(&quot;data-type&quot;),
+            _query = searchInput.value;
+        if (_type === &quot;local&quot;) {
+            // change the action
+            searchForm.setAttribute(&quot;action&quot;, headerOpts.local_search_url + _query);
+            // send to ga
+            trackEvent(&quot;GlobalChrome_Header&quot;, &quot;Search&quot;, &quot;Search This Site&quot;);
+        } else if (_type === &quot;global&quot;) {
+            // change the action
+            searchForm.setAttribute(&quot;action&quot;, headerOpts.global_search_url + _query);
+            // send to ga
+            trackEvent(&quot;GlobalChrome_Header&quot;, &quot;Search&quot;, &quot;Search PBS&quot;);
+        }
+
+        searchForm.submit();
+    }
+
+    function manageDropdowns(evt) {
+        var _this = evt.currentTarget,
+            _type = _this.getAttribute(&quot;data-type&quot;);
+
+        _this.jwToggleClass(&quot;active&quot;);
+
+        if (_type === &quot;search&quot;) {
+            // show dropdown
+            searchDropdown.jwToggleClass(&quot;active&quot;);
+            pbsDropdown.jwRemoveClass(&quot;active&quot;);
+            btnMenuDropdown.jwRemoveClass(&quot;active&quot;);
+        } else if (_type === &quot;menu&quot;) {
+            // show dropdown
+            pbsDropdown.jwToggleClass(&quot;active&quot;);
+            searchDropdown.jwRemoveClass(&quot;active&quot;);
+            btnSearchDropdown.jwRemoveClass(&quot;active&quot;);
+        }
+
+        evt.preventDefault();
+    }
+
+    function navitationTracking(evt) {
+        var _this = evt.currentTarget,
+            _btnText = _this.innerHTML,
+            _label = &quot;&quot;,
+            _station = pbsLogo.querySelector(&quot;span&quot;).innerHTML,
+            _destination = _this.getAttribute(&quot;href&quot;),
+            _needsTracking = _this.jwHasClass(&quot;ga&quot;);
+
+        if (_needsTracking) {
+            // create _label for ga
+            _label = _btnText + &quot; | &quot; + _destination;
+
+            // if the anchor has a donate-btn class add the station
+            // for ga analitycs
+            if (_this.jwHasClass(&quot;donate-btn&quot;)) {
+                if (_station !== &quot;&quot;) {
+                    _label = _btnText + &quot; | &quot; + _station + &quot; | &quot; +
+                                                            window.location.href;
+                }
+            }
+
+            // station link
+            if (_this.getAttribute(&quot;id&quot;) === &quot;pbs_loc_name&quot;) {
+                _label = _station + &quot; | &quot; + _this.getAttribute(&quot;href&quot;);
+            }
+
+            // send ga event with the name of the link
+            trackEvent(&quot;GlobalChrome_Header&quot;, &quot;Link&quot;, _label);
+        }
+    }
+
+    /**** EVENT LISTENERS ****/
+    // local search btn
+    if (headerOpts.hasOwnProperty(&#039;local_search_url&#039;)) {
+        btnLocal.jwOn(&quot;click&quot;, submitSearch);
+    }
+    // global search btn
+    btnGlobal.jwOn(&quot;click&quot;, submitSearch);
+    // search input listen to enter
+    searchInput.jwOn(&quot;keypress&quot;, function(evt) {
+        if (evt.keyCode == 13) {
+            submitSearch(evt);
+            evt.preventDefault();
+        }
+    });
+    // small breakpoint search box dropdown
+    btnSearchDropdown.jwOn(&quot;click&quot;, manageDropdowns);
+    // small breakpoint pbs menu dropdown
+    btnMenuDropdown.jwOn(&quot;click&quot;, manageDropdowns);
+    // all the anchors in the header widget
+    for (var i = 0; i &lt; headerLinks.length; i++) {
+        headerLinks[i].jwOn(&quot;click&quot;, navitationTracking);
+    }
+
+    // if there&#039;s no local_search_url don&#039;t display the local search button
+    if (!headerOpts.local_search_url) {
+        btnLocal.style.display = &quot;none&quot;;
+    }
+    // if there&#039;s no global_search_url don&#039;t display the global search button
+    if (!headerOpts.global_search_url) {
+        btnGlobal.style.display = &quot;none&quot;;
+    }
+
+
+}());
+//the confirm station button on the localization has been pressed
+// Mozilla, Opera and webkit nightlies currently support this event
+if (document.addEventListener) {
+    document.addEventListener(&quot;confirmStationEvent&quot;, function(event){
+        if(event.data.donate == &quot;Donate&quot;){
+            membership_url = event.data.link;
+            confirmBtn = event.data.confirmBtn;
+            document.querySelector(confirmBtn).click(window.open(membership_url, &quot;_blank&quot;));
+            return false;
+        }
+    });
+    // If IE event model is used
+} else {
+    document.attachEvent(&quot;confirmStationEvent&quot;, function(event){
+        if(event.data.donate == &quot;Donate&quot;){
+            membership_url = event.data.link;
+            confirmBtn = event.data.confirmBtn;
+            document.querySelector(confirmBtn).click(window.open(membership_url, &quot;_blank&quot;));
+            return false;
+        }
+    });
+}</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

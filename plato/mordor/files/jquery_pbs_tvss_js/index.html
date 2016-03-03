@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - jquery.pbs.tvss.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>jquery.pbs.tvss.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">64.57</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">592</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">76.90</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">9.74</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/*global PBS, ga */
+(function(window, jQuery) {
+    &quot;use strict&quot;;
+
+    if (typeof PBS === &#039;undefined&#039;) {
+        window.PBS = {}
+    }
+    var $ = jQuery;
+
+
+    PBS.Tvss = function(config){
+        var self = this,
+            h = new PBS.Helpers();
+        config.stationObj.primetime = (h.flattenHour(config.stationObj.primetime)
+                                      || &quot;2000&quot;);  // 08:00pm
+        if(!config || !config.stationObj.callsign){
+            return console.error(&quot;Tvss has an invalid configuration :: &quot;, config);
+        }
+
+        if(config.stationObj.videoPortal &amp;&amp; 
+           config.stationObj.videoPortal.charAt(config.stationObj.videoPortal.length-1) !== &quot;/&quot;){
+            config.stationObj.videoPortal += &quot;/&quot;;
+        }
+
+
+        this.config = config;
+        this.config.isKids = this.config.isKids || &quot;&quot;;
+
+
+        this.$ = function(selector,context){
+            if(selector &amp;&amp;
+               typeof selector === &#039;string&#039;){
+                   if(selector.indexOf(&#039;.modalOverlay&#039;) !== -1){
+                        selector = selector.replace(&#039;.modalOverlay&#039;,
+                                                    &#039;.modalOverlay[data-target=&quot;&#039;+self.config.snippetId+&#039;&quot;]&#039;);
+                        context = jQuery(&#039;body&#039;);
+                    }
+                    
+            }
+            return new jQuery.fn.init(selector, context || self.config.snippet);
+        };
+
+        self.$.fn = self.$.prototype = jQuery.fn;
+        jQuery.extend(self.$, jQuery); 
+        // jQuery.extend(self.$, jQuery);
+        //from this point on use this.$ when using jQuery if you want to target
+        //elements from the current snippet
+
+        this.player = new PBS.PartnerPlayer(this, config, this.$);
+        this.history = new PBS.History(this, config, this.$);
+        this.schedule = new PBS.Schedules(this, config, this.$);
+
+        if(config.stationObj.displaychannelnumber === &#039;False&#039; ||
+           config.stationObj.displaychannelnumber === false){
+            this.$(&#039;#listChannel&#039;).html(&#039;&amp;nbsp;&#039;);
+        }
+
+        this.config.snippet.removeClass(&#039;hide&#039;);
+        this.$(&#039;.modal_callsing&#039;).html(config.stationObj.callsign.toUpperCase());
+
+        //full schedule link
+        if(config.isWhatsOn){
+            self.schedule.addFullGridURL();
+        }
+
+        //kids grid
+        if(self.config.isKidsTvss){
+            if(self.$(&#039;.header-buttons #kidsOnly&#039;).hasClass(&#039;active&#039;)){
+                self.schedule.addKidsFilter();
+            }
+
+            self.config.snippet.css({
+                &#039;background-color&#039;:&#039;transparent&#039;,
+                &#039;padding&#039;: 0
+            });
+        }
+    };
+
+    PBS.Tvss.prototype.init = function(){
+        var self = this;
+        var config = this.config;
+        
+        if(!config || !config.stationObj.callsign){
+            return console.error(&quot;Tvss has an invalid configuration :: &quot;, config);
+        }
+
+        PBS.snippets[config.snippetId].DAYS = PBS.snippets[config.snippetId].DAYS || [];
+        PBS.snippets[config.snippetId].FEED = PBS.snippets[config.snippetId].FEED || [];
+        PBS.snippets[config.snippetId].PROVIDERS =PBS.snippets[config.snippetId].PROVIDERS || [];
+        PBS.snippets[config.snippetId].CURRENT_PROVIDER = PBS.snippets[config.snippetId].CURRENT_PROVIDER || null;
+        PBS.snippets[config.snippetId].TOTAL_RESULTS = PBS.snippets[config.snippetId].TOTAL_RESULTS || 0;
+
+        this.initDatepicker(this.config.datePickerImg);
+        jQuery.extend(this.$, jQuery);
+        this.history.init();
+
+        if(typeof window.ga === &#039;undefined&#039;){
+            //fake ga if doesn&#039;t exist so we don&#039;t get erorrs
+            window.ga = function(){};
+        }
+
+        self.$(window).on({
+            scroll: function() {
+                if (self.$(window).scrollTop() &gt; self.$(&#039;#schedulesList&#039;).offset().top) {
+                    self.$(&#039;#schedulesBar&#039;).width(self.$(&#039;#schedulesList&#039;).width()).addClass(&#039;fixed&#039;);
+                }
+                else {
+                    self.$(&#039;#schedulesBar&#039;).width(&#039;100%&#039;).removeClass(&#039;fixed&#039;);
+                }
+            },
+            resize: function() {
+                if (self.$(&#039;#schedulesBar&#039;).hasClass(&#039;fixed&#039;)) {
+                    self.$(&#039;#schedulesBar&#039;).width(self.$(&#039;#schedulesList&#039;).width());
+                }
+
+                self.schedule.resizeVideoViewport(self.$(&#039;.videoViewPort&#039;));
+                self.schedule.resizeProgramDivs();
+            }
+        });
+
+        self.$(&#039;#schedules-container .modalOverlay&#039;).appendTo(&#039;body&#039;);
+
+
+        self.$(document).ready(function() {
+            self.attachEventHandlers();
+            self.player.attachEventHandlers();
+        })
+
+        self.schedule.loadVideoModules();
+        self.schedule.lazyLoadFeeds();
+    }
+
+    PBS.Tvss.prototype.initDatepicker = function(img, options){
+        var self = this;
+        var config = this.config;
+
+        var dateFormat = $(&#039;body&#039;).width() &gt; 960 ?
+                         &quot;DD, M. d yy&quot; :
+                         &quot;M. d yy&quot;;
+
+        if(config.isWhatsOn){
+            dateFormat = &quot;DD, MM d yy&quot;
+        }
+
+        var dObj = {
+            cls : &#039;tvss&#039;,
+            dayNamesMin: [ &quot;S&quot;, &quot;M&quot;, &quot;T&quot;, &quot;W&quot;, &quot;T&quot;, &quot;F&quot;, &quot;S&quot; ] ,
+            minDate: -5,
+            maxDate: &quot;+13D&quot;,
+            dateFormat: dateFormat,
+            showOn: &quot;both&quot;,
+            buttonImage: img,
+            buttonImageOnly: false,
+            showAnim: &#039;slideDown&#039;,
+            onSelect : function(d){
+                ga(&#039;send&#039;, &#039;event&#039;, &#039;TV Schedule Module&#039;, &#039;Changed Date&#039;, d);
+                self.history.updateHash({
+                    day : (new PBS.Helpers(self.history)).flattenDay(d, $(&#039;.ui-datepicker-year&#039;).text(), $(this).datepicker(&#039;getDate&#039;).getMonth() + 1)
+                });
+
+                self.history.handleHashAction(self.history.parseHash());
+
+            },
+        }
+        if(options){
+            for(var i in options){
+                dObj[i] = options[i];
+            }
+        }
+
+
+        $(&#039;#&#039;+self.config.snippetId).find(&#039;#datepicker&#039;).datepicker(dObj);
+
+        if(!$(&#039;.datepicker.tvss&#039;).length){
+            $(&#039;&lt;div class=&quot;datepicker tvss&quot;&gt;&#039;).appendTo(&#039;body&#039;);
+            $(&#039;body &gt; .ui-datepicker&#039;).appendTo(&#039;.datepicker.tvss&#039;);
+        }
+        
+
+
+        //fix IE (including 11) reopening datepicker after date selection
+        if(self.$.browser.msie ||
+            !!navigator.userAgent.match(/Trident\/7\./)){   //match IE11 (it nolonger identifyes as MSIE)
+            self.$(&quot;#datepicker&quot;).unbind(&quot;focus&quot;)
+            self.$(&quot;#datepicker&quot;).on(&quot;click&quot;, function(){
+                $(&#039;#&#039;+self.config.snippetId).find(&#039;#datepicker&#039;).datepicker(&quot;show&quot;);
+                self.$(&quot;#datepicker&quot;).blur();
+            })
+        }
+        $(&#039;#&#039;+self.config.snippetId).find(&#039;#datepicker&#039;).datepicker(&quot;setDate&quot;, new Date());
+
+        if(config.isWhatsOn){
+            self.$(&#039;#currentDate&#039;).html(self.$(&#039;#datepicker&#039;).val());
+        }
+    }
+
+    PBS.Tvss.prototype.attachEventHandlers = function(){
+        var self = this,
+            config = this.config;
+
+        self.$(&#039;#listHours&#039;).unbind(&quot;change&quot;)
+        self.$(&#039;#listHours&#039;).on(&quot;change&quot;, function(){
+            self.schedule.hideVerticalItems()
+        })
+
+        self.$(&quot;#leftButton&quot;).unbind(&quot;click&quot;)
+        self.$(&quot;#leftButton&quot;).click(function() {
+            self.schedule.scrollScreen(-1);
+        });
+
+        // clicking on the transparent white bar on the left also scrools the page
+        self.$(&#039;.rightSide&#039;).unbind(&quot;click&quot;)
+        self.$(&#039;.rightSide&#039;).click(function() {
+           self.schedule.scrollScreen(1);
+        });
+
+        self.$(&#039;#buttonNow&#039;).unbind(&quot;click&quot;)
+        self.$(&#039;#buttonNow&#039;).click(function(){
+            var currentDate = new Date();
+            var hist = self.history;
+
+            ga(&#039;send&#039;, &#039;event&#039;,&#039;TV Schedule Module&#039;, &#039;&quot;Now&quot; button&#039;, (new PBS.Helpers(hist)).formatHour(currentDate.getHours()+&quot;&quot;+currentDate.getMinutes()));
+            var setDate = $(&#039;#&#039;+self.config.snippetId).find(&#039;#datepicker&#039;).datepicker(&quot;getDate&quot;);
+            if(setDate.getDate() !== currentDate.getDate() ||
+                setDate.getMonth() !== currentDate.getMonth() ||
+                setDate.getFullYear() !== currentDate.getFullYear()){
+                $(&#039;#&#039;+self.config.snippetId).find(&#039;#datepicker&#039;).datepicker(&quot;setDate&quot;, currentDate);
+                hist.updateHash({
+                    day : (new PBS.Helpers(hist)).flattenDay($.datepicker.formatDate(&quot;DD, M. d&quot;, currentDate), self.$(&#039;.ui-datepicker-year&#039;).text(), currentDate.getMonth() + 1)
+                });
+                hist.handleHashAction(hist.parseHash());
+            }else{
+                self.schedule.scrollToNow();
+            }
+        });
+
+        self.$(&#039;#buttonPrimetime&#039;).unbind(&quot;click&quot;)
+        self.$(&#039;#buttonPrimetime&#039;).click(function(){
+            ga(&#039;send&#039;, &#039;event&#039;,&#039;TV Schedule Module&#039;, &#039; &quot;Primetime&quot; button&#039;);
+            self.schedule.scrollToPrimetime();
+        });
+
+        self.$(&#039;#loadMore&#039;).unbind(&quot;click&quot;);
+        self.$(&#039;#loadMore&#039;).click(function(){
+            if(self.$(this).attr(&quot;data-handler&quot;) === &quot;load-more&quot;){
+                self.schedule.loadMoreVerticalItems()
+            }else{
+                self.schedule.getNextDay()
+            }
+        })
+
+        self.$(&#039;#goToSearch&#039;).unbind(&quot;click&quot;);
+        self.$(&#039;#goToSearch&#039;).click(function(){
+            self.$(&#039;.searchDropdownContainer&#039;).addClass(&quot;in&quot;);
+
+            self.$(&#039;.searchArrowDown&#039;).show();
+            self.$(&#039;.searchArrowUp&#039;).hide();
+
+            self.schedule.scrollToTop(function(){
+                self.$(&#039;.searchContainer input.scheduleSearchInput&#039;).focus()
+
+            })
+        })
+
+        self.$(&#039;.showMore a&#039;).unbind(&quot;click&quot;);
+        self.$(&#039;.showMore a&#039;).click(function(){
+            var parent = self.$(this).closest(&#039;.bentoContainer1&#039;).attr(&quot;id&quot;);
+            var label = &quot;&quot;
+            switch(parent){
+                case &quot;mostViewedContainer&quot;:
+                    label = &quot;Most Viewed&quot;;
+                    break;
+                case &quot;editorsChoiceContainer&quot;:
+                    label = &#039;Editor\&#039;s Choice&#039;;
+                    break;
+                case &quot;localProgramsContainer&quot;:
+                    label = &#039;Local Programs&#039;;
+                    break;
+                case &quot;airingThisWeekContainer&quot;:
+                    label = &#039;Airing This Week&#039;;
+                    break;
+                default:
+                    label = &#039;Preview What\&#039;s On&#039;
+                    break;
+            }
+            ga(&#039;send&#039;, &#039;event&#039;,&#039;TV Schedule Module&#039;, &#039;Show More&#039;, label);
+
+            self.schedule.showMoreVideos(self.$(this))
+        })
+
+        self.$(&#039;.searchButton&#039;).unbind(&quot;click&quot;);
+        self.$(&#039;.searchButton&#039;).click(function(){
+            ga(&#039;send&#039;, &#039;event&#039;,&#039;TV Schedule Module&#039;, &#039;&quot;Search TV Schedule&quot; button&#039;);
+            self.$(&#039;.searchDropdownContainer&#039;).toggleClass(&quot;in&quot;);
+            self.$(&#039;.searchArrowDown&#039;).toggle();
+            self.$(&#039;.searchArrowUp&#039;).toggle();
+            self.$(&#039;.searchContainer input.scheduleSearchInput&#039;).focus();
+        })
+
+        self.$(&#039;.searchContainer input.scheduleSearchInput&#039;).unbind(&quot;keydown&quot;)
+        self.$(&#039;.searchContainer input.scheduleSearchInput&#039;).on(&quot;keydown&quot;, function(e){
+            if(e.keyCode === 13){
+               self.$(&#039;.searchButtonSmall&#039;).click()
+            }
+        })
+
+        // close button for big breakpoints overlay
+        self.$(&#039;#scheduleOverlayContent .detailCloseBtn&#039;).unbind(&quot;click&quot;)
+        self.$(&#039;#scheduleOverlayContent .detailCloseBtn&#039;).click(function(){
+            self.schedule.closeGridOverlay()
+
+        });
+
+        self.$(&#039;#scrollableSchedule&#039;).unbind(&#039;scroll&#039;);
+        self.$(&#039;#scrollableSchedule&#039;).on(&#039;scroll&#039;, function(){
+            self.schedule.closeGridOverlay()
+        });
+
+        // close button for smaller breaks
+        self.$(&#039;#scheduleSmallOverlayContent .detailCloseBtn&#039;).unbind(&quot;click&quot;)
+        self.$(&#039;#scheduleSmallOverlayContent .detailCloseBtn&#039;).click(function(){
+            self.$(&quot;#scheduleSmallTapOverlay&quot;).hide();
+        });
+
+        self.$(&#039;.modalOverlay .detailCloseBtn, .modalOverlay .modalCloseButton&#039;).click(function(){
+            self.schedule.closeModal(null, false)
+        })
+
+        self.$(&#039;.modalOverlay .modalDefaultButton&#039;).unbind(&quot;click&quot;);
+        self.$(&#039;.modalOverlay .modalDefaultButton&#039;).click(function(){
+            self.schedule.closeModal(null, true);
+        })
+
+        self.$(&#039;#listProvider select&#039;).unbind(&quot;change&quot;);
+        self.$(&#039;#listProvider select&#039;).on(&quot;change&quot;, function(){
+            var helper = new PBS.Helpers(self.history);
+            var newProvider = self.$(&#039;#listProvider&#039;).find(&quot;:selected&quot;).text();
+
+            self.schedule.setDefaultProvider(newProvider);
+
+            if(newProvider){
+                ga(&#039;send&#039;, &#039;event&#039;,&#039;TV Schedule Module&#039;, &#039;Change Provider&#039;, newProvider);
+            }
+        })
+
+        self.$(&#039;.modalOverlay&#039;).click(function(e){
+            if( e.target !== this ){
+               return;
+            }
+            self.schedule.closeModal(null, false)
+        })
+
+        self.$(&#039;.searchButtonSmall&#039;).unbind(&quot;click&quot;)
+        self.$(&#039;.searchButtonSmall&#039;).click(function(){
+            var parent = self.history;
+            ga(&#039;send&#039;, &#039;event&#039;,&#039;TV Schedule Module&#039;, &#039;Search&#039;, self.$(&#039;.scheduleSearchInput&#039;).val());
+            if(self.$(&#039;.scheduleSearchInput&#039;).val().length &gt;= 3){
+                parent.updateHash({
+                    page : &quot;search&quot;,
+                    search : self.$(&#039;.scheduleSearchInput&#039;).val(),
+                    sorted : encodeURIComponent(self.$(&#039;#programSortOptions option:selected&#039;).attr(&quot;data-name&quot;))
+                })
+                self.$(&#039;.paginationContainer&#039;).html(&quot;&quot;);
+                self.$(&#039;.scheduleSearchSort&#039;).show();
+                self.$(&#039;.programSearchBack&#039;).hide()
+                self.$(&#039;.paginationContainer&#039;).css(&quot;float&quot;, &quot;none&quot;)
+                self.$(&#039;.episodeSortOptionsContainer&#039;).hide();
+                self.schedule.ajax.getSearchResults();
+            }
+        });
+
+        self.$(&#039;#programSortOptions&#039;).unbind(&quot;change&quot;)
+        self.$(&#039;#programSortOptions&#039;).change(function(){
+            self.history.updateHash({
+                sorted : encodeURIComponent(self.$(&#039;#programSortOptions option:selected&#039;).attr(&quot;data-name&quot;))
+            })
+            self.schedule.ajax.getSearchResults();
+            self.$(&#039;.paginationContainer&#039;).empty()
+        })
+
+        self.$(&#039;.episodeSortOptions&#039;).unbind(&quot;change&quot;)
+        self.$(&#039;.episodeSortOptions&#039;).change(function(){
+            self.history.updateHash({
+                sortedepisode : encodeURIComponent(self.$(&#039;.episodeSortOptions option:selected&#039;).attr(&quot;data-name&quot;))
+            })
+            var opt = self.$(this).find(&quot;:selected&quot;).text()
+            self.$(&#039;.episodeSortOptions&#039;).each(function(){
+                self.$(this).find(&quot;option&quot;).filter(function() {
+                    return self.$(this).text() === opt;
+                }).prop(&#039;selected&#039;, true);
+            })
+            self.schedule.ajax.getSearchResults(null, self.$(this).attr(&quot;data-program-id&quot;));
+            self.$(&#039;.paginationContainer&#039;).empty()
+        })
+
+        self.$(&#039;.searchClose&#039;).unbind(&quot;click&quot;)
+        self.$(&#039;.searchClose&#039;).click(function(){
+            ga(&#039;send&#039;, &#039;event&#039;,&#039;TV Schedule Module&#039;, &#039;Search close&#039;, self.$(&#039;.scheduleSearchInput&#039;).val());
+            self.$(&#039;#searchContainer&#039;).hide();
+            self.$(&#039;.searchDropdownContainer&#039;).removeClass(&quot;in&quot;);
+
+            self.$(&#039;.searchArrowDown&#039;).hide();
+            self.$(&#039;.searchArrowUp&#039;).attr(&quot;style&quot;, &quot;&quot;);
+
+            self.$(&#039;#whatsOnContainer&#039;).attr(&quot;style&quot;, &quot;&quot;);
+            self.$(&#039;#morePreviews&#039;).attr(&quot;style&quot;, &quot;&quot;);
+            self.$(&#039;.scheduleSmallText&#039;).attr(&quot;style&quot;, &quot;&quot;);
+            self.$(&#039;#scheduleV&#039;).attr(&quot;style&quot;, &quot;&quot;);
+            self.$(&#039;#schedListView&#039;).attr(&quot;style&quot;, &quot;&quot;);
+            self.$(&#039;.calendar&#039;).attr(&quot;style&quot;, &quot;&quot;);
+            self.$(&#039;#buttonNow&#039;).attr(&quot;style&quot;, &quot;&quot;);
+            self.$(&#039;#buttonPrimetime&#039;).attr(&quot;style&quot;, &quot;&quot;);
+            self.$(&#039;#scheduleSearchResults&#039;).html(&quot;&quot;)
+
+            self.schedule.resizeProgramDivs();
+            self.schedule.resizeVideoViewport(self.$(&#039;.videoViewPort&#039;))
+
+            self.$(&#039;#totalResults&#039;).html(&quot;&quot;)
+            self.$(&#039;#searchTerm&#039;).html(&quot;&quot;)
+
+            self.$(this).hide();
+            self.$(&#039;.programSearchBack&#039;).hide()
+            self.$(&#039;.paginationContainer&#039;).css(&quot;float&quot;, &quot;none&quot;)
+            self.$(&#039;.episodeSortOptionsContainer&#039;).hide();
+            self.$(&#039;.scheduleSearchInput&#039;).val(&quot;&quot;)
+            self.$(self.$(&#039;.episodeSortOptions option&#039;)[0]).prop(&#039;selected&#039;, true)
+            self.$(self.$(&#039;#programSortOptions option&#039;)[0]).prop(&#039;selected&#039;, true)
+
+            self.history.updateHash({
+                page : &quot;schedule&quot;,
+                search : null,
+                sorted : null,
+                sortedepisode : null,
+                programfilter : null,
+            })
+        });
+
+        //click on item in the grid
+        self.$(&#039;.schedulesRow.video&#039;).find(&#039;.calendarEntry:not(&quot;.empty&quot;)&#039;).unbind(&quot;click&quot;);
+        self.$(&#039;.schedulesRow.video&#039;).find(&#039;.calendarEntry:not(&quot;.empty&quot;)&#039;).click(function() {
+            var programName = self.$(this).find(&#039;.gridProgram&#039;).text();
+            var episodeName = self.$(this).find(&#039;.description&#039;).text();
+            ga(&#039;send&#039;, &#039;event&#039;,&#039;TV Schedule Module&#039;, &#039;Episode Details&#039;, programName +&quot; | &quot;+episodeName);
+
+            var programId = self.$(this).attr(&quot;data-program-id&quot;);
+            var showId = self.$(this).attr(&quot;data-show-id&quot;);
+
+            self.$(&#039;#scheduleTapOverlay .loading&#039;).show();
+            self.$(&#039;#scheduleOverlayContent&#039;).removeClass(&quot;in&quot;)
+            self.schedule.ajax.getEntryDetails(showId, programId, function(response){
+                self.schedule.displayEntryDetails(response)
+            })
+
+            // set the first switchig carousel div to visible
+            self.$(&#039;#ovCarousel1&#039;).show(); self.$(&#039;#ovCarousel2&#039;).hide();
+
+            self.$(&quot;.stationgridOverlay&quot;).show();
+            self.schedule.highlightSchedProgram(self.$(this));
+            self.schedule.highlightHour(self.$(this));
+            self.$(&quot;#gridOverlay&quot;).addClass(&quot;on&quot;)
+                .attr(&quot;data-program-id&quot;,self.$(this).attr(&quot;data-program-id&quot;))
+                .attr(&quot;data-show-id&quot;,self.$(this).attr(&quot;data-show-id&quot;))
+                .attr(&quot;data-channel&quot;,self.$(this).attr(&quot;data-channel&quot;))
+                .attr(&quot;data-program-title&quot;,self.$(this).attr(&quot;data-program-title&quot;))
+                .attr(&quot;data-episode-title&quot;,self.$(this).attr(&quot;data-episode-title&quot;));
+
+        });
+
+        self.$(&#039;.moreAirdates&#039;).unbind(&quot;click&quot;);
+        self.$(&#039;.moreAirdates&#039;).click(function(){
+            var elem = self.$(this).closest(&#039;#gridOverlay&#039;) || self.$(this).closest(&#039;.verticalProgram&#039;);
+            var programName = elem.attr(&quot;data-program-title&quot;);
+            var episodeName = elem.attr(&quot;data-episode-title&quot;);
+            ga(&#039;send&#039;, &#039;event&#039;,&#039;TV Schedule Module&#039;, &#039;Episode Details - See More Airdates&#039;, programName +&quot; | &quot;+episodeName);
+
+            self.$(&#039;#ovCarousel1&#039;).toggle();
+            self.$(&#039;#ovCarousel2&#039;).toggle();
+
+            if(self.config.isKidsTvss){
+                self.$(&#039;#ovAirdatesContainer&#039;).css({
+                    &#039;height&#039;: self.$(&#039;.ovAirdatesRow&#039;).outerHeight() * 4,
+                    &#039;overflow-y&#039;: &#039;auto&#039;
+                })
+            }
+        });
+
+        self.$(&#039;.showDetailsButton&#039;).unbind(&quot;click&quot;)
+        self.$(&#039;.showDetailsButton&#039;).click(function(){
+            var elem = self.$(this).closest(&quot;.verticalProgram&quot;);
+            var programId = elem.attr(&quot;data-program-id&quot;);
+            var showId = elem.attr(&quot;data-show-id&quot;);
+
+            var programName = elem.attr(&#039;data-program-title&#039;);
+            var episodeName = elem.attr(&#039;data-episode-title&#039;);
+
+            var loading = self.$(this).before(&quot;&lt;div class=&#039;loading&#039;&gt;&lt;/div&gt;&quot;)
+            ga(&#039;send&#039;, &#039;event&#039;,&#039;TV Schedule Module&#039;, &#039;Episode Details&#039;, programName +&quot; | &quot;+episodeName);
+
+            if(self.config.isWhatsOn){
+                //collapse all expanded vertical items, only for what&#039;s on
+                self.$(&#039;.showDetailsButton&#039;)
+                .closest(&#039;#schedListViewContent&#039;)
+                .find(&#039;.detailsContainer:visible&#039;).hide()
+                self.$(&#039;.showDetailsButton&#039;).show();
+            }
+
+            elem.find(&#039;.showDetailsButton&#039;).hide();
+
+            self.schedule.ajax.getEntryDetails(showId, programId, function(response){
+                elem.find(&#039;.loading&#039;).remove()
+                self.schedule.displayEntryDetails(response, elem)
+                elem.find(&#039;.detailsContainer&#039;).show();
+                elem.find(&quot;.smallSwitchable.Tab2&quot;).hide();
+            });
+        });
+
+        self.$(&#039;.schedulesDarkButton.smallAirdates&#039;).unbind(&quot;click&quot;)
+        self.$(&#039;.schedulesDarkButton.smallAirdates&#039;).click(function(){
+            // load temporary template data intro the detailsContainer
+            var programId = self.$(this).closest(&#039;.verticalProgram&#039;).attr(&quot;data-program-id&quot;);
+            var showId = self.$(this).closest(&#039;.verticalProgram&#039;).attr(&quot;data-show-id&quot;);
+            var channelId = self.$(this).closest(&#039;.verticalProgram&#039;).attr(&quot;data-channel&quot;);
+
+            var elem = self.$(this);
+            elem.closest(&#039;.verticalProgram&#039;).find(&#039;.smallSwitchable.Tab1&#039;).hide();
+            elem.closest(&#039;.verticalProgram&#039;).find(&#039;.smallSwitchable.Tab2&#039;).show();
+
+            elem.closest(&#039;.verticalProgram&#039;).find(&#039;#episodeDetails&#039;).unbind(&quot;click&quot;)
+            elem.closest(&#039;.verticalProgram&#039;).find(&#039;#episodeDetails&#039;).click(function(){
+                self.$(this).closest(&#039;.verticalProgram&#039;).find(&quot;.smallSwitchable.Tab1&quot;).show()
+                self.$(this).closest(&#039;.verticalProgram&#039;).find(&quot;.smallSwitchable.Tab2&quot;).hide()
+            })
+
+        });
+
+        self.$(&quot;#episodeDetails&quot;).unbind(&quot;click&quot;)
+        self.$(&#039;#episodeDetails&#039;).click(function(){
+            self.$(&#039;#ovCarousel1&#039;).toggle();
+            self.$(&#039;#ovCarousel2&#039;).toggle();
+        });
+
+        self.$(&#039;#changeProvider&#039;).unbind(&quot;click&quot;);
+        self.$(&#039;#changeProvider&#039;).click(function(){
+            self.$(&#039;.modalOverlay&#039;).addClass(&quot;in&quot;);
+            self.$(&#039;.modalOverlay .modalContent .content&#039;).hide();
+            self.$(&#039;.modalOverlay #scheduleProvider&#039;).show();
+            self.schedule.loadProviders(PBS.snippets[config.snippetId].PROVIDERS);
+        });
+
+        self.$(&#039;#printDay&#039;).unbind(&quot;click&quot;);
+        self.$(&#039;#printDay&#039;).click(function(){
+            ga(&#039;send&#039;, &#039;event&#039;,&#039;TV Schedule Module&#039;, &#039;Printable Schedule&#039;);
+            self.schedule.setPrintPreview(&quot;today&quot;);
+        });
+
+        //kids grid
+        if(self.config.isKidsTvss){
+            self.$(&#039;.header-buttons #kidsOnly, .header-buttons #fullSchedule&#039;).unbind(&#039;click&#039;);
+            self.$(&#039;.header-buttons #kidsOnly, .header-buttons #fullSchedule&#039;).bind(&#039;click&#039;, function(e){
+
+                self.$(&#039;.header-buttons #kidsOnly, .header-buttons #fullSchedule&#039;).removeClass(&#039;active&#039;);
+                self.$(this).addClass(&#039;active&#039;);
+                if(self.$(&#039;.header-buttons #kidsOnly&#039;).hasClass(&#039;active&#039;)){
+                    self.schedule.addKidsFilter();
+                }else{
+                    self.schedule.removeKidsFilter();
+                }
+            });
+
+            self.$(&#039;.header-buttons #kidsOnly, .header-buttons #fullSchedule&#039;).unbind(&#039;mousedown&#039;);
+            self.$(&#039;.header-buttons #kidsOnly, .header-buttons #fullSchedule&#039;).bind(&#039;mousedown&#039;, function(e){
+                self.$(this).addClass(&#039;clicked&#039;);
+            });
+
+            self.$(&#039;.header-buttons #kidsOnly, .header-buttons #fullSchedule&#039;).unbind(&#039;mouseup, mouseout&#039;);
+            self.$(&#039;.header-buttons #kidsOnly, .header-buttons #fullSchedule&#039;).bind(&#039;mouseup, mouseout&#039;, function(e){
+                self.$(this).removeClass(&#039;clicked&#039;);
+            });
+
+            self.$(&#039;#loadMore&#039;).unbind(&quot;mousedown&quot;);
+            self.$(&#039;#loadMore&#039;).bind(&#039;mousedown&#039;, function(){
+                self.$(this).addClass(&#039;clicked&#039;);
+            });
+
+            self.$(&#039;#loadMore&#039;).unbind(&quot;mouseup, mouseout&quot;);
+            self.$(&#039;#loadMore&#039;).bind(&#039;mouseup, mouseout&#039;, function(){
+                self.$(this).removeClass(&#039;clicked&#039;);
+            });
+        }
+
+    }
+
+})(window, window.tvss_jq);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

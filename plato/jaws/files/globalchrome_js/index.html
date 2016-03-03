@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - globalchrome.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>globalchrome.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">73.38</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">264</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">25.33</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.12</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">jQuery(function() {
+    var $ = jQuery;
+
+    //Override the default text and style of the &quot;Save and continue&quot; button on destination add page
+    $(&#039;#destination_form&gt;div&gt;.submit-row&gt;input&#039;).val(&#039;Save&#039;);
+    $(&#039;#destination_form&gt;div&gt;.submit-row&gt;input&#039;).attr(&#039;class&#039;, &#039;default&#039;);
+    //Load current widget for selected destination
+    load_current_widgets();
+});
+
+function open_widget_popup(obj, titleName, callback_open, callback_close){
+    //event handler for clicking on config widget link
+    $(obj).click(function(){
+        var target = $(this).attr(&#039;href&#039;);
+        $(this).attr(&#039;href&#039;, &#039;javascript:void(0);&#039;);
+       // Create the dialog
+        $(&#039;#div_dialog&#039;).dialog({
+            title: titleName,
+            autoOpen: true,
+            modal: true,
+            width: &#039;800px&#039;,
+            height: &#039;auto&#039;,
+            resizable: false,
+            closeOnEscape: false,
+            position: [220, 100],
+            zIndex: 10,
+            overlay: {
+                backgroundColor: &#039;#000&#039;,
+                opacity: 0.5
+            },
+            open: function(event, ui) {
+                // Load the remote content
+                $(this).load(
+                    target+&#039; #content-main&#039;,
+                    function (responseText, textStatus, XMLHttpRequest) {
+                        if (textStatus != &#039;success&#039;) {
+                            return;
+                        }
+                        // Post load handler
+                        if (typeof(callback_open)==&#039;function&#039;)
+                            callback_open.call(self, $(this), target);
+                    }
+                )
+            },
+            close: function(event, ui){
+                if (typeof(callback_close)==&#039;function&#039;)
+                    callback_close.call(self, $(this));
+                location.reload();
+            }
+        });
+    });
+}
+
+function delete_widget(section, callback){
+    //delete widget event handler
+    $(&#039;#&#039;+ section +&#039; .a_widget_delete&#039;).click(function(){
+        var target = $(this).attr(&#039;href&#039;);
+        $(this).attr(&#039;href&#039;, &#039;javascript:void(0);&#039;);
+        // Create the dialog
+        $(&#039;#div_delete&#039;).dialog({
+            title: &#039;Delete widget&#039;,
+            autoOpen: true,
+            modal: true,
+            width: &#039;400px&#039;,
+            height: &#039;auto&#039;,
+            resizable: false,
+            closeOnEscape: false,
+            show: &#039;explode&#039;,
+            zIndex: 10,
+            overlay: {
+                backgroundColor: &#039;#000&#039;,
+                opacity: 0.5
+            },
+            buttons: {
+                &quot;No&quot;: function() {
+                    $(this).dialog(&quot;close&quot;);
+                    location.reload();
+                    },
+                &quot;Yes&quot;: function() {
+                    var dlg = $(this);
+                    $.ajax({
+                        url: target,
+                        type: &#039;GET&#039;,
+                        success: function() {
+                            dlg.dialog(&quot;close&quot;);
+                            if (typeof(callback)==&#039;function&#039;)
+                               callback.call(self, $(this), target);
+                            location.reload();
+                        },
+                        error: function(xhr, status, err){
+                            alert(&#039;Error occured: status code = &#039;+status);
+                            return false;
+                        }
+                    });
+                    }
+                },
+            close: function(event, ui){
+                location.reload();
+            }
+        });
+    });
+    }
+
+function load_current_widgets(){
+    //Load changelist for base widget page
+    if(typeof current_widgets_url != &#039;undefined&#039;){
+        $(&#039;#id_widget_list&#039;).load(current_widgets_url + &quot; #changelist&quot;, function(response, status, xhr) {
+            if (status == &quot;error&quot;) {
+              var msg = &quot;Sorry but there was an error: &quot;;
+              $(&quot;#error&quot;).html(msg + xhr.status + &quot; &quot; + xhr.statusText);
+            }
+            if (status == &quot;success&quot;){
+                // Display/hide &quot;Add widget&quot; link
+                var widgets_count = $(&#039;#changelist form table#result_list tbody tr&#039;).length;
+                if(add_widgets_url != &#039;&#039;){
+                    $(&#039;#id_add_widget&#039;).attr(&#039;href&#039;, add_widgets_url);
+                    $(&#039;#id_add_widget&#039;).show();
+                }
+                else{
+                    $(&#039;#id_add_widget&#039;).hide();
+                }
+
+                // Handle config/add widget click
+                open_widget_popup($(&#039;#pbs-widgets .a_widget_change&#039;),
+                    &#039;Configure Widgets&#039;,
+                    function (container, target) {
+                        //bind_inline_events()
+                        //handle_themes_selection();
+                        //Add widget link click handle function
+                        open_add_widget_popup();
+                        // Form ajax options for events in popup
+                        ajax_options_handler(target);
+                        $(&quot;#div_dialog&quot;).load(target);
+                        $(&quot;.ui-dialog&quot;).css({&#039;z-index&#039;:100, &#039;left&#039;: 315, &quot;top&quot;: 204});
+                    },
+                    function (container){
+                        load_current_widgets();
+                        //Add link for Widget get code href
+                        link = $(&#039;#pbs-widgets .a_widget_get_code&#039;).attr(&#039;rel&#039;);
+                        $(&#039;#pbs-widgets .a_widget_get_code&#039;).attr(&#039;href&#039;, link);
+                    }
+
+                );
+
+                open_widget_popup($(&#039;#pbs-widgets .a_widget_change&#039;),
+                    &#039;Configure Widgets&#039;,
+                    function (container, target) {
+                        handle_themes_selection();
+                        //Add widget link click handle function
+                        open_add_widget_popup();
+                        // Form ajax options for events in popup
+                        ajax_options_handler(target);
+                        $(&quot;#div_dialog&quot;).load(target);
+                        $(&quot;.ui-dialog&quot;).css({&#039;z-index&#039;:100, &#039;left&#039;: 315, &quot;top&quot;: 204});
+                    },
+                    function (container){
+                        load_current_widgets();
+                        //Add link for Widget get code href
+                        link = $(&#039;#pbs-widgets .a_widget_get_code&#039;).attr(&#039;rel&#039;);
+                        $(&#039;#pbs-widgets .a_widget_get_code&#039;).attr(&#039;href&#039;, link);
+                    }
+
+                );
+
+                open_widget_popup($(&#039;#pbs-widgets .a_widget_add&#039;),
+                    &#039;Add Widgets&#039;,
+                    function (container, target) {
+                        //Add widget link click handle function
+                        open_add_widget_popup();
+                        // Form ajax options for events in popup
+                        ajax_options_handler(target);
+                        $(&quot;#div_dialog&quot;).load(target);
+                    },
+                    function (container){
+                        load_current_widgets();
+                        //Add link for Widget get code href
+                        link = $(&#039;#pbs-widgets .a_widget_get_code&#039;).attr(&#039;rel&#039;);
+                        $(&#039;#pbs-widgets .a_widget_get_code&#039;).attr(&#039;href&#039;, link);
+                    }
+
+                );
+                //Handle delete widget click
+                delete_widget(&#039;pbs-widgets&#039;, function(container, target){load_current_widgets();});
+                //handle get embedded code click
+                handle_get_code_click(widgets_count);
+            }
+        });
+    }
+}
+
+
+function handle_get_code_click(widgets_count){
+    if(widgets_count&gt;0){
+        $(&#039;#widget_droppable_code&#039;).show();
+        //Handle get embedded code link click
+        open_widget_popup($(&#039;#widget_droppable_code .a_widget_get_code&#039;),
+                            &#039;Widgets Droppable Code&#039;,
+                            function (container, target) {
+                                $(&#039;#widget_get_code_form&gt;.submit-row&gt;input&#039;).val(&#039;Close&#039;);
+                                $(&#039;#widget_get_code_form&gt;.submit-row&gt;input&#039;).click(function(){
+                                    $(&#039;#div_dialog&#039;).dialog(&#039;close&#039;);
+                                    location.reload();
+                                    return false;
+                                });
+                            },
+                            function (container){
+                                link = $(&#039;#widget_droppable_code .a_widget_get_code&#039;).attr(&#039;rel&#039;);
+                                $(&#039;#widget_droppable_code .a_widget_get_code&#039;).attr(&#039;href&#039;, link);
+                            });
+    }
+    else
+        $(&#039;#widget_droppable_code&#039;).hide();
+}
+
+function open_add_widget_popup(){
+    if($(&#039;#available_widget_types&#039;).length&gt;0){
+        load_selected_widget_type();
+        $(&#039;#available_widget_types&#039;).change(function() {
+            load_selected_widget_type();
+        });
+    }
+}
+
+function ajax_options_handler(target){
+    var options = {
+        url: target,
+        success: function(responseText, statusText) {
+            var wrap = $(responseText).find(&#039;#content-main&#039;);
+            var errors = wrap.find(&#039;.errornote&#039;);
+            if(errors.length&gt;0){
+                //reload page if an error occured on saving of the object
+                $(&#039;#div_dialog&#039;).html(wrap);
+                post_load_add_widget($(&#039;#content-widget&#039;), target);
+            }
+            else{
+                //Close dialog box if the object has been saved successfully
+
+                $(&#039;#div_dialog&#039;).dialog(&#039;close&#039;);
+            }
+        }
+    };
+    // Init the submit event handler of the form
+    $(&quot;#div_dialog form&quot;).submit(function() {
+
+        $(this).ajaxSubmit(options);
+        return false;
+    });
+}
+
+
+function bind_click(target, section, callback){
+    $(&#039;#div_&#039;+ section +&#039;_inline&#039;).remove();
+    $(&#039;.&#039;+section).append(&#039;&lt;div id=&quot;div_&#039;+section+&#039;_inline&quot;&gt;&lt;/div&gt;&#039;);
+
+    $(&#039;#add_id_&#039;+section).attr(&#039;href&#039;, &#039;javascript:void(0);&#039;);
+    $(&#039;#add_id_&#039;+section).attr(&#039;onclick&#039;, &#039;&#039;);
+    $(&#039;#add_id_&#039;+section).bind(&#039;click&#039;, {target: target}, callback);
+}
+
+var post_load_add_widget = function(container, widget_add_url) {
+    handle_themes_selection();
+    // Form ajax options
+    ajax_options_handler(widget_add_url);
+}</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

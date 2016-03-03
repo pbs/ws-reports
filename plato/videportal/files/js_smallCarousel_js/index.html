@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - js/smallCarousel.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>js/smallCarousel.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">67.26</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">119</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">30.24</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">0.86</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function ($) {
+    $.fn.smallCarousel = function () {
+        var carousel = $(this),
+            item = carousel.find(&#039;div.item&#039;),
+            nrOfItemShown,
+            total,
+            controls = carousel.find(&#039;.controls&#039;),
+            leftControl = controls.find(&#039;.leftArrow&#039;),
+            rightControl = controls.find(&#039;.rightArrow&#039;),
+            current = 1,
+            screenWidth = $(window).width();
+
+        if (screenWidth &gt;= 1024) {
+            nrOfItemShown = 6;
+        }
+        if (screenWidth &gt;= 768 &amp;&amp; screenWidth &lt;= 1023) {
+            nrOfItemShown = 4;
+        } else if (screenWidth &gt;= 600 &amp;&amp; screenWidth &lt;= 767) {
+            nrOfItemShown = 3;
+        }
+
+        total = Math.ceil(item.length / nrOfItemShown);
+
+        function show(nr) {
+            var start,
+                end,
+                showItem,
+                firstInRow,
+                bpLargeUp = &#039;(min-width: 1024px)&#039;,
+                bpLarge = &#039;(min-width: 768px) and (max-width: 1023px)&#039;,
+                bpMedium = &#039;(min-width: 600px) and (max-width: 767px)&#039;;
+
+            // add event listeners if the carousel hasn&#039;t been initiated
+            if (!carousel.hasClass(&#039;carouselInitiated&#039;)) {
+                leftControl.on(&#039;click&#039;, function () { goLeft(); });
+                rightControl.on(&#039;click&#039;, function () { goRight(); });
+                carousel.addClass(&quot;carouselInitiated&quot;);
+            }
+
+            if (window.matchMedia(bpLargeUp).matches) {
+                nrOfItemShown = 7;
+            }
+            if (window.matchMedia(bpLarge).matches) {
+                nrOfItemShown = 4;
+            } else if (window.matchMedia(bpMedium).matches) {
+                nrOfItemShown = 3;
+            }
+            start = (nr - 1)  * nrOfItemShown;
+            end = nr * nrOfItemShown;
+            showItem = carousel.find(&#039;div.item&#039;).slice(start, end);
+            firstInRow = carousel.find(&#039;div.item:nth-child(&#039; + (start + 1) + &#039;)&#039;);
+            total = Math.ceil(item.length / nrOfItemShown);
+
+            item.removeAttr(&#039;style&#039;);
+            item.removeClass(&#039;active&#039;); // remove all active classes
+            showItem.addClass(&#039;active&#039;); // add active class to current bullet
+
+            firstInRow.css(&#039;margin-left&#039;, 0);
+
+            if (current === 1) {
+                leftControl.hide();
+            } else {
+                leftControl.show();
+            }
+            if (current &gt;= total) {
+                rightControl.hide();
+            } else {
+                rightControl.show();
+            }
+        }
+
+        function goLeft() {
+            if (current &gt; 1) {
+                current--;
+            } else {
+                current = total;
+            }
+            show(current);
+        }
+
+        function goRight() {
+            if (current &lt; total) {
+                current++;
+            } else {
+                current = 1;
+            }
+            show(current);
+        }
+
+        function init() {
+            // add a class to see that the carousel has been initiaded
+            carousel.addClass(&quot;carouselInitiated&quot;);
+            // add event listeners for arrows
+            leftControl.on(&#039;click&#039;, function () { goLeft(); });
+            rightControl.on(&#039;click&#039;, function () { goRight(); });
+            // show the first element
+            show(1);
+        }
+
+        if (total &gt; 1) {
+            init();
+        }
+
+        function log(msg) {
+            console.log(msg);
+        }
+
+        $.fn.smallCarousel.getCurrent = function () {
+            return current;
+        }
+
+        $(window).on(&#039;resize orientationchange&#039;, function(){
+            var screenWidth = $(window).outerWidth();
+            if (screenWidth &gt;= 600) {
+                show(Math.min(current, total));
+            }
+        });
+    };
+}(jQuery));</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>
