@@ -16,8 +16,8 @@ var wsProjects = [
         ]
     },
     {
-        name: 'videportal',
-        clone: 'git clone -b LUN-2933 git@github.com:pbs/mobileweb.git videportal'
+        name: 'videoportal',
+        clone: 'git clone -b LUN-2933 git@github.com:pbs/mobileweb.git videoportal'
     },
     {
         name: 'jaws',
