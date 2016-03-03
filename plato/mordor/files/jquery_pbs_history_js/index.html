@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - jquery.pbs.history.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>jquery.pbs.history.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">63.19</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">254</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">60.53</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">3.36</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/*global PBS */
+(function(window) {
+    &quot;use strict&quot;;
+
+    if (typeof PBS === &#039;undefined&#039;) {
+        window.PBS = {}
+    }
+
+    var $ = jQuery;
+
+    Array.prototype.clean = function(deleteValue) {
+        for (var i = 0; i &lt; this.length; i++) {
+            if (this[i] === deleteValue) {
+                this.splice(i, 1);
+                i--;
+            }
+        }
+        return this;
+    };
+
+    PBS.History = function(parent, config, newjQuery){
+        var self = this;
+
+        this.schedule = parent.schedule;
+        this.parent = parent;
+        this.config = config;
+
+        this.$ = newjQuery;
+    };
+
+    PBS.History.prototype.init = function(){
+
+        if(!this.config.stationObj.callsign){
+            return console.log(&quot;PBS.History doesn&#039;t have callsign&quot;);
+        }
+        this.addNavEvents();
+        this.handleHashAction(this.parseHash());
+
+        this.oldHash = window.location.hash;
+
+    };
+
+    PBS.History.prototype.setHash = function(params){
+        if(this.config.isWhatsOn){ return; }
+
+        var h = &quot;&quot;;
+        if(params){
+            for (var i in params){
+                if(params.hasOwnProperty(i)){
+                    //decode then re-encode : make sure it&#039;s not encoded twice
+                    h += i+&quot;=&quot;+encodeURIComponent(decodeURIComponent(params[i]))+&quot;&amp;&quot;;
+                }
+            }
+            if(h.substring(h.length - 1, h.length) === &quot;&amp;&quot;){
+                h = h.substring(0, h.length - 1);
+            }
+
+        }
+
+        window.location.hash = h;
+    };
+
+    PBS.History.prototype.updateHash = function(params){
+
+        var oldHash = this.parseHash();
+
+        for (var i in params) {
+            if(params.hasOwnProperty(i)){
+                if(params[i] === null){
+                    delete oldHash[i];
+                }else{
+                    oldHash[i] = params[i];
+                }
+            }
+        }
+
+        this.setHash(oldHash);
+    };
+
+    PBS.History.prototype.parseHash = function(hash){
+        var h = hash || window.location.hash;
+
+        if(h){
+            var result = {};
+            h = h.replace(&quot;#&quot;, &quot;&quot;);
+
+            h = h.split(&quot;&amp;&quot;);
+            for(var i=0; i&lt;h.length; i++){
+                result[h[i].split(&quot;=&quot;)[0]] = h[i].split(&quot;=&quot;)[1];
+            }
+
+            return result;
+        }
+
+        return {};
+    };
+
+    PBS.History.prototype.handleHashAction = function(params){
+        var self = this;
+        var helper = new PBS.Helpers(self);
+        var config = this.config;
+
+        self.$(&#039;.scheduleStations&#039;).html(&#039;&#039;);
+        self.$(&#039;.schedulesRow&#039;).remove();
+
+        if(!params.page){
+            this.setHash({page: &quot;schedule&quot;});
+            this.updateHash({
+                day : self.$.datepicker.formatDate(&quot;yymmdd&quot;, $(&#039;#&#039;+self.config.snippetId).find(&#039;#datepicker&#039;).datepicker( &quot;getDate&quot; ))
+            });
+        }
+
+        if(!self.config.isWhatsOn){
+            if(params.page === &quot;search&quot; || params.page === &quot;searchProgram&quot;){
+                self.$(document).ready(function(){
+                    self.$(&#039;#currentProvider&#039;).html(decodeURIComponent(params.provider));
+                    self.$(&#039;.searchButton&#039;).click();
+                    self.$(&#039;.scheduleSearchInput&#039;).val(params.search);
+                    self.$(&#039;#programSortconfig option&#039;).filter(function() {
+                        return self.$(this).text() === decodeURIComponent(params.sorted);
+                    }).prop(&#039;selected&#039;, true);
+                    self.$(&#039;.episodeSortconfig option&#039;).filter(function() {
+                        return self.$(this).text() === decodeURIComponent(params.sortedepisode);
+                    }).prop(&#039;selected&#039;, true);
+
+                    if(params.page === &quot;search&quot;){
+                        self.parent.schedule.ajax.getSearchResults();
+                    }
+
+                    if(params.page === &quot;searchProgram&quot;){
+                        self.$(&#039;.paginationContainer&#039;).html(&quot;&quot;);
+                        self.parent.schedule.renderProgramPage(params.programfilter);
+                    }
+                });
+            }
+        }
+
+        var date = params.day ? helper.parseDate(params.day) : new Date();
+        $(&#039;#&#039;+self.config.snippetId).find(&#039;#datepicker&#039;).datepicker(&quot;setDate&quot;, date);
+        this.updateHash({
+            day : self.$.datepicker.formatDate(&quot;yymmdd&quot;, $(&#039;#&#039;+self.config.snippetId).find(&#039;#datepicker&#039;).datepicker( &quot;getDate&quot; ))
+        });
+        if(params.provider){
+            helper.setCookie(&quot;pbssol.provider&quot;, decodeURIComponent(params.provider));
+        }
+
+        this.parent.schedule.ajax.getFeed(function(response){
+            var helper = new PBS.Helpers(self), provider;
+            if(!self.config.isWhatsOn){
+                provider = self.$.cookie(&quot;pbssol.provider&quot;)|| &quot;Broadcast&quot;;
+            }else{
+                provider = &quot;Broadcast&quot;;
+            }
+            var data = response.headends[0].feeds;
+
+            //Save feed
+            PBS.snippets[config.snippetId].FEED = response;
+
+            //parse and set providers
+           PBS.snippets[config.snippetId].PROVIDERS = self.setProviders(response);
+
+            if(provider &amp;&amp; helper.getProviderFeed(provider, response)){
+                data = helper.getProviderFeed(provider, response);
+
+            }
+
+            if(PBS.snippets[config.snippetId].CURRENT_PROVIDER){
+                provider = PBS.snippets[config.snippetId].CURRENT_PROVIDER
+            }
+            self.$(&#039;#listProvider select option&#039;).filter(function() {
+                return self.$(this).text() === provider;
+            }).prop(&#039;selected&#039;, true);
+
+            //update provider
+            helper.setCookie(&quot;pbssol.provider&quot;, provider);
+            self.$(&#039;#currentProvider&#039;).html(provider);
+            self.updateHash({
+                provider : provider
+            });
+
+            self.parent.schedule.loadDay(data);
+
+        });
+    };
+
+    PBS.History.prototype.setProviders = function(response){
+        var providers = [];
+        var self = this;
+
+        self.$(&#039;#listProvider .select&#039;).html(&quot;&quot;);
+        for(var i=0; i&lt;response.headends.length; i++){
+            providers.push(response.headends[i].name);
+            self.$(&#039;#listProvider select&#039;).append(&#039;&lt;option&gt;&#039;+response.headends[i].name+&#039;&lt;/option&gt;&#039;);
+        }
+
+        //dirty iOS fix for multiline option text
+        self.$(&#039;#listProvider select&#039;).append(&#039;&lt;optgroup label=&quot;&quot;&gt;&lt;/optgroup&gt;&#039;)
+
+        return providers;
+    };
+
+    PBS.History.prototype.addNavEvents = function(){
+        var self = this;
+
+        $(&#039;body&#039;)
+            .off(&#039;click&#039;)
+            .on(&quot;click&quot;,function(e){
+                var cls = self.$(e.target).attr(&quot;class&quot;) || &quot;&quot;;
+                if(self.$(e.target).attr(&quot;id&quot;) !== &quot;scheduleTapOverlay&quot; &amp;&amp;
+                    self.$(e.target).parents(&quot;.modalOverlay&quot;).length === 0 &amp;&amp;
+                    !self.$(e.target).hasClass(&quot;modalOverlay&quot;) &amp;&amp;
+                    self.$(e.target).parents(&#039;#scheduleTapOverlay&#039;).length === 0 &amp;&amp;
+                    self.$(e.target).parents(&#039;.calendarEntry&#039;).length === 0 &amp;&amp;
+                    cls.indexOf(&quot;calendarEntry&quot;) === -1 ){
+
+                        self.$(&quot;#gridOverlay&quot;).removeClass(&quot;on&quot;);
+                        self.$(&quot;.stationgridOverlay&quot;).hide();
+                        self.$(&#039;.schedulesTime .hourOverlay&#039;).hide();
+                        self.$(&#039;.schedulesTime&#039;).removeClass(&quot;selected&quot;);
+
+                        setTimeout(function(){
+                            self.$(&#039;#scheduleOverlayContent&#039;).removeClass(&quot;in&quot;);
+                            self.$(&#039;#gridOverlayContainer .loading&#039;).show();
+                            self.$(&#039;#scheduleOverlayContent .ovSubtitle&#039;).html(&quot;&quot;);
+                            self.$(&#039;#scheduleOverlayContent .ovProgramTitle&#039;).html(&quot;&quot;);
+                            self.$(&#039;#scheduleOverlayContent .ovDescription&#039;).html(&quot;&quot;)
+                            self.$(&#039;#scheduleOverlayContent .ovSubData1&#039;).html(&quot;&quot;)
+                            self.$(&#039;#scheduleOverlayContent .ovSubData2&#039;).html(&quot;&quot;)
+                            self.$(&#039;#scheduleOverlayContent .ovImage&#039;).html(&quot;&quot;)
+                        }, 500)
+                    }
+            })
+    
+        if(self.config.isKidsTvss){
+            $(window)
+                .off(&#039;hashchange.&#039;+self.config.snippetId)
+                .on(&#039;hashchange.&#039;+self.config.snippetId, function(){
+                    var oldHash = self.parseHash(self.oldHash);
+                    var hash = self.parseHash();
+                    if(oldHash.page === &#039;searchProgram&#039; &amp;&amp; hash.page ===&#039;search&#039;){
+                        self.$(&#039;.programSearchClose&#039;).click();
+                    }
+                    if(oldHash.page === &#039;search&#039; &amp;&amp; hash.page ===&#039;schedule&#039;){
+                        self.$(&#039;.searchClose&#039;).click();
+                    }
+                    if((oldHash.page === &#039;schedule&#039; &amp;&amp; hash.page ===&#039;search&#039;) ||
+                       (oldHash.page === &#039;search&#039; &amp;&amp; hash.page ===&#039;searchProgram&#039;)){
+                        self.handleHashAction(self.parseHash());
+                    }
+                    self.oldHash = window.location.hash;
+                })
+        }
+    };
+
+})(window, window.tvss_jq);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>
