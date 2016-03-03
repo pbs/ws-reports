@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - shared/media/snippet-widgets/js/marquee-promo-admin.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>shared/media/snippet-widgets/js/marquee-promo-admin.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">63.62</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">176</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">22.07</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">1.28</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/* global SnippetWidgetRegistry, django, put */
+(function($) {
+    &#039;use strict&#039;;
+    var $parent,
+        widgetSelector = &#039;tr td.col-sm-12[colspan=&quot;2&quot;] &#039; +
+                            &#039;div.widget-box &#039; +
+                                &#039;div.widget-header &gt; &#039; +
+                                    &#039;h4.widget-title + &#039;+
+                                    &#039;div.widget-toolbar &#039; +
+                                        &#039;a.widget-anchor[href=&quot;#&quot;] &#039; +
+                                            &#039;i.ace-icon.glyphicon.glyphicon-chevron-up.bigger-125 &#039; +
+                                            &#039;&lt;&lt;&lt;&lt; div.widget-body &#039; +
+                                                &#039;div.widget-main &#039; +
+                                                    &#039;table.form-horizontal&#039;,
+        formMap = [
+            {
+                wrapper: widgetSelector,
+                title: &#039;Main Area&#039;,
+                collapsed: false,
+                fields: [
+                    &#039;07_Program_Logo&#039;,
+                    &#039;07_Program_Logo_Link&#039;,
+                    &#039;08_Description&#039;,
+                    &#039;09_Subhead_Text&#039;,
+                    &#039;10_Navigation_Link_Type&#039;,
+                ]
+            },
+            {
+                wrapper: widgetSelector,
+                title: &#039;Social&#039;,
+                collapsed: true,
+                fields: [
+                    &#039;00_Social_Media_Label&#039;,
+                    &#039;tr td.col-sm-12[colspan=&quot;2&quot;] hr&#039;,
+                    &#039;01_Social_Media_Image&#039;,
+                    &#039;01_Social_Media_Url&#039;,
+                    &#039;tr td.col-sm-12[colspan=&quot;2&quot;] hr&#039;,
+                    &#039;02_Social_Media_Image&#039;,
+                    &#039;02_Social_Media_Url&#039;,
+                    &#039;tr td.col-sm-12[colspan=&quot;2&quot;] hr&#039;,
+                    &#039;03_Social_Media_Image&#039;,
+                    &#039;03_Social_Media_Url&#039;,
+                    &#039;tr td.col-sm-12[colspan=&quot;2&quot;] hr&#039;,
+                    &#039;04_Social_Media_Image&#039;,
+                    &#039;04_Social_Media_Url&#039;,
+                    &#039;tr td.col-sm-12[colspan=&quot;2&quot;] hr&#039;,
+                    &#039;05_Social_Media_Image&#039;,
+                    &#039;05_Social_Media_Url&#039;,
+                    &#039;tr td.col-sm-12[colspan=&quot;2&quot;] hr&#039;,
+                    &#039;06_Social_Media_Image&#039;,
+                    &#039;06_Social_Media_Url&#039;,
+                ]
+            },
+            {
+                wrapper: widgetSelector,
+                title: &#039;Producers&#039;,
+                collapsed: true,
+                fields: [
+                    &#039;11_Producer_Label&#039;,
+                    &#039;tr td.col-sm-12[colspan=&quot;2&quot;] hr&#039;,
+                    &#039;12_Producer_Logo&#039;,
+                    &#039;12_Producer_Logo_Link&#039;,
+                    &#039;tr td.col-sm-12[colspan=&quot;2&quot;] hr&#039;,
+                    &#039;13_Producer_Logo&#039;,
+                    &#039;13_Producer_Logo_Link&#039;,
+                ]
+            },
+            {
+                wrapper: widgetSelector,
+                title: &#039;Partners&#039;,
+                collapsed: true,
+                fields: [
+                    &#039;14_Partner_Label&#039;,
+                    &#039;tr td.col-sm-12[colspan=&quot;2&quot;] hr&#039;,
+                    &#039;15_Partner_Logo&#039;,
+                    &#039;15_Partner_Logo_Link&#039;,
+                    &#039;tr td.col-sm-12[colspan=&quot;2&quot;] hr&#039;,
+                    &#039;16_Partner_Logo&#039;,
+                    &#039;16_Partner_Logo_Link&#039;,
+                ]
+            },
+            {
+                wrapper: widgetSelector,
+                title: &#039;Reminder&#039;,
+                collapsed: true,
+                fields: [
+                    &#039;17_Reminder_File&#039;,
+                    &#039;18_Reminder_Message&#039;,
+                ]
+            }
+        ];
+
+    window.MarqueePromo = window.MarqueePromo || {
+        buildAdminLayout: function($parent, map){
+            var $field, $label, $input, $widget, $widgetBox,
+                sectionIter, fieldsIter, section, fields;
+
+            for (sectionIter = 0; sectionIter &lt; map.length; sectionIter++){
+
+                section = map[sectionIter];
+                $widget = $(put($parent.get(0), section.wrapper));
+                $widgetBox = $widget.closest(&#039;.widget-box&#039;);
+                $widgetBox.find(&#039;.widget-title&#039;).html(section.title);
+                this.setCollapseHandler($widgetBox);
+
+                fields = section.fields;
+                for (fieldsIter = 0; fieldsIter &lt; fields.length; fieldsIter++){
+                    $input = $(&#039;#var_&#039; + section.fields[fieldsIter]);
+                    if(!$input.length){
+                        // input doesn&#039;t exist =&gt; we need to create an element
+                        put($widget.find(&#039;tbody&#039;).get(0), section.fields[fieldsIter]);
+                    }
+                    else{
+                        //input exists =&gt; append it
+                        $label = $(&#039;label[for=&quot;var_&#039; + section.fields[fieldsIter] + &#039;&quot;]&#039;);
+                        $field = $input.closest(&#039;tr&#039;);
+                        $label.text(this.userFriendlyLabel($label.text()));
+                        $field.appendTo($widget);
+                    }
+                }
+                this.collapseItem($widgetBox,
+                                  (section.collapsed ? &#039;collapsed&#039; : &#039;&#039;));
+            }
+
+        },
+
+        setCollapseHandler: function($elem){
+            var self = this;
+            $elem.find(&quot;.widget-anchor&quot;)
+                .off(&#039;click&#039;)
+                .on(&#039;click&#039;, function(e){
+                    e.preventDefault();
+                    return self.collapseItem($(this).closest(&#039;.widget-box&#039;));
+                });
+        },
+
+        userFriendlyLabel: function(text){
+            /***
+            * strips numeric after replacing `_` with spaces
+            * expected text : 01_Some_Label, Some_Label_01
+            */
+            return text.split(&#039;_&#039;).filter(function(item){
+                return isNaN(parseInt(item, 10));
+            }).join(&#039; &#039;);
+        },
+
+        collapseItem: function(elem, state) {
+            var link = elem.find(&#039;.widget-anchor&#039;),
+                widgetBody = elem.find(&#039;.widget-body&#039;),
+                height = $(widgetBody).find(&#039;.widget-main&#039;).outerHeight();
+
+            if (widgetBody.hasClass(&#039;on&#039;) || state === &#039;collapsed&#039;) {
+                widgetBody.css(&#039;height&#039;, &#039;0&#039;).removeClass(&#039;on&#039;);
+                link.addClass(&#039;collapsed&#039;);
+            }
+            else {
+                widgetBody.css(&#039;height&#039;, height).addClass(&#039;on&#039;);
+                link.removeClass(&#039;collapsed&#039;);
+            }
+        },
+
+        init: function(variable_id){
+            var $variable = $(&#039;#var_&#039; + variable_id);
+            $parent = $variable.closest(&#039;tbody&#039;);
+            this.buildAdminLayout($parent, formMap);
+            $variable.closest(&#039;tr&#039;).hide();
+        },
+
+        validate: function(variable_id){
+           return true;
+        }
+    };
+
+}(jQuery || django.jQuery));
+
+SnippetWidgetRegistry.registerWidget(&#039;marquee-promo&#039;, window.MarqueePromo);
+SnippetWidgetRegistry.registerVariable(&#039;marquee-promo&#039;, &#039;Marquee_Promo_Admin&#039;);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

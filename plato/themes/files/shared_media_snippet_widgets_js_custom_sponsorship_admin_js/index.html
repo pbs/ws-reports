@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - shared/media/snippet-widgets/js/custom-sponsorship-admin.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>shared/media/snippet-widgets/js/custom-sponsorship-admin.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">73.53</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">50</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">10.75</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">0.48</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/* global django, jQuery, SnippetWidgetRegistry, limitChars */
+
+(function ($) {
+    var fields = {
+        &#039;var_00_Title&#039;: 60,
+        &#039;var_01_Description&#039;: 190,
+        &#039;var_02_Funding_Text&#039;: 50
+    };
+
+    CustomSponsorship = window.CustomSponsorship || {
+        validate: function(){
+            return true;
+        },
+
+        setLimiter: function($elem, limit){
+            var html = &#039;&lt;p class=&quot;limiter&quot; data-input=&quot;label&quot; data-limit=&quot;&#039;+limit+&#039;&quot;&gt;&lt;i class=&quot;counter&quot;&gt;&#039;+limit+&#039;&lt;/i&gt;&lt;i&gt; characters remaining.&lt;/i&gt;&lt;/p&gt;&#039;;
+            $elem.after(html);
+            $elem.next(&#039;.limiter&#039;).css({
+                &#039;margin-bottom&#039;: $elem.css(&#039;margin-bottom&#039;)
+            });
+            $elem.css(&#039;margin-bottom&#039;, 0);
+            limitChars($elem, limit, $elem.next(&#039;.limiter&#039;).find(&#039;.counter&#039;));
+        },
+        logosDescription: function(snippet_id){
+            var logos_wrapper = $(&#039;#&#039;+snippet_id).closest(&#039;table&#039;).find(&#039;input[id*=&quot;_Logo_&quot;].filer_field&#039;).closest(&#039;.form-group&#039;),
+                help_text = &#039;Enter image url, browse the Filer and select one of the available images. Recommended specs: Max height 60px; Max width 120px.&#039;,
+                tooltip = &#039;&lt;span class=&quot;help-button&quot; data-rel=&quot;popover&quot; data-trigger=&quot;hover&quot; data-placement=&quot;right&quot; data-content=&quot;&#039; + help_text + &#039;&quot; title=&quot;&quot;&gt;?&lt;/span&gt;&#039;;
+
+            logos_wrapper.append(tooltip);
+        },
+
+        init : function(variable_id){
+            var self = this;
+
+            $(document).ready(function(){
+                var siblingImputs = $(&#039;#&#039;+variable_id).closest(&#039;table&#039;).find(&#039;input, textarea&#039;).not(&#039;#&#039;+variable_id);
+                siblingImputs.each(function(index){
+                    if(fields[$(this).attr(&#039;id&#039;)]){
+                        self.setLimiter($(this), fields[$(this).attr(&#039;id&#039;)]);
+                    }
+                });
+
+                self.logosDescription(variable_id);
+                $(&#039;[data-rel=popover]&#039;).popover({container:&#039;body&#039;});
+
+            });
+        }
+    };
+
+}(jQuery || django.jQuery));
+
+SnippetWidgetRegistry.registerWidget(&#039;customsponsorship&#039;,  CustomSponsorship);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - shared/media/snippet-widgets/js/colorpicker-field.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>shared/media/snippet-widgets/js/colorpicker-field.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">61.02</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">491</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">42.60</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">5.48</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function($){
+
+    colorpicker_schemes = window.colorpicker_schemes || {
+        &quot;schemes&quot;: [{
+            &quot;main_color&quot;: &quot;#efa80e&quot;,
+            &quot;background&quot;: &quot;#ffffff&quot;,
+            &quot;button_color&quot;: &quot;#ef850d&quot;,
+            &quot;light_accent&quot;: &quot;#0087bb&quot;,
+            &quot;darker_accent&quot;: &quot;#016e97&quot;,
+            &quot;name&quot;: &quot;Yellow Theme&quot;,
+            &quot;id&quot;: &quot;yellow&quot;
+        }, {
+            &quot;main_color&quot;: &quot;#589846&quot;,
+            &quot;background&quot;: &quot;#f3f4ee&quot;,
+            &quot;button_color&quot;: &quot;#ef850f&quot;,
+            &quot;light_accent&quot;: &quot;#7eb750&quot;,
+            &quot;darker_accent&quot;: &quot;#1f6038&quot;,
+            &quot;name&quot;: &quot;Green Theme&quot;,
+            &quot;id&quot;: &quot;green&quot;
+        }, {
+            &quot;main_color&quot;: &quot;#ee4a2f&quot;,
+            &quot;background&quot;: &quot;#f1f0ec&quot;,
+            &quot;button_color&quot;: &quot;#9a8783&quot;,
+            &quot;light_accent&quot;: &quot;#27314c&quot;,
+            &quot;darker_accent&quot;: &quot;#ff3d1f&quot;,
+            &quot;name&quot;: &quot;Red Theme&quot;,
+            &quot;id&quot;: &quot;red&quot;
+        }, {
+            &quot;main_color&quot;: &quot;#5d3b6d&quot;,
+            &quot;background&quot;: &quot;#f8f3f0&quot;,
+            &quot;button_color&quot;: &quot;#7e5a88&quot;,
+            &quot;light_accent&quot;: &quot;#a69ca7&quot;,
+            &quot;darker_accent&quot;: &quot;#46324b&quot;,
+            &quot;name&quot;: &quot;Purple Theme&quot;,
+            &quot;id&quot;: &quot;purple&quot;
+        }, {
+            &quot;main_color&quot;: &quot;#ee6225&quot;,
+            &quot;background&quot;: &quot;#f8f3f0&quot;,
+            &quot;button_color&quot;: &quot;#d24a10&quot;,
+            &quot;light_accent&quot;: &quot;#20639a&quot;,
+            &quot;darker_accent&quot;: &quot;#0b3a64&quot;,
+            &quot;name&quot;: &quot;Orange Theme&quot;,
+            &quot;id&quot;: &quot;orange&quot;
+        }, {
+            &quot;main_color&quot;: &quot;#c1ad94&quot;,
+            &quot;background&quot;: &quot;#ffffff&quot;,
+            &quot;button_color&quot;: &quot;#404955&quot;,
+            &quot;light_accent&quot;: &quot;#8697a5&quot;,
+            &quot;darker_accent&quot;: &quot;#687a92&quot;,
+            &quot;name&quot;: &quot;Neutral Theme&quot;,
+            &quot;id&quot;: &quot;neutral&quot;
+        }, {
+            &quot;main_color&quot;: &quot;#541357&quot;,
+            &quot;background&quot;: &quot;#fffdf1&quot;,
+            &quot;button_color&quot;: &quot;#635262&quot;,
+            &quot;light_accent&quot;: &quot;#f18c09&quot;,
+            &quot;darker_accent&quot;: &quot;#332244&quot;,
+            &quot;name&quot;: &quot;Orange/Purple Theme&quot;,
+            &quot;id&quot;: &quot;orangepurple&quot;
+        }]
+    };
+
+    function resizeIframe(){
+        var bodyH = $(&#039;body&#039;).height();
+        try{
+            var parentJQuery = window.parent.jQuery || window.parent.django.jQuery;
+        }catch(e){
+        }
+
+        if(typeof parentJQuery != undefined &amp;&amp; parentJQuery){
+            parentJQuery(&#039;iframe&#039;).css(&quot;height&quot;, bodyH);
+        }
+
+    }
+
+    function getPreviewHTML(){
+        var HTML = &quot;&quot;;
+        var elems = [{
+                &quot;tag&quot;: &quot;div&quot;,
+                &quot;attr&quot;: &quot;id=&#039;top-stripe&#039; class=&#039;main_color&#039;&quot;,
+            },{
+                &quot;tag&quot;: &quot;div&quot;,
+                &quot;attr&quot;: &quot;id=&#039;top-theree-links&#039; &quot;,
+                &quot;text&quot;: &quot;&lt;a&gt;Log In&lt;/a&gt; | &lt;a&gt;Shop&lt;/a&gt; | &lt;a&gt;Donate&lt;/a&gt;&quot;
+            },{
+                &quot;tag&quot;: &quot;div&quot;,
+                &quot;attr&quot;: &quot;id=&#039;menu-btn&#039; class=&#039;main_color&#039;&quot;,
+                &quot;text&quot;: &quot;HOME&quot;
+            },{
+                &quot;tag&quot;: &quot;div&quot;,
+                &quot;attr&quot;: &quot;id=&#039;menu-stripe&#039; class=&#039;main_color&#039;&quot;
+            },{
+                &quot;tag&quot; : &quot;span&quot;,
+                &quot;attr&quot;: &quot;class=&#039;search button_color&#039;&quot;
+            },{
+                &quot;tag&quot;: &quot;div&quot;,
+                &quot;attr&quot; : &quot;id=&#039;right_rail_add&#039; class=&#039;light_accent&#039;&quot;,
+            },{
+                &quot;tag&quot;: &quot;a&quot;,
+                &quot;attr&quot; : &quot;id=&#039;pledge&#039; href=&#039;javascript:void(0)&#039;&quot;,
+                &quot;text&quot; : &quot;Pledge your support today &amp;gt;&quot;
+            },{
+                &quot;tag&quot;: &quot;div&quot;,
+                &quot;attr&quot;: &quot;id=&#039;module-header&#039; class=&#039;light_accent&#039;&quot;,
+            },{
+                &quot;tag&quot;: &quot;a&quot;,
+                &quot;attr&quot;: &quot;id=&#039;module-text1&#039; href=&#039;javascript:void(0)&#039;&quot;,
+                &quot;text&quot;:&quot;linked text&quot;
+            },{
+                &quot;tag&quot;: &quot;a&quot;,
+                &quot;attr&quot;: &quot;id=&#039;module-text2&#039; href=&#039;javascript:void(0)&#039;&quot;,
+                &quot;text&quot;:&quot;Linked Text&quot;
+            },{
+                &quot;tag&quot;: &quot;div&quot;,
+                &quot;attr&quot;: &quot;id=&#039;footer-stripe&#039; class=&#039;main_color&#039;&quot;,
+            },{
+                &quot;tag&quot;: &quot;div&quot;,
+                &quot;attr&quot;: &quot;id=&#039;copyright&#039; class=&#039;main_color&#039;&quot;,
+            }];
+
+        var scheme = window.opener.colorScheme;
+
+        HTML += &quot;&lt;style&gt;&quot;;
+            for(var i in scheme){
+                if(scheme.hasOwnProperty(i)){
+                    if(i != &#039;background&#039; &amp;&amp; i !=&#039;apply_overlay&#039;){
+                        HTML += &#039;.&#039;+i+&#039;{ background-color: &#039;+scheme[i]+&#039;;}&#039;;
+                    }
+                    if(i == &#039;background&#039;){
+                        HTML += &#039;body{background-color:&#039;+scheme[i]+&#039;}&#039;;
+                    }
+                    if(i == &#039;apply_overlay&#039;){
+                        if(scheme[i].toLowerCase() != &#039;true&#039;){
+                            HTML += &#039;body {background-image: none}&#039;;
+                        }else{
+                            var fake_img = $(&quot;&lt;div/&gt;&quot;)
+                                .css(&#039;display&#039;, &#039;none&#039;)
+                                .addClass(&#039;fake-preview&#039;)
+                                .appendTo(&#039;body&#039;);
+                            var bg_img_url = fake_img
+                                .css(&#039;background-image&#039;)
+                                .replace(&#039;_preview_mock&#039;, &quot;-&quot; + scheme.id + &#039;-bubble-bg&#039;);
+                            console.log(bg_img_url);
+                            $(&#039;body&#039;)
+                                .addClass(&#039;explorer passport &#039;+ scheme.id)
+                                .css(&#039;background-image&#039;, bg_img_url);
+                            fake_img.remove();
+                        }
+                    }
+
+
+                    HTML += &#039;#preview a, #preview a:hover{color:&#039;+scheme.darker_accent+&#039;}&#039;;
+                }
+            }
+        HTML += &quot;&lt;/style&gt;&quot;;
+
+        HTML += &#039;&lt;div id=&quot;preview&quot;&gt;&#039;;
+            for(var i=0; i&lt;elems.length; i++){
+                if(elems[i].tag){
+                    HTML += &#039;&lt;&#039;+elems[i].tag+&#039; &#039;+(elems[i].attr ? elems[i].attr : &quot;&quot;)+&#039;&gt;&#039;+(elems[i].text ? elems[i].text : &quot;&quot;)+&#039;&lt;/&#039;+elems[i].tag+&#039;&gt;&#039;;
+                }
+            }
+        HTML += &#039;&lt;/div&gt;&#039;;
+
+        return HTML;
+    }
+
+    function toggleView(view){
+
+        if(!view){
+            $(&#039;#color-picker-views&#039;).hide();
+            resizeIframe();
+            return;
+        }
+
+        if(view === true){
+            $(&#039;#color-picker-views&#039;).removeAttr(&quot;style&quot;);
+            $(&#039;.view&#039;).hide();
+            $(&#039;#step_1&#039;).show();
+            resizeIframe();
+            return;
+        }
+
+        $(&#039;.view&#039;).hide();
+        view.show();
+        resizeIframe();
+    }
+
+    function setDefaultView(theme){
+
+        $(&#039;#container&#039;).css(&quot;visibility&quot;, &quot;visible&quot;);
+
+        if(theme == &#039;passport&#039;){
+            toggleView(true);
+            $(&#039;#smartsnippetpointer_form table tr:not(#color-picker-views)&#039;).hide();
+            $(&#039;.plugin-submit-row input[name=&quot;_save&quot;]&#039;).val(&quot;Save and Apply New Theme to My Site&quot;).attr(&quot;disabled&quot;, true);
+        }else{
+            toggleView(false);
+            $(&#039;#smartsnippetpointer_form table tr:not(#color-picker-views)&#039;).show();
+            $(&#039;.plugin-submit-row input[name=&quot;_save&quot;]&#039;).val(&quot;Save&quot;).removeAttr(&quot;disabled&quot;);
+        }
+
+        //used when loading same page in new window to view the preview
+        try{
+            if(window.location.href.split(&quot;?&quot;)[1].indexOf(&quot;preview&quot;) != -1){
+                $(&#039;#container&#039;).css({
+                    &quot;visibility&quot;: &quot;hidden&quot;,
+                    &quot;height&quot;:&quot;0px&quot;});
+                $(&#039;#container&#039;).hide();
+                $(&#039;#color-picker-css&#039;).remove()
+                $(&#039;body&#039;).append(getPreviewHTML());
+            }
+        }catch(e){}
+    }
+
+    function generateColorScheme(hex, output){
+        if(!hex){
+            return false;
+        }
+
+        var color = tinycolor(hex);
+        var result = tinycolor.monochromatic(color, 5).splice(1);
+
+        result.sort(function(a, b){
+            a = a.toHsl();
+            b = b.toHsl();
+            return a.l - b.l;
+
+        });
+        result = [color].concat(result);
+        scheme = [];
+        scheme[0] = color;
+        scheme[1] = tinycolor.lighten(result[1], 90);
+        scheme[2] = tinycolor.darken(result[2], 10);
+        scheme[3] = tinycolor.lighten(result[3], 25);
+        scheme[4] = result[4];
+        if(output){
+            output.each(function(iter){
+                $(this).css(&#039;background-color&#039;, scheme[iter].toHexString());
+                $(this).parent().find(&#039;.title.hex&#039;).html(scheme[iter].toHexString());
+            });
+        }
+
+        $(&#039;#color-picker-views #step_2_a #background option:first&#039;).attr(&quot;data-val&quot;, scheme[1].toHexString());
+    }
+
+    function getFormScheme(){
+        var profile = $(&#039;#color-picker-views #step_1 input[name=&quot;profile&quot;]:checked&#039;).val();
+        var scheme = {};
+        var hexElems = null;
+
+        if(profile == &quot;custom&quot;){
+            hexElems = $(&#039;#color-picker-views #step_2_a .title.hex&#039;);
+            scheme.apply_overlay = &quot;&quot;;
+            scheme.background = $(&#039;#color-picker-views #step_2_a #background option:selected&#039;).attr(&quot;data-val&quot;);
+            scheme.selected_background = $(&#039;#color-picker-views #step_2_a #background&#039;)[0].selectedIndex
+        }
+
+        if(profile == &quot;preselected&quot;){
+            var radioBtn = $(&#039;#color-picker-views #step_2_b input[name=&quot;scheme&quot;]:checked&#039;);
+            hexElems = radioBtn.next(&#039;.scheme&#039;).find(&#039;.title.hex&#039;);
+            scheme.apply_overlay = $(&#039;#color-picker-views #step_2_b input[name=&quot;apply-overlay&quot;]&#039;).is(&quot;:checked&quot;) ? &quot;true&quot; : &quot;&quot;;
+            scheme.id = radioBtn.next(&#039;.scheme&#039;).attr(&quot;data-name&quot;)
+        }
+
+        hexElems.each(function(){
+            var key = $(this).attr(&quot;data-name&quot;);
+            var val = $(this).text();
+            if(!scheme[key]){
+                scheme[key] = val;
+            }
+        });
+
+        return scheme;
+    }
+
+    function initStep_2_a(){
+        $(&#039;#smartsnippetpointer_form&#039;).unbind(&quot;submit&quot;);
+        var defaultColor =  &#039;#0000ff&#039;;
+        try{
+            var scheme = JSON.parse($(&#039;.snippet-variable&#039;).val())
+            var selected_background = scheme.selected_background;
+            var scheme_color = scheme.main_color;
+        }catch(e){}
+
+        $(&#039;#colorpickerHolder&#039;).ColorPicker({
+            color: (scheme_color || defaultColor),
+            flat: true,
+            onChange: function (hsb, hex, rgb) {
+                generateColorScheme(hex, $(&#039;#step_2_a .colors-placeholder .output&#039;));
+                // $(&#039;#colorSelector div&#039;).css(&#039;backgroundColor&#039;, &#039;#&#039; + hex);
+            }
+        });
+        try{
+            if(selected_background){
+                $(&#039;#color-picker-views #step_2_a #background option:eq(&#039;+selected_background+&#039;)&#039;).attr(&#039;selected&#039;, true);
+            }
+        }catch(e){}
+
+        generateColorScheme((scheme_color || defaultColor), $(&#039;#step_2_a .colors-placeholder .output&#039;));
+
+        $(&#039;.wizard-steps li .title2&#039;).removeClass(&#039;active&#039;)
+        $(&#039;.wizard-steps li .title1&#039;).addClass(&#039;active&#039;);
+
+
+        $(&#039;.plugin-submit-row input[name=&quot;_save&quot;]&#039;).val(&quot;Save and Apply New Theme to My Site&quot;).removeAttr(&quot;disabled&quot;);
+    }
+
+    function initStep_2_b(){
+        $(&#039;.plugin-submit-row input[name=&quot;_save&quot;]&#039;).val(&quot;Save and Apply New Theme to My Site&quot;).removeAttr(&quot;disabled&quot;);
+        $(&#039;.wizard-steps li .title1&#039;).removeClass(&#039;active&#039;);
+        $(&#039;.wizard-steps li .title2&#039;).addClass(&#039;active&#039;);
+
+        try{
+            var json = JSON.parse($(&#039;.snippet-variable&#039;).val());
+            $(&#039;#step_2_b .title.hex[data-name=&quot;main_color&quot;]&#039;).each(function(){
+                var self = $(this);
+
+                if(json.main_color == self.text()){
+                    self.closest(&#039;.colors-placeholder&#039;).find(&#039;.scheme.selected&#039;).removeClass(&#039;selected&#039;);
+                    self.closest(&#039;.scheme-container&#039;).find(&#039;.scheme&#039;).addClass(&#039;selected&#039;)
+                                                     .find(&quot;input[name=&#039;scheme&#039;]&quot;).prop(&quot;checked&quot;, true);
+                }
+            });
+
+            if(json.apply_overlay.toLowerCase() == &quot;true&quot;){
+                $(&#039;#step_2_b input[name=&quot;apply-overlay&quot;]&#039;).prop(&quot;checked&quot;, true);
+            }
+        }catch(e){}
+
+    }
+
+    function handleSubmitButton(){
+        var form = $(&#039;#smartsnippetpointer_form&#039;);
+
+        var handleSubmit = function(handler){
+
+            if(handler){
+                form.bind(&quot;submit&quot;,handler);
+            }else{
+                form.bind(&quot;submit&quot;,function(){
+                    return false;
+                });
+            }
+        };
+
+        form.find(&#039;input[type=&quot;submit&quot;], .footer-view .cancel-btn&#039;).on(&#039;click&#039;, function(){
+            //&quot;next&quot; button is pressed
+            if($(this).attr(&#039;name&#039;) == &quot;next&quot;){
+                form.unbind(&quot;submit&quot;)
+                var radioVal = form.find(&#039;input[name=&quot;profile&quot;]:checked&#039;, form).val();
+
+                if(radioVal == &quot;custom&quot;){
+                    toggleView($(&#039;#step_2_a&#039;));
+                    handleSubmit(false);
+                    initStep_2_a();
+                } else{
+                    toggleView($(&#039;#step_2_b&#039;));
+                    handleSubmit(false);
+                    initStep_2_b();
+                }
+                // add &quot;complete&quot; class to previous step and &quot;active&quot; to the current step
+                $(&#039;.wizard-steps li[data-step=&quot;1&quot;]&#039;).addClass(&#039;complete&#039;);
+                $(&#039;.wizard-steps li[data-step=&quot;2&quot;]&#039;).addClass(&#039;active&#039;);
+
+                return false
+            }
+
+            //&quot;back to step one&quot; button is pressed
+            if($(this).attr(&#039;name&#039;) == &quot;reset&quot;){
+                toggleView($(&#039;#step_1&#039;));
+                handleSubmit(false);
+
+                $(&#039;.wizard-steps li&#039;).each(function(){
+                    $(this).removeClass(&#039;active complete&#039;);
+                    $(this).find(&#039;.title.active&#039;).removeClass(&#039;active&#039;);
+                });
+                $(&#039;.wizard-steps li[data-step=&quot;1&quot;]&#039;).addClass(&#039;active&#039;);
+
+                return
+            }
+
+            //&quot;undo&quot; button is pressed
+            if($(this).attr(&#039;data-name&#039;) == &quot;cancel&quot;){
+                $(&#039;#var_theme option&#039;).filter(function() {
+                    return ($(this).text() == &#039;explorer&#039;);
+                }).attr(&#039;selected&#039;, true);
+                setDefaultView($(&#039;#var_theme&#039;).val());
+            }
+
+            //&quot;preview scheme&quot; button is pressed
+            if($(this).attr(&#039;name&#039;) == &quot;preview&quot;){
+                var page = $(&#039;#step_1 input[name=&quot;profile&quot;]:checked&#039;).val();
+                var url = window.location.href + (window.location.href.indexOf(&#039;?&#039;) !== -1 ? &#039;&amp;&#039; : &#039;?&#039;) + &#039;preview=&#039;+page;
+                win = window.open(url, &quot;preview&quot;, &#039;height=600,width=1034,resizable=no,scrollbars=1&#039;);
+
+                win.focus();
+                window.colorScheme = getFormScheme();
+                handleSubmit(false);
+            }
+
+            //&quot;save and apply new theme&quot; button is pressed
+            if($(this).attr(&#039;name&#039;) == &quot;_save&quot;){
+                form.unbind(&quot;submit&quot;)
+                handleSubmit(function(){
+                    var scheme = getFormScheme();
+                    $(&#039;.snippet-variable&#039;).val(JSON.stringify(scheme));
+                });
+                form.submit();
+                return true;
+            }
+        });
+    }
+
+    function set_predefined_schemes(){
+        var holder = $(&#039;#step_2_b .colors-placeholder&#039;);
+        $.each(colorpicker_schemes[&#039;schemes&#039;], function(idx, scheme_data){
+            var scheme_container = $(&quot;&lt;div /&gt;&quot;)
+                .addClass(&#039;scheme-container&#039;).appendTo(holder);
+            var option = $(&quot;&lt;input type=&#039;radio&#039; name=&#039;scheme&#039;/&gt;&quot;).appendTo(scheme_container);
+            if (idx == 0){
+                option.prop(&#039;checked&#039;, true);
+            }
+
+            var scheme_box = $(&quot;&lt;div /&gt;&quot;)
+                .attr(&#039;data-name&#039;, scheme_data[&#039;id&#039;])
+                .addClass(&#039;scheme&#039;)
+                .appendTo(scheme_container);
+
+            if (option.prop(&quot;checked&quot;) == true) {
+                scheme_box.addClass(&#039;selected&#039;);
+            }
+
+            for (var attr_name in scheme_data){
+                if (attr_name !== &#039;name&#039; &amp;&amp; attr_name !== &#039;id&#039;){
+                    var attr_val = scheme_data[attr_name];
+                    var title = $.map(attr_name.split(&#039;_&#039;), function(s){
+                        return s.charAt(0).toUpperCase() + s.substring(1);
+                    }).join(&quot; &quot;);
+                    $(&quot;&lt;div /&gt;&quot;).addClass(&#039;row&#039;).append(
+                        $(&quot;&lt;div /&gt;&quot;).addClass(&#039;output&#039;).css(&#039;background-color&#039;, attr_val).html(&#039;&amp;nbsp;&#039;),
+                        $(&quot;&lt;div /&gt;&quot;).addClass(&#039;title hex&#039;).attr(&#039;data-name&#039;, attr_name).text(attr_val),
+                        $(&quot;&lt;div /&gt;&quot;).addClass(&#039;title&#039;).text(title)
+                    ).appendTo(scheme_box);
+                }
+            }
+        });
+    }
+
+    function initialize(variable_id){
+        set_predefined_schemes();
+
+        handleSubmitButton();
+
+        $(&#039;#var_theme&#039;).change(function(){
+            setDefaultView($(this).val());
+        });
+
+        $(&#039;#step_2_b .scheme-container .scheme, .label&#039;).on(&#039;click&#039;,function(){
+            $(&#039;#step_2_b .scheme-container .scheme&#039;).removeClass(&#039;selected&#039;);
+
+            $(this).prev(&#039;input[type=&quot;radio&quot;]&#039;).prop(&quot;checked&quot;, true);
+            $(this).addClass(&#039;selected&#039;);
+        });
+
+        setDefaultView($(&#039;#var_theme&#039;).val());
+
+        $(&#039;[data-rel=popover]&#039;).popover({
+            container: &#039;body&#039;, 
+            html: true
+        });
+
+    }
+
+    SnippetColorPickerWidget = window.SnippetColorPickerWidget || {
+        validate: function(){ return true; },
+        init: initialize,
+        events: {
+            preInit: function(){
+                $(&#039;body&#039;).bind(&quot;change&quot;, function(){
+                    resizeIframe();
+                });
+            }
+        }
+    };
+
+
+
+}(django.jQuery || jQuery));
+
+SnippetWidgetRegistry.registerWidget(&#039;colorpickerwidget&#039;, SnippetColorPickerWidget)</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

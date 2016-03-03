@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - shared/media/passport/js/menu.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>shared/media/passport/js/menu.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">61.77</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">344</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">59.93</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">4.21</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function($){
+    window.PBS = window.PBS || {};
+    PBS.passportMenu = PBS.passportMenu || {};
+    PBS.passportMenu.swipeIgnore = PBS.passportMenu.swipeIgnore || [];
+
+    //get the schema set by Station Theme smart snippet on the body
+    var BENTO_SCHEMA = $(&#039;body&#039;).attr(&#039;data-schema&#039;) ? &#039;.&#039;+$(&#039;body&#039;).attr(&#039;data-schema&#039;) : &#039;&#039;;
+    var nua = navigator.userAgent;
+    var is_android = ((nua.indexOf(&#039;Mozilla/5.0&#039;) &gt; -1 &amp;&amp; nua.indexOf(&#039;Android &#039;) &gt; -1 &amp;&amp; nua.indexOf(&#039;AppleWebKit&#039;) &gt; -1) &amp;&amp; !(nua.indexOf(&#039;Chrome&#039;) &gt; -1));
+    var is_safary  =(nua.indexOf(&#039;Safari&#039;) != -1 &amp;&amp; nua.indexOf(&#039;Chrome&#039;) == -1);
+
+    if(is_android){
+        $(&#039;body&#039;).addClass(&#039;android&#039;);
+    }
+
+    if(&#039;ontouchstart&#039; in document){
+        $(&#039;body&#039;).addClass(&#039;no-hover&#039;);
+    }else{
+        $(&#039;body&#039;).removeClass(&#039;no-hover&#039;);
+    }
+
+    function isMobile(){
+        return window.matchMedia(&#039;(max-width: 960px)&#039;).matches;
+    }
+
+    function isPassportTheme(){
+        return BENTO_SCHEMA.toLowerCase().indexOf(&#039;passport&#039;) != -1;
+    }
+
+    function isHorizSwipeIgnored(elem, ignoreArray){
+        ignoreArray = ignoreArray || PBS.passportMenu.swipeIgnore;
+
+        elem = $(elem);
+        for(var i=0; i &lt; ignoreArray.length; i++){
+            if(elem.is(ignoreArray[i]) ||
+                elem.closest(ignoreArray[i]).length){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function activateMenuButton(){
+        if(!$.cookie(&quot;menu_active_item&quot;)){
+            var l = window.location.href.toString().toLowerCase();
+            l = l.substr(l.indexOf(window.location.host) + window.location.host.length, l.length);
+            l = l.substr(0, l.indexOf(&quot;?&quot;) != -1 ? l.indexOf(&quot;?&quot;) : l.length);
+            l = l.substr(0, l.indexOf(&quot;#&quot;) != -1 ? l.indexOf(&quot;#&quot;) : l.length);
+
+            $(&#039;.nav-collapse .nav.clearfix &gt; li&#039;).removeClass(&#039;active&#039;);
+            $(&#039;.nav-collapse .nav.clearfix&#039;)
+                .find(&#039;a[href=&quot;&#039;+l+&#039;&quot;]&#039;)
+                .parents(&#039;li:eq(0)&#039;).addClass(&#039;active&#039;);
+        }else{
+            $(&#039;.nav-collapse .nav.clearfix &gt; li&#039;).removeClass(&#039;active&#039;);
+            $(&#039;.nav-collapse .nav.clearfix &gt; li:eq(&#039;+$.cookie(&quot;menu_active_item&quot;)+&#039;)&#039;).addClass(&#039;active&#039;);
+            $.cookie(&quot;menu_active_item&quot;, &#039;&#039;,{ expires: -1, path: &#039;/&#039; , domain: &#039;pbs.org&#039;});
+        }
+    }
+
+    function clearOpen(elems){
+        elems.removeClass(&#039;open&#039;);
+    }
+
+    function fitNavigation(resize){
+        if(!isPassportTheme()){
+            return;
+        }
+
+        var navContainer = $(&#039;.explorer&#039;+BENTO_SCHEMA+&#039; .nav-collapse ul.nav&#039;).closest(&#039;.container&#039;);
+        var navBar = $(&#039;.explorer&#039;+BENTO_SCHEMA+&#039; .nav-collapse ul.nav&#039;);
+        var menuItems = $(&#039;.explorer&#039;+BENTO_SCHEMA+&#039; .nav-collapse ul.nav &gt; li&#039;).not(&#039;:empty&#039;);
+        var menuSeparators = $(&#039;.explorer&#039;+BENTO_SCHEMA+&#039; .nav-collapse ul.nav &gt; li:empty&#039;);
+
+        if(isMobile()){
+            var nav = $(&#039;.nav-collapse.collapse&#039;);
+            nav.appendTo(&#039;body&#039;);
+            nav.find(&#039;.shadow&#039;).remove();
+            nav.append(&#039;&lt;div class=&quot;shadow&quot;&gt;&lt;/div&gt;&#039;);
+
+            if(!$(&#039;.explorer&#039;+BENTO_SCHEMA+&#039; &gt; .fake-bg&#039;).length){
+                $(&#039;.explorer&#039;+BENTO_SCHEMA).append(&#039;&lt;div class=&quot;fake-bg&quot;&gt;&lt;/div&gt;&#039;);
+            }
+
+            menuItems.attr(&quot;style&quot;, &quot;&quot;);
+            navBar.attr(&quot;style&quot;, &quot;&quot;);
+        } else {
+            if(!$(&#039;.navbar-inner &gt; .nav-collapse.collapse&#039;).length){
+                $(&#039;.nav-collapse.collapse&#039;).appendTo(&#039;.navbar-inner&#039;);
+            }
+        }
+    }
+
+
+    function addTouchHandlers(){
+        if(!isPassportTheme()){
+            return;
+        }
+
+        if(!isMobile()){
+            $(document).on(&quot;click&quot;, function(event){
+                if(!$(event.target).parents(&#039;li.open .dropdown-menu&#039;).length){
+                   $(&#039;.explorer&#039;+BENTO_SCHEMA+&#039; header div.main-menu .navbar li&#039;).removeClass(&#039;open&#039;);
+                }
+            });
+            return;
+        }
+
+        var initialY = 0;
+        var initialX = 0;
+        var currentY = 0;
+        var currentX = 0;
+        var initialScroll = $(window).scrollTop();
+        var windowH = $(window).height();
+        var menuMaxTop = 0;
+        var menuMinTop = 0;
+        var insideMenu = false;
+
+         $(document).on(&quot;touchstart&quot;, function(event){
+            if(!isMobile()){
+                return;
+            }
+
+            if(isHorizSwipeIgnored($(event.target))){
+                return;
+            }
+
+            insideMenu = false;
+            if($(event.target).closest(&#039;.nav-collapse.collapse&#039;).length){
+                insideMenu = true;
+            }
+
+            if(event.originalEvent.touches.length &gt; 1){
+                event.preventDefault();
+            }
+
+            menuMinTop = windowH - $(&#039;.nav-collapse.collapse ul&#039;).outerHeight(true) &gt; 0 ?
+                        0 :
+                        windowH - $(&#039;.nav-collapse.collapse ul&#039;).outerHeight(true);
+
+            initialY = event.originalEvent.touches[0].clientY;
+            initialX = event.originalEvent.touches[0].clientX;
+            initialScroll = $(&#039;.nav-collapse.collapse&#039;).offset().top;
+
+        });
+
+         $(document).on(&#039;touchmove&#039;, function(event) {
+            if(!isMobile()){
+                return;
+            }
+            if(isHorizSwipeIgnored($(event.target))){
+                return
+            }
+            if(event.originalEvent.touches.length &gt; 1){
+                event.preventDefault();
+            }
+
+            currentY = event.originalEvent.touches[0].clientY;
+            currentX = event.originalEvent.touches[0].clientX;
+
+            var xDiff = Math.abs(currentX - initialX);
+            var yDiff = Math.abs(currentY - initialY);
+
+            if(xDiff &gt;= yDiff){
+                //unser wants to swipe horizontally
+                event.preventDefault();
+            }
+
+            if($(&#039;body&#039;).hasClass(&#039;in&#039;)){
+                if(isPassportTheme()){
+                    event.preventDefault();
+                }
+            }
+
+
+        });
+
+        $(document).on(&quot;touchend&quot;, function(event){
+
+
+            if(isHorizSwipeIgnored($(event.target))){
+                return;
+            }
+
+            if(event.originalEvent.touches.length &gt; 1){
+                event.preventDefault();
+            }
+            var windowW = $(window).width();
+            var diffX = currentX - initialX;
+            var procentX = diffX * 100 / windowW;
+            var diffY = currentY - initialY;
+            var procentY = diffY * 100 / Math.abs($(window).outerHeight());
+            var xTransition = $(&#039;.nav-collapse.collapse&#039;).css(&#039;-webkit-transform&#039;) || $(&#039;.nav-collapse.collapse&#039;).css(&#039;transform&#039;);
+            xTransition = xTransition.split(&quot;,&quot;);
+            xTransition = xTransition[xTransition.length-2];
+
+            if(Math.abs(procentY) &gt; 20 &amp;&amp; currentY){
+                if(insideMenu){
+                    if(isPassportTheme()){
+                        var newTop = initialScroll + diffY;
+                        var viewportHeight = $(window).height();
+                        if(newTop &gt; 0){
+                            newTop = 0;
+                        }
+                        if(newTop &lt; menuMinTop){
+                            newTop = menuMinTop;
+                        }
+                        $(&#039;.nav-collapse.collapse&#039;).css(&#039;top&#039;, newTop);
+                        event.preventDefault();
+                    }
+                }
+            }
+
+
+            initialY = 0;
+            initialX = 0;
+            currentY = 0;
+            currentX = 0;
+            initialScroll = $(&#039;.nav-collapse.collapse&#039;).offset().top;
+
+        });
+
+    }
+    var windowWidth = $(window).width();
+    $(document).ready(function() {
+
+
+        if($(&#039;.navbar&#039;).hasClass(&#039;split-button&#039;)){
+            $(&#039;.split-button .nav-collapse .nav li a .caret&#039;).each(function(elem) {
+
+               $(this).parent().after(&quot;&lt;span class=&#039;dropdownBg&#039; data-toggle=&#039;dropdown&#039;&gt;&lt;b class=&#039;caret visible&#039;&gt;&lt;/b&gt;&lt;/span&gt;&quot;);
+               $(this).parent().removeAttr(&quot;data-toggle&quot;);
+               $(this).remove();
+
+            });
+
+            $(&quot;.split-button .nav-collapse .nav li a&quot;).click(function(){
+                var parentLi = $(this).parents(&#039;.nav.clearfix.btn-gpup &gt; li&#039;);
+                var parentIndex = $(&#039;.nav.clearfix.btn-gpup &gt; li&#039;).index(parentLi);
+                var url = $(this).attr(&quot;href&quot;);
+
+                if (! /^https?:\/\/./.test(url) || new RegExp(&#039;https?://&#039;+window.location.domain).test(url)){
+                    //set cookie only if user stays on the domain
+                    $.cookie(&quot;menu_active_item&quot;, &#039;&#039;,{ expires: -1, path: &#039;/&#039; , domain: &#039;pbs.org&#039;});
+                    $.cookie(&quot;menu_active_item&quot;, parentIndex,{ expires: 300, path: &#039;/&#039; , domain: &#039;pbs.org&#039;});
+                }
+                if($(this).attr(&quot;target&quot;) != &quot;_blank&quot;){
+                    $(&#039;.explorer&#039;+BENTO_SCHEMA).removeClass(&quot;in&quot;);
+                    window.location = url;
+                }
+            });
+        }else{
+            $(&quot;.split-button .nav-collapse .nav li a&quot;).click(function(){
+                if($(this).attr(&quot;target&quot;) != &quot;_blank&quot;){
+                    $(&#039;.explorer&#039;+BENTO_SCHEMA).removeClass(&quot;in&quot;);
+                }
+            });
+        }
+
+        if(isPassportTheme()){
+            $(&#039;.explorer&#039;+BENTO_SCHEMA+&#039; .navbar-inner .btn.btn-navbar&#039;).removeAttr(&#039;data-toggle&#039;);
+            $(&#039;.explorer&#039;+BENTO_SCHEMA+&#039; .navbar-inner .btn.btn-navbar&#039;)
+                .unbind(&#039;click&#039;)
+                .bind(&#039;click&#039;,function(e){
+
+                    $(&#039;body&#039;).toggleClass(&quot;in&quot;);
+                    if(!$(&#039;body&#039;).hasClass(&#039;in&#039;)){
+                        if(isPassportTheme()){
+                            clearOpen($(&#039;.nav li&#039;));
+                        }
+                    }
+                    e.stopPropagation();
+                    e.preventDefault();
+                });
+
+        }
+
+        addTouchHandlers();
+        activateMenuButton();
+
+        if(!isMobile()){
+            $(document).on(&quot;click&quot;, function(event){
+                if(!$(event.target).parents(&#039;li.open .dropdown-menu&#039;).length){
+                   $(&#039;.explorer&#039;+BENTO_SCHEMA+&#039; header div.main-menu .navbar li&#039;).removeClass(&#039;open&#039;);
+                }
+            });
+            fitNavigation();
+            return;
+        }
+
+        fitNavigation();
+
+        $(&#039;body&#039;).unbind(&#039;customresize&#039;).bind(&#039;customresize&#039;, function(e){
+            $(&#039;.explorer&#039;+BENTO_SCHEMA+&#039; .fake-bg&#039;)
+                .css(&quot;height&quot;,Math.max($(&#039;body&#039;).outerHeight()), $(document).height());
+        });
+
+        $(&#039;.explorer&#039;+BENTO_SCHEMA+&#039; .fake-bg&#039;)
+                .css(&quot;height&quot;,Math.max($(&#039;body&#039;).outerHeight()), $(document).height());
+
+        if(is_safary &amp;&amp; isPassportTheme()){
+            //safary doesn&#039;t support onbeforeunload so we get all links to
+            //check when the user leaves the page and close the menu
+            $(&#039;a&#039;).bind(&#039;click&#039;, function(){
+                if($(this).attr(&#039;href&#039;) &amp;&amp; $(this).attr(&#039;href&#039;).indexOf(&quot;#&quot;) !== 0){
+                    $(&#039;body&#039;).removeClass(&#039;in&#039;);
+                    clearOpen($(&#039;.nav li&#039;));
+                }
+            });
+        }
+    });
+
+
+    $(window).resize(function(){
+
+        var headerBanner = $(&#039;.explorer&#039;+BENTO_SCHEMA+&#039; .producer-header-banner&#039;);
+
+        addTouchHandlers();
+        fitNavigation(true);
+        if(!isMobile()){
+            $(&#039;.explorer&#039;+BENTO_SCHEMA+&#039; .navbar-inner ul.nav&#039;).css(&#039;top&#039;,&quot;&quot;);
+            $(&#039;.explorer&#039;+BENTO_SCHEMA).removeClass(&quot;in&quot;);
+            $(&#039;.explorer&#039;+BENTO_SCHEMA+&#039; .navbar-inner ul.nav .dropdown-menu&#039;).removeAttr(&quot;style&quot;);
+            $(&#039;.nav-collapse.collapse&#039;).css(&#039;top&#039;, &quot;&quot;);
+            $(document).off(&quot;touchstart touchmove touchend&quot;);
+            if(isPassportTheme()){
+                headerBanner.html(headerBanner.data(&#039;r940&#039;));
+            }
+        }else{
+            $(&#039;.explorer&#039;+BENTO_SCHEMA+&#039; .fake-bg&#039;)
+                .css(&quot;height&quot;,Math.max($(&#039;body&#039;).outerHeight()), $(document).height());
+            if(isPassportTheme()){
+                headerBanner.html(headerBanner.data(&#039;r0&#039;));
+            }
+        }
+
+    });
+
+    $(window).on(&#039;beforeunload&#039;, function(){
+        $(&#039;body&#039;).removeClass(&quot;in&quot;);
+    });
+
+}(jQuery));</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

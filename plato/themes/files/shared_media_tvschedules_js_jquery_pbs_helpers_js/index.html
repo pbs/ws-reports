@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - shared/media/tvschedules/js/jquery.pbs.helpers.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>shared/media/tvschedules/js/jquery.pbs.helpers.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">63.40</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">354</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">71.83</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">4.44</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/*global PBS */
+(function(window, jQuery) {
+    &quot;use strict&quot;;
+
+    if (!window.PBS) {
+        window.PBS = {}
+    }
+
+    var $ = jQuery;
+
+    PBS.Helpers = function(parent, config, newjQuery){
+        var self = this;
+
+        if(parent){
+            this.parent = this.parent;
+            this.config = config || parent.config;
+
+            this.$ = newjQuery || parent.$;
+        }
+
+    };
+
+    PBS.Helpers.prototype.htmlEncode = function(value){
+        //create a in-memory div, set it&#039;s inner text(which jQuery automatically encodes)
+        //then grab the encoded contents back out.  The div never exists on the page.
+        return self.$(&#039;&lt;div/&gt;&#039;).text(value).html();
+    }
+
+    PBS.Helpers.prototype.htmlDecode = function(value){
+        return self.$(&#039;&lt;div/&gt;&#039;).html(value).text();
+    }
+
+    PBS.Helpers.prototype.paddDigit = function(d){
+        if(d.toString().length &gt; 1){
+            return d;
+        }
+
+        return &quot;0&quot;+d;
+    }
+
+    PBS.Helpers.prototype.getDates = function(startDate, endDate){
+        var dates = [],
+            self = this,
+            curentFormat = self.$(&#039;#datepicker&#039;).datepicker(&#039;option&#039;, &#039;dateFormat&#039;),
+            currentDate = new Date(self.$(&#039;#datepicker&#039;).datepicker(&#039;getDate&#039;)),
+            minDate = null,
+            maxDate = null;
+
+        self.$(&#039;#datepicker&#039;).datepicker(&#039;option&#039;, &#039;dateFormat&#039;, &#039;yy-mm-dd&#039;);
+        if(startDate){
+            minDate = self.parseDate(startDate);
+        }else{
+            minDate = new Date(self.$(&#039;#datepicker&#039;).datepicker(&#039;option&#039;, &#039;minDate&#039;));
+        }
+        if(endDate){
+            maxDate = self.parseDate(endDate);
+        }else{
+            maxDate = new Date(self.$(&#039;#datepicker&#039;).datepicker(&#039;option&#039;, &#039;maxDate&#039;));
+        }
+        self.$(&#039;#datepicker&#039;).datepicker(&#039;option&#039;, &#039;dateFormat&#039;, curentFormat);
+
+        function pushDates(){
+            $(&#039;#ui-datepicker-div td&#039;).not(&#039;.ui-datepicker-unselectable&#039;).each(function(){
+                dates.push(new Date(
+                                   self.$(this).data(&quot;year&quot;),
+                                   self.$(this).data(&quot;month&quot;),
+                                   self.$(this).find(&#039;a&#039;).text()
+                                   )
+                );
+            });
+        }
+
+        if(minDate.getMonth() &lt; maxDate.getMonth()){
+            self.$(&#039;#datepicker&#039;).datepicker(&#039;setDate&#039;, minDate);
+            pushDates();
+        }
+        self.$(&#039;#datepicker&#039;).datepicker(&#039;setDate&#039;, maxDate);
+        pushDates();
+
+        self.$(&#039;#datepicker&#039;).datepicker(&#039;setDate&#039;, currentDate);
+
+        return dates;
+    }
+
+    PBS.Helpers.prototype.isCached = function(startDate, endDate){
+        var dates = this.getDates(startDate, endDate),
+            day = null;
+
+        for(var d=0; d&lt;dates.length; d++){
+            day = &quot;&quot;+dates[d].getFullYear()+this.paddDigit(dates[d].getMonth()+1)+this.paddDigit(dates[d].getDate())
+            if(!PBS.DAYS[day]){
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    PBS.Helpers.prototype.parseDate = function(yyyymmdd){
+        return new Date(yyyymmdd.slice(0,4), parseInt(yyyymmdd.slice(4,6)) -1, yyyymmdd.slice(6,8))
+    }
+
+    PBS.Helpers.prototype.formatDay = function(dayStr, shortFormat){
+        var weekDays = [&#039;Sunday&#039;,&#039;Monday&#039;,&#039;Tuesday&#039;,&#039;Wednesday&#039;,&#039;Thursday&#039;,&#039;Friday&#039;,&#039;Saturday&#039;];
+        var months = (shortFormat ?
+                    [&quot;January&quot;, &quot;February&quot;, &quot;March&quot;, &quot;April&quot;, &quot;May&quot;, &quot;June&quot;,
+                    &quot;July&quot;, &quot;August&quot;, &quot;September&quot;, &quot;October&quot;, &quot;November&quot;, &quot;December&quot; ]
+                    :
+                    [&quot;Jan.&quot;, &quot;Feb.&quot;, &quot;Mar.&quot;, &quot;Apr.&quot;, &quot;May.&quot;, &quot;June&quot;,
+                    &quot;July&quot;, &quot;Aug.&quot;, &quot;Sept.&quot;, &quot;Oct.&quot;, &quot;Nov.&quot;, &quot;Dec.&quot; ]);
+
+        var s_year = dayStr.slice(0,4);
+        var s_month = parseInt(dayStr.slice(4,6)) - 1;   //months are 0 based, response gives 1 based
+        var s_day = dayStr.slice(6,8);
+
+        var date = new Date(s_year, s_month, s_day);
+
+        return weekDays[date.getDay()]+&#039;&lt;span class=&quot;separator&quot;&gt;,&lt;/span&gt; &lt;span&gt;&#039;+months[date.getMonth()]+&#039; &#039;+s_day+&#039;&lt;/span&gt;&#039;;
+    }
+
+    PBS.Helpers.prototype.getDateLimit = function(limit){
+        var self = this;
+        var curretnFormat = self.$(&#039;#datepicker&#039;).datepicker( &quot;option&quot;, &quot;dateFormat&quot;),
+            limitDate = new Date();
+        self.$(&#039;#datepicker&#039;).datepicker( &quot;option&quot;, &quot;dateFormat&quot;, &#039;yy/mm/dd&#039; );
+        limitDate = new Date(self.$(&#039;#datepicker&#039;).datepicker(&#039;option&#039;, limit.toLowerCase()+&#039;Date&#039;));
+        self.$(&#039;#datepicker&#039;).datepicker( &quot;option&quot;, &quot;dateFormat&quot;, curretnFormat );
+        return limitDate;
+    }
+
+    PBS.Helpers.prototype.minutesToHour = function(minutes){
+        var hh = parseInt(minutes / 60)
+        var mm = minutes % 60
+        if(hh.toString().length &lt; 2){
+            hh = &quot;0&quot;+ hh
+        }
+
+        if(mm.toString().length &lt; 2){
+            mm = &quot;0&quot;+ mm
+        }
+
+        return &quot;&quot;+hh + mm
+    }
+
+    PBS.Helpers.prototype.hourToMinutes = function(hour){
+        hour += &quot;&quot;;
+        if(hour.length === 3){
+            hour = &#039;0&#039;+hour
+        }
+        return parseInt(hour.substring(0,2), 10) * 60 + parseInt(hour.substring(2), 10);
+    }
+
+    PBS.Helpers.prototype.flattenDay = function(dayStr, year, month){
+        var date = new Date(),
+            day;
+
+        if(dayStr.indexOf(&quot;. &quot;) !== -1){
+            dayStr = dayStr.split(&quot;. &quot;)[1];
+        }
+
+        function paddDigit(d){
+            if(d.toString().length &gt; 1){
+                return d;
+            }
+
+            return &quot;0&quot;+d;
+        }
+        month = month ? paddDigit(month) : paddDigit((date.getMonth()+1));
+
+        day = paddDigit(dayStr.split(&quot; &quot;)[0]);
+        year = year || (new Date()).getFullYear();
+
+        return &quot;&quot; + year + month + day;
+    }
+
+    PBS.Helpers.prototype.formatHour = function(hourStr){
+        var h = parseInt(hourStr.slice(0,2), 10);
+        var m = parseInt(hourStr.slice(2,4), 10);
+        var append = &quot;&quot;;
+        if (h - 12 &gt;= 0){
+            append = &quot;pm&quot;;
+        }else{
+            append = &quot;am&quot;;
+        }
+
+        if (h - 12 &gt; 0){
+            h = h - 12;
+        }
+
+        if(h === 0){
+            h = 12
+        }
+
+        function paddString(m){
+            if(m.toString().length &gt; 1){
+                return m;
+            }
+
+            return &quot;0&quot;+m;
+        }
+
+        return paddString(h)+&quot;:&quot;+paddString(m)+&quot; &quot;+append;
+    }
+
+    PBS.Helpers.prototype.flattenHour = function(hourStr){
+        //hourStr formats : 2pm, 7am, 7:00pm, 9:30am, 01:00am, 7:00 etc
+        if(!hourStr) return hourStr;
+        var that = this;
+
+        hourStr = hourStr.toLowerCase();
+
+        if(hourStr.indexOf(&#039;pm&#039;) === -1){
+            hourStr = hourStr.replace(/am/g, &#039;&#039;).split(&quot;:&quot;).map(function(x){
+                return that.paddDigit(x);
+            }).join(&quot;&quot;);
+        }
+
+        if(hourStr.indexOf(&#039;pm&#039;) !== -1){
+            hourStr = hourStr.replace(/pm/g, &#039;&#039;).split(&quot;:&quot;).map(function(x, index){
+                if(index === 0){
+                    x = (parseInt(x) + 12) +&quot;&quot;;
+                }
+                return that.paddDigit(x);
+            }).join(&quot;&quot;);
+        }
+
+        return hourStr.length &lt; 4 ? hourStr + &#039;00&#039; : hourStr;
+    }
+
+    PBS.Helpers.prototype.mapChannels = function(channels, provider){
+
+        var arr = [],
+            configChannels = this.config.stationObj.channels;
+
+        configChannels = configChannels.sort(function(x, y){
+            return parseInt(x.order) - parseInt(y.order);
+        });
+
+        for(var ch=0; ch &lt; configChannels.length; ch++){
+            for(var feed_ch=0; feed_ch &lt; channels.length; feed_ch++){
+                if(configChannels[ch].shortname === channels[feed_ch].short_name){
+                    if(configChannels[ch].display === &quot;False&quot; &amp;&amp; provider == &quot;Broadcast&quot;){
+                        continue;
+                    }
+                    if(configChannels[ch].order){
+                        arr[ch] = channels[feed_ch];
+                    }else{
+                        arr.push(channels[feed_ch]);
+                    }
+                    for(var p in configChannels[ch]){
+                        if(configChannels[ch].hasOwnProperty(p)){
+                            if(configChannels[ch].order){
+                                arr[ch][p] = configChannels[ch][p];
+                            }else{
+                                arr[arr.length-1][p] = configChannels[ch][p];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        arr = arr.clean(undefined);
+
+        return (arr.length ? arr : channels);
+    }
+
+    PBS.Helpers.prototype.getProviderFeed = function(provider, data){
+        var providerData = null;
+        var defaultData = null;
+        var config = this.config;
+
+        for(var i=0; i&lt;data.headends.length; i++){
+            if(data.headends[i].name == provider){
+                this.setCookie(&quot;pbssol.provider&quot;, decodeURIComponent(provider));
+                if(this.parent){
+                    this.parent.updateHash({
+                        provider : provider
+                    });
+                }
+                providerData = this.mapChannels(data.headends[i].feeds, provider);
+                PBS.snippets[config.snippetId].CURRENT_PROVIDER = provider;
+                return  providerData;
+
+            }
+
+            if(data.headends[i].name == &quot;Broadcast&quot;){
+                defaultData = this.mapChannels(data.headends[i].feeds, &quot;Broadcast&quot;);
+            }
+        }
+
+        //if this poit is reached it means no providers match the given oneDay
+        //in this case return the default provider : Broadcast
+        this.setCookie(&quot;pbssol.provider&quot;, decodeURIComponent(&quot;Broadcast&quot;));
+        if(this.parent){
+            this.parent.updateHash({
+                provider : &quot;Broadcast&quot;
+            });
+        }
+        PBS.snippets[config.snippetId].CURRENT_PROVIDER = &quot;Broadcast&quot;;
+        return defaultData;
+    }
+
+    PBS.Helpers.prototype.getEntryImage = function(entry, defaultImg){
+        if(!entry){
+            return defaultImg;
+        }
+        var imgArray = entry.associated_images || [];
+        var minImgSize = 0;
+        var imgURL = imgArray[0] ? imgArray[0].url : null;
+
+        if(imgArray.length){
+            for(var i=0; i&lt;imgArray.length; i++){
+                try{
+                    if(imgArray[i].type.eeid.indexOf(&quot;COVEStackCard&quot;) != -1 ||
+                        imgArray[i].type.eeid.indexOf(&quot;program-mezzanine&quot;) != -1){
+                        return imgArray[i].url;
+                    }
+                }catch(e){
+                }
+                try{
+                    var imageSize = parseInt(imgArray[i].url.substr(imgArray[i].url.search(/.\d{3}x/) + 1, 3));
+                    if(imageSize &gt;= minImgSize &amp;&amp; imageSize &lt; 300){
+                        minImgSize = imageSize;
+                        imgURL = imgArray[i].url;
+                    }
+                }catch(e){}
+
+            }
+        }else{
+            if(entry.image){
+                return entry.image;
+            }
+        }
+
+        return imgURL || defaultImg;
+    }
+
+    PBS.Helpers.prototype.abbreviate_tz = function(timezone){
+        // US/Central CT
+        // US/Eastern ET
+        // US/Mountain MT
+        // US/Pacific PT
+        return timezone.split(&quot;/&quot;)[1][0] + &quot;T&quot;;
+    }
+
+    PBS.Helpers.prototype.setCookie = function(name, value){
+        var self = this;
+        //first delete the cookie so we don&#039;t run into trubble
+        self.$.cookie(name, &#039;&#039;,{ expires: -1, path: &#039;/&#039; , domain: &#039;&#039;});
+        //set the cookie
+        self.$.cookie(name, value,{ expires: 30, path: &#039;/&#039;, domain: &#039;&#039; }); //days
+    }
+
+})(window, jQuery);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

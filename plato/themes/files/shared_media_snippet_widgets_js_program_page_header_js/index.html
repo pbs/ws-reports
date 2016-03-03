@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - shared/media/snippet-widgets/js/program-page-header.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>shared/media/snippet-widgets/js/program-page-header.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">75.42</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">87</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">14.62</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">0.79</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function($) {
+    ProgramHeaderSetup = {
+        programHeaderFieldsDescriptions: {
+            Background_image: &quot;Enter image url, browse the Filer and select one of the available images or just leave it blank. Recommended size: 1280x110px.&quot;,
+            Logo_image: &quot;Enter image url, browse the Filer and select one of the available images. Recommended size: Max height 74px; No max width.&quot;,
+            Hover_text: &quot;This text is what the user should see when they hover over your logo. It should generally be the shortest version of what your site is about. Max 40 Char.&quot;,
+            Blur_effect_amount: &quot;Select the percentage of blur you&#039;d like for your image. Recommended blur amount is 30%.&quot;,
+        },
+        getBackgroundImage: function() {
+          return $(&quot;#var_Background_image&quot;);
+        },
+        setDefaultBlurEffect: function(amount){
+            var blurSelector = this.getBackgroundImage().closest(&#039;table&#039;).find(&#039;#var_Blur_effect_amount&#039;);
+            
+            if (!blurSelector.find(&#039;option:selected&#039;).val().length) {
+                blurSelector.find(&#039;option[value*=&quot;&#039; + amount + &#039;%&quot;]&#039;).attr(&#039;selected&#039;, true);
+            }
+        },
+        addDescriptions: function() {
+            var elem = this.getBackgroundImage().closest(&#039;table&#039;);
+            var tooltip = &#039;&#039;;
+
+            $.each(this.programHeaderFieldsDescriptions, function (idx, variable){
+                tooltip = &#039;&lt;span class=&quot;help-button&quot; data-rel=&quot;popover&quot; data-trigger=&quot;hover&quot; data-placement=&quot;right&quot; data-content=&quot;&#039; + variable + &#039;&quot; title=&quot;&quot; style=&quot;position:static&quot;&gt;?&lt;/span&gt;&#039;;
+
+                elem.find(&#039;input, select&#039;).filter(&#039;[id=&quot;var_&#039; + idx + &#039;&quot;]&#039;).each(function(){
+                    if ($(this).data(&#039;filetype&#039;) == &#039;image&#039;){
+                        $(this).parent().parent().append(tooltip);
+                    }
+                    else {
+                        $(this).addClass(&#039;pull-left&#039;).parent().append(tooltip);
+                    }
+                });
+
+            });
+
+        },
+        setLimiterHoverText: function(limit) {
+            var elem = this.getBackgroundImage().closest(&#039;table&#039;).find(&#039;#var_Hover_text&#039;);
+            elem.attr(&#039;size&#039;, limit)
+                .attr(&#039;maxlength&#039;, limit)
+                .css(&#039;margin-bottom&#039;, 30)
+                .inputlimiter({
+                    remText: &#039;%n character%s left. &#039;,
+                    limitText: &#039;%n character%s limit.&#039;,
+                    limitTextShow: false
+                });
+        },
+        beautifyLabels: function () {
+            var labels = this.getBackgroundImage().closest(&#039;table&#039;).find(&#039;label&#039;);
+            
+            labels.each(function(idx, elem) {
+                var label = $(elem);
+
+                if (label.text() == &#039;Hover_text&#039;) {
+                    label.text(&#039;Hover/Alt Text&#039;);
+                }
+                label.text(label.text().replace(/\_/g, &#039; &#039;));
+            });
+          
+        },
+        init: function() {
+            var self = this;
+            self.addDescriptions();
+            self.beautifyLabels();
+            self.setDefaultBlurEffect(30);
+            self.setLimiterHoverText(40);
+        }
+    }
+    SnippetProgramHeaderSetupWidget = window.SnippetProgramHeaderSetupWidget || {
+        validate: function(variable_id) {
+            return true;
+        },
+        init: function(variable_id) {},
+        events: {
+          postInit: function() {
+              ProgramHeaderSetup.init();
+          },
+        }
+    };
+
+}(jQuery || django.jQuery));
+
+
+
+SnippetWidgetRegistry.registerWidget(&#039;program-header-setup&#039;, SnippetProgramHeaderSetupWidget);
+SnippetWidgetRegistry.registerVariable(&#039;program-header-setup&#039;, SnippetProgramHeaderSetupWidget);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

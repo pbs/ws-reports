@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - themes/explorer_station/media/station-header/js/stationheader.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>themes/explorer_station/media/station-header/js/stationheader.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">71.22</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">287</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">40.49</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.73</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/* global PBS, django */
+(function(window, $) {
+    &quot;use strict&quot;;
+
+    if (typeof PBS === &#039;undefined&#039;) {
+        window.PBS = {};
+    }
+
+    function StationHeaderException(message){
+        this.name = &#039;StationHeaderException&#039;;
+        this.message = message || this.name;
+        this.stack = (new Error()).stack;
+    }
+
+    StationHeaderException.prototype = Object.create(Error.prototype);
+    StationHeaderException.prototype.constructor = StationHeaderException;
+
+
+    PBS.StationHeader = function(config) {
+         if(!config){
+            throw new StationHeaderException(&quot;Station Header has no configuration: &quot;, config);
+        }
+
+        var FIRST_LEVEL_CHARACTERS_LIMIT = config.FIRST_LEVEL_CHARACTERS_LIMIT,
+            FIRST_LEVEL_ITEMS_LIMIT = config.FIRST_LEVEL_ITEMS_LIMIT,
+            SECOND_LEVEL_CHARACTERS_LIMIT = config.SECOND_LEVEL_CHARACTERS_LIMIT,
+            SECOND_LEVEL_ITEMS_LIMIT = config.SECOND_LEVEL_ITEMS_LIMIT;
+
+        var stationHeader = $(&#039;[data-snippet-id=&quot;stationHeader_&#039; + config.snippetId+&#039;&quot;]&#039;),
+            headerMenu = stationHeader.find(&#039;.header-menu&#039;),
+            defaultMenu = stationHeader.find(&#039;.default-menu&#039;),
+            isMobile = window.matchMedia(&#039;(max-width: 960px)&#039;).matches,
+            currentPath = config.requestPath,
+            menuItems = $(&#039;ul.header-menu &gt; li&#039;),
+            submenuItems = stationHeader.find(&#039;ul.submenu &gt; li&#039;),
+            footerItems = $(&#039;footer ul.nav &gt; li&#039;);
+
+
+
+        var makeStickyMenu = function(){
+            if (stationHeader.hasClass(&#039;sticky&#039;)) {
+                stationHeader.closest(&#039;header&#039;).addClass(&#039;sticky-menu&#039;);
+            }
+        };
+
+        //fix for Safari browser - force redrawing the dom
+        var forceDOMredraw = function(){
+            var afterHeader = stationHeader.closest(&#039;header&#039;).next(),
+                temp;
+
+            afterHeader.hide();
+            temp = afterHeader.get(0).offsetHeight;
+            afterHeader.show();
+        };
+
+        var updateSecondLevelMenuDisplay = function(){
+            var headerRightOffset = stationHeader.offset().left + stationHeader.outerWidth();
+
+            headerMenu.find(&#039;.submenu&#039;).each(function(){
+                var rightOffset = $(this).offset().left + $(this).outerWidth();
+
+                if (rightOffset &gt; headerRightOffset){
+                    $(this).addClass(&#039;right-align&#039;);
+                }
+            });
+        };
+
+        var prepareMenuForMobile = function() {
+            $(&#039;.left-off-canvas-menu&#039;).insertAfter(&#039;.studio footer&#039;);
+            $(&#039;&lt;div class=&quot;fake-bg&quot;&gt;&lt;/div&gt;&lt;div class=&quot;station-menu-blocker&quot;&gt;&lt;/div&gt;&#039;).appendTo(&#039;.studio&#039;);
+            headerMenu.clone().appendTo(&#039;.left-off-canvas-menu&#039;);
+            $(&#039;.left-off-canvas-menu&#039;).attr(&#039;data-snippet-id&#039;,
+                                            &#039;stationHeader_&#039; + config.snippetId);
+            stationHeader = $(&#039;[data-snippet-id=&quot;stationHeader_&#039; + config.snippetId+&#039;&quot;]&#039;);
+        };
+
+        var resizeFakeBgAndShadow = function() {
+            var mobileMenu = $(&#039;.left-off-canvas-menu .header-menu&#039;),
+                mobileSearch = $(&#039;.left-off-canvas-menu .header-search&#039;);
+            $(&#039;body&#039;).off(&#039;customresize&#039;).on(&#039;customresize&#039;, function(e){
+                $(&#039;.studio .fake-bg&#039;)
+                .css(&quot;height&quot;, Math.max($(&#039;body&#039;).outerHeight()), $(document).height());
+            });
+            mobileMenu.off(&#039;customresize&#039;).on(&#039;customresize&#039;, function(e){
+                $(&#039;.studio .menu-shadow&#039;).css(&#039;min-height&#039;, $(window).height());
+            });
+
+            $(&#039;.studio .fake-bg&#039;)
+                .css(&quot;height&quot;, Math.max($(&#039;body&#039;).outerHeight()), $(document).height());
+
+            $(&#039;.studio .menu-shadow&#039;)
+                .css(&#039;min-height&#039;, $(window).height());
+        };
+
+        var manipulateSecondLevelMenu = function() {
+            $(&#039;.left-off-canvas-menu .header-menu&#039;)
+                .find(&#039;li.has-children&#039;)
+                .remove(&#039;.open-arrow&#039;)
+                .append(&#039;&lt;i class=&quot;open-arrow&quot;&gt;&lt;/i&gt;&#039;);
+
+            $(&#039;.left-off-canvas-menu .header-menu&#039;).find(&#039;ul.submenu &gt; li &gt; a&#039;).each(function(){
+                $(this).text($(this).data(&#039;original-title&#039;));
+            });
+        };
+
+        var applyRestrictions = function() {
+            // menu should be limited to FIRST_LEVEL_ITEMS_LIMIT items
+            var itemsCount,
+                textLimit;
+
+            // menu should be limited to FIRST_LEVEL_ITEMS_LIMIT items
+            limitMenuItemsCount(stationHeader,
+                                &#039;&gt; ul &gt; li&#039;,
+                                FIRST_LEVEL_ITEMS_LIMIT - 1);
+
+            // submenu should be limited to SECOND_LEVEL_ITEMS_LIMIT items
+            stationHeader.find(&#039;&gt; ul &gt; li&#039;).each(function(){
+                limitMenuItemsCount($(this),
+                                    &#039;ul.submenu &gt; li&#039;,
+                                    SECOND_LEVEL_ITEMS_LIMIT - 1);
+            });
+
+            // menu items text should be limited to FIRST_LEVEL_CHARACTERS_LIMIT
+            // trim each to FIRST_LEVEL_CHARACTERS_LIMIT / itemsCount
+            itemsCount = headerMenu.find(&#039;&gt; li&#039;).length;
+            textLimit = parseInt(FIRST_LEVEL_CHARACTERS_LIMIT / itemsCount, 10);
+            trimMenuText(stationHeader.find(&#039;&gt; ul &gt; li&#039;), textLimit);
+
+            // footer links should reflect the menu
+            trimMenuText(footerItems, textLimit);
+
+            // each submenu item text should be limited to SECOND_LEVEL_CHARACTERS_LIMIT
+            // only on desktop breakpoint
+            if(!isMobile){
+                trimMenuText(submenuItems, SECOND_LEVEL_CHARACTERS_LIMIT);
+            }
+
+            $(&#039;.header-menu&#039;).removeClass(&#039;invisible&#039;);
+
+        };
+
+        var overwriteMenuText = function(map){
+            for (var item in map){
+                if(map.hasOwnProperty(item)){
+                    $(&#039;li[data-menuid=&#039; + item + &#039;]&#039;)
+                        .find(&#039;&gt; a&#039;)
+                        .text(map[item])
+                        .data(&#039;original-title&#039;, map[item]);
+                }
+            }
+        };
+
+        var limitMenuItemsCount = function(parent, selector, limit){
+            parent
+                .find(selector+&#039;:gt(&#039; + limit + &#039;)&#039;)
+                .remove();
+        };
+
+        var trimMenuText = function(items, limit){
+            items.each(function(){
+                var anchor = $(this).find(&#039; &gt; a&#039;),
+                    words = anchor.text().split(&#039; &#039;),
+                    index,
+                    trimmedText = words[0].substr(0, limit);
+
+                for (index = 1; index &lt; words.length; index++){
+                    if((trimmedText + &#039; &#039; + words[index]).length &lt;= limit){
+                        trimmedText += &#039; &#039; + words[index];
+                    }else{
+                        break;
+                    }
+                }
+
+                if(anchor.text().length &gt; trimmedText.length){
+                    trimmedText += &#039;...&#039;;
+                }
+                anchor.text(trimmedText);
+            });
+        };
+
+        var attachEventHandlers = function(){
+            // iOS Safari event delegation fix. See http://www.quirksmode.org/blog/archives/2010/09/click_event_del.html
+            $(&#039;.open-arrow, \
+              #mobile-menu-button, \
+              .station-menu-blocker, \
+              .left-off-canvas-menu .header-menu a&#039;).on(&#039;click&#039;, function(){});
+
+            // iOS Safari disable panning
+            $(document).on(&#039;touchmove&#039;, function(event){
+                var target = event.target,
+                    isSideMenuVisible = $(&#039;.studio.move-right&#039;).length,
+                    preventScroll = !$(target).closest(&#039;.left-off-canvas-menu&#039;).length;
+
+                if (preventScroll &amp;&amp; isSideMenuVisible) {
+                    event.preventDefault();
+                }
+            });
+
+            $(window).on(&quot;orientationchange&quot;,function(){
+                $(&#039;body.studio&#039;).removeClass(&#039;move-right&#039;);
+                $(&#039;html&#039;).removeClass(&#039;menu-opened&#039;);
+            });
+
+            $(document)
+                .on(&#039;click&#039;, &#039;#mobile-menu-button, .station-menu-blocker&#039;, function(){
+                    $(&#039;body.studio&#039;).toggleClass(&#039;move-right&#039;);
+                    $(&#039;html&#039;).toggleClass(&#039;menu-opened&#039;);
+                });
+
+            $(document)
+                .on(&#039;click&#039;, &#039;.open-arrow&#039;, function(){
+                    $(this)
+                        .closest(&#039;li&#039;)
+                        .siblings()
+                        .removeClass(&#039;open&#039;)
+                        .find(&#039;.expand&#039;)
+                        .removeClass(&#039;expand&#039;);
+                    $(this)
+                        .closest(&#039;li&#039;)
+                        .toggleClass(&#039;open&#039;)
+                        .find(&#039;.submenu&#039;)
+                        .toggleClass(&#039;expand&#039;);
+                });
+
+            $(document).on(&#039;click&#039;, &#039;.left-off-canvas-menu .header-menu a&#039;,
+                           function(){
+                                $(&#039;body.studio&#039;).removeClass(&#039;move-right&#039;);
+                            });
+
+        };
+
+        var submitSearchForm = function() {
+            var searchform = stationHeader.find(&#039;#search-form&#039;),
+                searchBtn = searchform.find(&#039;.btn-search&#039;);
+
+            searchBtn.click(function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                searchform.submit();
+            });
+        };
+
+        $(document).ready(function(){
+            prepareMenuForMobile();
+            overwriteMenuText(config.menuMap);
+            applyRestrictions();
+            submitSearchForm();
+
+            if (isMobile) {
+                $(&#039;body.studio&#039;).addClass(&#039;mobile&#039;);
+                resizeFakeBgAndShadow();
+                manipulateSecondLevelMenu();
+                $(&#039;body.studio&#039;)
+                    .addClass(&#039;mobile&#039;)
+                    .css(&#039;min-height&#039;, $(window).height());
+            } else {
+                updateSecondLevelMenuDisplay();
+                trimMenuText(submenuItems, SECOND_LEVEL_CHARACTERS_LIMIT);
+            }
+
+            attachEventHandlers();
+            makeStickyMenu();
+            forceDOMredraw();
+
+        });
+
+        $(window).resize(function(){
+            isMobile = window.matchMedia(&#039;(max-width: 960px)&#039;).matches;
+
+            if (isMobile &amp;&amp; !$(&#039;body.studio&#039;).hasClass(&#039;mobile&#039;)) {
+                $(&#039;body.studio&#039;)
+                    .addClass(&#039;mobile&#039;)
+                    .css(&#039;min-height&#039;, $(window).height());
+                resizeFakeBgAndShadow();
+                manipulateSecondLevelMenu();
+            }
+
+            if (!isMobile &amp;&amp; $(&#039;body.studio&#039;).hasClass(&#039;mobile&#039;)) {
+                updateSecondLevelMenuDisplay();
+                trimMenuText(submenuItems, SECOND_LEVEL_CHARACTERS_LIMIT);
+                $(&#039;body.studio&#039;).removeClass(&#039;mobile&#039;);
+            }
+            makeStickyMenu();
+            forceDOMredraw();
+        });
+    };
+
+})(window, jQuery || django.jQuery );</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

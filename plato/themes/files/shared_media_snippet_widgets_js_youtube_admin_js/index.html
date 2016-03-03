@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - shared/media/snippet-widgets/js/youtube-admin.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>shared/media/snippet-widgets/js/youtube-admin.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">73.57</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">133</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">13.79</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">1.12</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function ($) {
+
+    var Youtube = {
+        get: function(selector){
+            return this.widget.find(selector);
+        },
+
+        fields : null,
+
+        formatVideo: function (video) {
+            if (video.loading) return video.text;
+
+            var markup = &#039;&#039; +
+                &#039;&lt;div class=&quot;clearfix&quot;&gt;&#039; +
+                    &#039;&lt;div class=&quot;col-sm-2 thumb-wrapper&quot;&gt;&#039; +
+                        &#039;&lt;img src=&quot;&#039; + video.snippet.thumbnails.default.url + &#039;&quot; style=&quot;max-width: 100%&quot; /&gt;&#039; +
+                    &#039;&lt;/div&gt;&#039; +
+                    &#039;&lt;div clas=&quot;col-sm-10&quot;&gt;&#039; +
+                        &#039;&lt;div class=&quot;clearfix&quot;&gt;&#039; +
+                            &#039;&lt;div class=&quot;col-sm-6&quot;&gt;&lt;h4&gt;&#039; + video.snippet.title + &#039;&lt;/h4&gt;&lt;/div&gt;&#039; +
+                        &#039;&lt;/div&gt;&#039; + 
+                    &#039;&lt;/div&gt;&#039; +
+                &#039;&lt;/div&gt;&#039;;
+
+
+            return markup;
+        },
+
+        formatVideoSelection: function(self, video) {
+            self.fields.videoId = video.id.videoId;
+            return video.id.videoId;
+        },
+
+        formatSize: function(option){
+            var originalOption = option.element;
+
+            return &#039;&lt;label&gt;&#039; + $(originalOption).data(&#039;label&#039;) +&#039;&lt;/label&gt;&#039; +
+                   &#039;&lt;p class=&quot;help-text&quot;&gt;&#039;+ $(originalOption).data(&#039;details&#039;) + &#039;&lt;/p&gt;&#039;;
+        },
+
+        initSelect2: function(apiEndpoint){
+            var self = this;
+
+            this.get(&quot;.select2-search&quot;).select2({
+                ajax: {
+                    url: apiEndpoint,
+                    dataType: &#039;json&#039;,
+                    delay: 250,
+                    data: function(term) {
+                        return {
+                            search_term: term,
+                            restype: &#039;video&#039;
+                        };
+                    },
+                    results: function(data, page) {
+                        return {
+                            results: data.items
+                        };
+                    },
+                    cache: true
+                },
+                initSelection: function(element, callback) {
+                    var id = $(element).val();
+                    
+                    callback({
+                        id: {
+                            videoId: id
+                        }
+                    });
+                },
+                escapeMarkup: function(markup) {
+                    return markup;
+                },
+                minimumInputLength: 3,
+                formatResult: self.formatVideo,
+                formatSelection: function(video){
+                    return self.formatVideoSelection(self, video);
+                }
+            });
+
+            this.get(&#039;.select2-size&#039;).select2({
+                formatResult: self.formatSize,
+                formatSelection: function(option){
+                    self.fields.options.size = option.id;
+                    return option.id;
+                },
+                escapeMarkup: function(m) { return m; }
+            });
+
+        },
+
+        collapseItem: function() {
+            var link = this.get(&#039;.widget-anchor&#039;),
+                colapsible = this.get(&#039;.widget-body&#039;),
+                height = $(colapsible).find(&#039;.settings-wrapper&#039;).outerHeight();
+            
+            link.toggleClass(&#039;collapsed&#039;);
+
+            if (colapsible.hasClass(&#039;on&#039;)) {
+                colapsible.css(&#039;height&#039;, &#039;0&#039;).removeClass(&#039;on&#039;);
+            }
+            else {
+                colapsible.css(&#039;height&#039;, height).addClass(&#039;on&#039;);
+            }
+        },
+
+        validate: function(variable_id){
+            $(&#039;#&#039;+ variable_id).val(JSON.stringify(this.fields));
+            return true;
+        },
+
+        init : function(variable_id){
+            var id = variable_id.replace(&#039;var_&#039;, &#039;&#039;),
+                section = $(&quot;.section_&quot; + id),
+                self = this;
+
+            this.widget = section;
+            this.fields = {options:{}};
+            this.initSelect2($(&#039;#&#039; + variable_id).data(&#039;endpoint&#039;));
+
+            this.get(&quot;.widget-anchor&quot;).unbind(&#039;click&#039;).bind(&#039;click&#039;, function(e){
+                e.preventDefault();
+                return self.collapseItem();
+            });
+        }
+    };
+
+
+    SnippetYoutubeWidget = window.SnippetYoutubeWidget || Youtube;
+
+}(jQuery || django.jQuery));
+
+SnippetWidgetRegistry.registerWidget(&#039;youtubefield&#039;, SnippetYoutubeWidget);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>
