@@ -2,6 +2,7 @@
 
 'use strict';
 var execSync = require('sync-exec');
+var program = require('commander');
 
 var reports = require('./src/plato-reports');
 
@@ -35,15 +36,31 @@ var wsProjects = [
 
 var projectsDir = 'projects_src';
 
-if(require.main == module){
+function runPlato(){
+    execSync('rm -rf ' + projectsDir + ' && mkdir ' + projectsDir);
     wsProjects.forEach(function(project){
-        execSync('rm -rf ' + projectsDir + ' && mkdir ' + projectsDir);
         var cloneCmd = (project.clone instanceof Array ?
                         project.clone.join(' && ') :
                         project.clone);
         execSync(cloneCmd, {cwd: projectsDir});
         reports.runPlato(project, projectsDir);
     });
-    reports.pushToGithub();
 }
 
+if(require.main == module){
+    program
+        .version(require('./package.json').version)
+        .option('-p, --plato', 'run plato reports')
+        .option('-c, --commit', 'commit and push generated reports to Github')
+        .parse(process.argv);
+
+    if (!process.argv.slice(2).length) {
+        program.outputHelp();
+    }
+    if(program.plato){
+        runPlato();
+    }
+    if(program.commit){
+        reports.pushToGithub();
+    }
+}
