@@ -27,7 +27,7 @@ function pushToGithub(){
             'git add {reportsFolder} &&' +
             'git commit -m "{now} report" &&' +
             'git push origin gh-pages',{
-                bamboo_GIT_USER_NAME: process.evn.bamboo_GIT_USER_NAME,
+                bamboo_GIT_USER_NAME: process.env.bamboo_GIT_USER_NAME,
                 bamboo_GIT_USER_EMAIL: process.env.bamboo_GIT_USER_EMAIL,
                 repoURL: 'git@github.com:pbs/ws-reports.git',
                 reportsFolder: 'plato',
