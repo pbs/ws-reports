@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - js/jquery.pbs.profile.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>js/jquery.pbs.profile.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">70.87</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">319</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">32.29</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.63</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/*globals PBS,document,localStorage,CUSTOM_HEADERS,alert,
+location,COOKIE_DOMAIN,jQuery,window, station_portal_short_common,
+station_portal_flagship, console,
+is_kindle_wrapped,is_wrapped*/
+(function (window, $) {
+    &quot;use strict&quot;;
+    if (!window.PBS) {
+        window.PBS = {};
+    }
+
+    PBS.Profile = (function () {
+
+        /*
+         * If we have showSignIn we need to trigger a signIn automatically
+         */
+        if (PBS.querystring.parse().showSignIn === &#039;true&#039;) {
+            signIn(&#039;MVOD&#039;, &#039;Upsell screen&#039;, &#039;sign-in&#039;, PBS.querystring.parse().returnURL);
+        }
+
+        //
+        // Private functions:
+        //
+        function htmlEntities(str) {
+            return String(str).replace(/&amp;/g, &#039;&amp;amp;&#039;).replace(/&lt;/g, &#039;&amp;lt;&#039;).replace(/&gt;/g, &#039;&amp;gt;&#039;).replace(/&quot;/g, &#039;&amp;quot;&#039;);
+        }
+
+        function showCopyMessage(message) {
+            $(&#039;.copy-message&#039;).addClass(&#039;hidden&#039;);
+            if (message) {
+                $(&#039;.copy-message.&#039; + message).removeClass(&#039;hidden&#039;);
+            }
+        }
+
+        /* Social login */
+        function triggerLogin(message, data) {
+            if (!$(&quot;#loginModalWindow&quot;).hasClass(&#039;initiated&#039;)) {
+                // initiate modal login plugin
+                $(&quot;#loginModalWindow&quot;).modalLogin();
+            }
+
+            showCopyMessage(message);
+
+            // show modal login window
+            $.fn.modalLogin.show();
+
+            if (data) {
+                // if data exists
+                PBS.Profile.uua.setData(JSON.stringify(data));
+                // show upgrade messages for hibrid
+                $.fn.modalLogin.showUpgragedMessage();
+            }
+        }
+
+        function signIn(campaign_info_code, action, message, redirect_url) {
+            $.cookie(&quot;pbsol.redirect_url&quot;, redirect_url || window.location.href,{
+                    expires : 360,
+                    path : &#039;/&#039;,
+                    domain : COOKIE_DOMAIN
+            });
+            $.cookie(&quot;tmp_campaign_info&quot;, campaign_info_code, { expires : 1, path : &#039;/&#039;, domain : COOKIE_DOMAIN});
+            window.GAaction = action || &#039;&#039;;
+            triggerLogin(message);
+        }
+
+        function cancelLogin() {
+            $.cookie(&quot;tmp_data_watchlist&quot;, null, { expires : -1, path : &#039;/&#039;, domain : COOKIE_DOMAIN});
+            $.cookie(&quot;tmp_data_programs&quot;, null, { expires : -1, path : &#039;/&#039;, domain : COOKIE_DOMAIN});
+            $.cookie(&quot;tmp_campaign_info&quot;, null, { expires : -1, path : &#039;/&#039;, domain : COOKIE_DOMAIN});
+        }
+
+        function logIn(campaign_info_code, provider, url) {
+            var innerProvider;
+            if (window.GAaction) {
+                switch (provider) {
+                case &#039;facebook&#039;:
+                    innerProvider = &#039;Facebook&#039;;
+                    break;
+                case &#039;openid&#039;:
+                    innerProvider = &#039;PBS&#039;;
+                    break;
+                case &#039;googleplus&#039;:
+                    innerProvider = &#039;Google&#039;;
+                    break;
+                }
+                if (campaign_info_code) {
+                    $.cookie(&quot;tmp_campaign_info&quot;, campaign_info_code, { expires : 1, path : &#039;/&#039;, domain : COOKIE_DOMAIN});
+                }
+                PBS.GA.trackEvent(&#039;Video - Portal&#039;, &#039;Sign In - &#039; + window.GAaction, innerProvider);
+            }
+        }
+
+        function logOut() {
+            var iframe = document.createElement(&quot;iframe&quot;);
+            iframe.className = &quot;hidden&quot;;
+            document.body.appendChild(iframe);
+            iframe.src=&quot;https://account.pbs.org/oauth2/logout/&quot;;
+            $(iframe).load(function() {
+                $.ajax({
+                    url : &#039;/logout/&#039;,
+                    headers : CUSTOM_HEADERS,
+                    type : &#039;post&#039;,
+                    success : function (data) {
+                        location.reload();
+                    }
+                });
+            });
+        }
+
+        function getGACategory() {
+            var category = &#039;Video - Portal&#039;;
+            if (is_wrapped) {
+                category = &#039;Video - iOS App&#039;;
+            }
+            if (is_kindle_wrapped) {
+                category = &#039;Video - Kindle Fire App&#039;;
+            }
+            return category;
+        }
+
+        function logGAVideo(video_id, video_title, program_title, action, opt_value) {
+            PBS.GA.trackEvent(PBS.Profile.getGACategory(), action, program_title + &quot; | &quot; + htmlEntities(video_title) + &quot; | &quot; + video_id, opt_value);
+        }
+        function logGAProgram(title) {
+            PBS.GA.trackEvent(PBS.Profile.getGACategory(), &#039;Favorite Program&#039;, title);
+        }
+
+        function getProvider() {
+            return PBS.Storage.getStorageItem(localStorage, &#039;pbs_mw_provider&#039;);
+        }
+
+        var favoriteVideos = {
+            add : function (id, title, programTitle) {
+                $.ajax({
+                    url : &#039;/profile/addFavoriteVideo/&#039; + id + &#039;/&#039;,
+                    headers : CUSTOM_HEADERS,
+                    type : &#039;post&#039;,
+                    success : function (data) {
+                        PBS.Profile.logGAVideo(id, title, programTitle, &#039;Watchlist&#039;);
+                    }
+                });
+            },
+            remove : function (id) {
+                $.ajax({
+                    url : &#039;/profile/removeFavoriteVideo/&#039; + id + &#039;/&#039;,
+                    headers : CUSTOM_HEADERS,
+                    type : &#039;post&#039;,
+                    success : function (data) {
+                        // console.log(data);
+                    }
+                });
+            }
+        }, watchedVideos = {
+            add : function (id, timecode) {
+                $.ajax({
+                    url : &#039;/profile/addWatchedVideo/&#039; + id + &#039;/&#039;,
+                    headers : CUSTOM_HEADERS,
+                    type : &#039;post&#039;,
+                    data : {
+                        timecode : timecode
+                    },
+                    success : function (data) {
+                        // console.log(data);
+                    }
+                });
+            },
+            clear : function () {
+                $.ajax({
+                    url : &#039;/profile/clearWatchedVideos/&#039;,
+                    headers : CUSTOM_HEADERS,
+                    type : &#039;post&#039;,
+                    success : function (data) {
+                        // console.log(data);
+                    }
+                });
+            },
+            get : function (id) {
+                var video = null;
+                $.ajax({
+                    url : &#039;/profile/getWatchedVideo/&#039; + id + &#039;/&#039;,
+                    headers : CUSTOM_HEADERS,
+                    type : &#039;post&#039;,
+                    async : false,
+                    success : function (data) {
+                        if (!data.errorCode) {
+                            video = data.video;
+                        }
+                    }
+                });
+                return video;
+            },
+            remove : function (id) {
+                $.ajax({
+                    url : &#039;/profile/removeWatchedVideo/&#039; + id + &#039;/&#039;,
+                    headers : CUSTOM_HEADERS,
+                    type : &#039;post&#039;,
+                    success : function (data) {
+                        // console.log(data);
+                    }
+                });
+            }
+        }, favoritePrograms = {
+            add : function (slug, title) {
+                $.ajax({
+                    url : &#039;/profile/addFavoriteProgram/&#039; + slug + &#039;/&#039;,
+                    headers : CUSTOM_HEADERS,
+                    type : &#039;post&#039;,
+                    success : function () {
+                        PBS.Profile.logGAProgram(title);
+                    }
+                });
+            },
+            remove : function (slug) {
+                $.ajax({
+                    url : &#039;/profile/removeFavoriteProgram/&#039; + slug + &#039;/&#039;,
+                    headers : CUSTOM_HEADERS,
+                    type : &#039;post&#039;,
+                    success : function (data) {
+                        // console.log(data);
+                    }
+                });
+            }
+        }, favoriteStations = {
+            add : function (callSign, zipCode) {
+                $.ajax({
+                    url : &#039;/profile/addFavoriteStation/&#039; + callSign + &#039;/&#039;,
+                    headers : CUSTOM_HEADERS,
+                    type : &#039;post&#039;,
+                    async : false,
+                    data : {
+                        zipcode : zipCode
+                    },
+                    success : function (data) {
+                        //console.log(data);
+                    }
+                });
+            }
+        }, devices = {
+            add : function (deviceType, authCode, callback) {
+                $.ajax({
+                    url : &#039;/profile/addRegisteredDevice/&#039;,
+                    headers : CUSTOM_HEADERS,
+                    type : &#039;post&#039;,
+                    async : true,
+                    data : {
+                        deviceType : deviceType,
+                        authCode : authCode
+                    },
+                    success : function (data) {
+                        if ($.isFunction(callback)) {
+                            callback(data);
+                        }
+                    }
+                });
+            }
+        }, clientId = {
+            get: function () {
+                var id = null;
+                $.ajax({
+                    url : &#039;/profile/getClientId/&#039;,
+                    type : &#039;get&#039;,
+                    async : false,
+                    success : function (data) {
+                        id = data.client_id;
+                    }
+                });
+                return id;
+            }
+        }, uua = {
+            setData : function (data) {
+                PBS.Storage.setStorageItem(localStorage, &#039;uua_data&#039;, data);
+            },
+            getData : function () {
+                var data = null;
+                try {
+                    data = JSON.parse(PBS.Storage.getStorageItem(localStorage, &#039;uua_data&#039;));
+                } catch (e) {
+                }
+
+                return data;
+            },
+            upgrade : function (callback) {
+                var newData = PBS.Profile.uua.getData();
+                if (newData) {
+                    // if upgrade data exists
+                    $.ajax({
+                        url : &#039;/profile/upgrade/&#039;,
+                        headers : CUSTOM_HEADERS,
+                        type : &#039;post&#039;,
+                        data : {
+                            data : JSON.stringify(newData)
+                        },
+                        success : function (data) {
+                            if ($.isFunction(callback)) {
+                                callback();
+                            }
+                        }
+                    });
+                    // remove the data from the storage
+                    PBS.Storage.removeStorageItem(localStorage, &#039;uua_data&#039;);
+                }
+            }
+        };
+
+        return {
+            watchedVideos : watchedVideos,
+            favoriteVideos : favoriteVideos,
+            favoritePrograms : favoritePrograms,
+            favoriteStations : favoriteStations,
+            devices : devices,
+            clientId: clientId,
+            uua : uua,
+            getGACategory : getGACategory,
+            logGAVideo : logGAVideo,
+            logGAProgram : logGAProgram,
+            triggerLogin : triggerLogin,
+            cancelLogin : cancelLogin,
+            logIn : logIn,
+            logOut : logOut,
+            signIn : signIn,
+            getProvider : getProvider
+        };
+    }());
+}(window, jQuery));</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

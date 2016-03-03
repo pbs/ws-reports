@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - shared/media/snippet-widgets/js/google-doubleclick.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>shared/media/snippet-widgets/js/google-doubleclick.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">72.17</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">269</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">29.75</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.67</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function($) {
+    AdSetup = {
+        doubleClickFieldsDescriptions: {
+            Desktop_Ad_id: &quot;Found in Ad Code. Visit &lt;a href=&#039;http://bit.ly/DFPHelp&#039; target=&#039;_blank&#039;&gt;Google&#039;s Documentation&lt;/a&gt; for More.&quot;,
+            Desktop_Ad_size: &quot;Select All Display Sizes That Relate to Ad.&quot;,
+            Desktop_Ad_slot: &quot;Found in Ad Code. Visit &lt;a href=&#039;http://bit.ly/DFPHelp&#039; target=&#039;_blank&#039;&gt;Google&#039;s Documentation&lt;/a&gt; for More.&quot;,
+            Desktop_Ad_type: &quot;Selecting Station or Producer will Enables Customization Options of the Supporting Text That Displays Under Ad.&quot;,
+            Desktop_Background_color: &quot;Billboard and Leaderboard Only: Enter HEX Value for Background Color Behind Ad.&quot;,
+            Desktop_Color_message_text: &quot;Billboard and Leaderboard Only: Select the Color of the Messaging Text Under Ad.&quot;,
+            Station_Short_Name: &quot;Enter Desired Station Name to Customize Supporting Text That Displays Under Ad.&quot;,
+            Station_Sponsorship_Link: &quot;Add Url for Supporting Sponsorship Documentation (for example: http://www.pbs.org/about/faqs/online-sponsorship/)&quot;
+        },
+        getType: function() {
+          return $(&quot;#var_Desktop_Ad_type&quot;);
+        },
+        getAdhesionFields: function() {
+            var adhesionRows = this.getType().closest(&#039;table&#039;).find(&#039;input[id*=&quot;Adhesion&quot;]&#039;);
+            return adhesionRows.closest(&#039;tr&#039;);
+        },
+        getAdSlotAndId: function() {
+            var adSlotAndIdRows = this.getType().closest(&#039;table&#039;)
+                                      .find(&#039;input[id*=&quot;Desktop_Ad_id&quot;], input[id*=&quot;Desktop_Ad_slot&quot;]&#039;);
+            return adSlotAndIdRows.closest(&#039;tr&#039;);
+        },
+        getAdSlotIdSize: function() {
+            var adSlotIdSizeRows = this.getType().closest(&#039;table&#039;)
+                                      .find(&#039;input[id*=&quot;Desktop_Ad_id&quot;], input[id*=&quot;Desktop_Ad_slot&quot;], input[id*=&quot;Desktop_Ad_size&quot;]&#039;);
+            return adSlotIdSizeRows.closest(&#039;tr&#039;);
+        },
+        checkSlotIds: function() {
+            var self = this,
+                desktop_items = self.getAdSlotAndId(),
+                adhesion_items = self.getAdhesionFields(),
+                toCheck = [&#039;id&#039;, &#039;slot&#039;],
+                notUnique = false;
+
+            $.each(toCheck, function(idx, item){
+                var filterFromList = function(items) {
+                    return items.find(&#039;input[id*=&#039; + item + &#039; ]&#039;);
+                };
+
+                var desktop_item = filterFromList(desktop_items),
+                    adhesion_item = filterFromList(adhesion_items);
+           
+                if (desktop_item.val() == adhesion_item.val()) {
+                    adhesion_item
+                        .addClass(&#039;error&#039;)
+                        .closest(&#039;tr&#039;).addClass(&#039;has-error&#039;)
+                        .find(&#039;.help-block&#039;).text(&#039;This field should be different from Desktop_Ad_&#039; + item +&#039;.&#039;);
+                    notUnique = true;   
+                    return true;    
+                }
+            });
+            return notUnique;
+
+        },
+
+        moveToEnd: function(rows) {
+            rows.appendTo(rows.closest(&#039;table&#039;));
+        },
+        separateFromRest: function(rows, type) {
+            var separator = $(&#039;&lt;tr class=&quot;separator&quot;&gt;&lt;td colspan=&quot;2&quot;&gt;&lt;h3 class=&quot;header smaller lighter blue block&quot;&gt;&#039; + type + &#039; Setup&lt;/h3&gt;&lt;/td&gt;&lt;/tr&gt;&#039;);
+            separator.insertBefore(rows.first());
+        },
+        addDescriptions: function() {
+            var elem = this.getType().closest(&#039;table&#039;);
+            var tooltip = &#039;&#039;;
+
+            $.each(this.doubleClickFieldsDescriptions, function (idx, variable){
+                tooltip = &#039;&lt;span class=&quot;help-button&quot; data-rel=&quot;popover&quot; data-delay={&quot;hide&quot;:&quot;1000&quot;} data-trigger=&quot;hover&quot; data-placement=&quot;right&quot; data-content=&quot;&#039; + variable + &#039;&quot; title=&quot;&quot; style=&quot;position:static&quot;&gt;?&lt;/span&gt;&#039;;
+
+                elem.find(&#039;input, select&#039;).filter(&#039;[id=&quot;var_&#039; + idx + &#039;&quot;]&#039;).each(function(){
+                    $(this).addClass(&#039;pull-left&#039;).parent().append(tooltip);
+                });
+
+            });
+
+        },
+        addErrorWrapper: function(items) {
+            items.find(&#039;input[type=&quot;text&quot;]&#039;).parent().append(&#039;&lt;div class=&quot;help-block col-xs-12 col-sm-reset&quot;&gt;&lt;/div&gt;&#039;);
+
+        },
+        toggleSpecificFields: function(state) {
+            var fields = this.getType().closest(&#039;table&#039;)
+                             .find(&#039;input[id*=&quot;Station_Short_Name&quot;], input[id*=&quot;Station_Sponsorship_Link&quot;]&#039;);
+           
+            if (state == &#039;hide&#039;) {
+                fields.closest(&#039;tr&#039;).hide();
+            }
+            else {
+                fields.closest(&#039;tr&#039;).show();
+            }
+        },
+        beautifyLabels: function () {
+            var labels = this.getType().closest(&#039;table&#039;).find(&#039;.control-label &gt; label&#039;);
+            
+            labels.each(function(idx, elem) {
+                var label = $(elem);
+
+                label.text(label.text().replace(/\_/g, &#039; &#039;));
+                label.text(label.text().replace(/Desktop|Adhesion/g, &#039;&#039;));
+            });
+          
+        },
+        isStationSelectedActions: function() {
+            var self = this;
+            var selected = this.getType().find(&quot;option[value=&#039;station&#039;]:selected&quot;);
+
+            if (selected.length &gt; 0){
+                self.toggleSpecificFields(&#039;show&#039;);
+            } else {
+                self.toggleSpecificFields(&#039;hide&#039;);
+            }
+        },
+        setTypeOnclick: function() {
+            var self = this;
+            self.getType().unbind(&#039;change&#039;).bind(&#039;change&#039;, function(){
+                self.isStationSelectedActions();
+            });
+
+        },
+        setAllowEmpty: function(items, state) {
+            var self = this;
+
+            items.each(function(){
+                var elem = $(this);
+
+                if (elem.find(&#039;input[type=&quot;text&quot;]&#039;).val().length || elem.find(&#039;option:selected&#039;).length) {
+
+                    items.data(&#039;allowEmpty&#039;, state);
+                    items.find(&#039;.help-block&#039;).text(&#039;This field is mandatory!&#039;);
+
+                    return false;
+                }
+                else {
+                    elem.removeData(&#039;allowEmpty&#039;);
+                }
+            });
+        },
+        areSectionInputsEmpty: function (elems) {
+            var isEmpty = true;
+
+            elems.each(function() {
+                if ($(this).find(&#039;input[type=&quot;text&quot;]&#039;).val().length) {
+                    isEmpty = false;
+                }
+            });
+
+            return isEmpty;
+
+        },
+        areAllEmpty: function () {
+            var self = this;
+            var adhesionFields = self.getAdhesionFields();
+            var desktopFields = self.getAdSlotIdSize();
+
+            if (self.areSectionInputsEmpty(adhesionFields) &amp;&amp; 
+                self.areSectionInputsEmpty(desktopFields) &amp;&amp; 
+                !desktopFields.find(&#039;option:selected&#039;).length) {
+
+                if (!desktopFields.closest(&#039;fieldset&#039;).find(&#039;.general-error&#039;).length) {
+                    var errorMsg = $(&#039;&lt;div class=&quot;general-error error&quot;&gt;You must add at least a Desktop Ad or an Adhesion.&lt;/div&gt;&#039;);
+                    errorMsg.insertBefore(desktopFields.closest(&#039;table&#039;));
+
+                    //remove other old errors messages
+                    desktopFields.closest(&#039;table&#039;).find(&#039;tr&#039;).removeClass(&#039;has-error&#039;);
+                }
+                return true;
+            }
+
+            desktopFields.closest(&#039;fieldset&#039;).find(&#039;.general-error&#039;).remove();
+            return false;
+
+        },
+        areMandatoryEmpty: function () {
+            var items = this.getType().closest(&#039;table&#039;).find(&#039;tbody tr&#039;);
+            var emptyData = false;
+
+            items.each(function(){
+                var item = $(this);
+                var emptyNotAllowed = item.data(&#039;allowEmpty&#039;) === false;
+
+                if (item.find(&#039;.multiselect-container&#039;).length) {
+                    var isEmpty = item.find(&#039;option:selected&#039;).length == 0;
+                }
+                else {
+                   var isEmpty = item.find(&#039;input[type=&quot;text&quot;], select&#039;).val() == &quot;&quot;;
+                }
+                item.removeClass(&#039;has-error&#039;);
+
+                if (emptyNotAllowed &amp;&amp; isEmpty){
+                    item.find(&#039;input[type=&quot;text&quot;], select&#039;).addClass(&#039;error&#039;);
+                    item.addClass(&#039;has-error&#039;);
+                    emptyData = true;
+                    return true;
+
+                } else {
+                    item.find(&#039;input[type=&quot;text&quot;], select&#039;).removeClass(&#039;error&#039;);
+                }
+            });
+            return emptyData;
+        },
+       
+        unsetUnnecessaryFields: function() {
+            var hiddenFields = this.getType().closest(&#039;tbody&#039;).find(&#039;tr:hidden input&#039;);
+
+            hiddenFields.each(function(){
+                if ($(this).attr(&#039;id&#039;) == &quot;var_Background_color&quot;) {
+                    $(this).val(&#039;transparent&#039;);
+                }
+                else {
+                    $(this).val(&#039;&#039;);
+                }
+            });
+        },
+
+        init: function() {
+            var self = this;
+            self.isStationSelectedActions();
+            self.setTypeOnclick();
+            self.addDescriptions();
+
+            var adhesionFields = self.getAdhesionFields();
+            var desktopFields = self.getAdSlotAndId();
+
+            self.moveToEnd(adhesionFields);
+            self.separateFromRest(adhesionFields, &#039;Adhesion&#039;);
+            self.separateFromRest(desktopFields, &#039;Desktop Ad&#039;);
+            self.addErrorWrapper(adhesionFields);
+            self.addErrorWrapper(desktopFields);
+            self.beautifyLabels();
+
+
+            $(&#039;[data-rel=&quot;popover&quot;]&#039;).on(&#039;mouseleave&#039;, function(e){
+                $(&#039;[data-rel=&quot;popover&quot;]&#039;).not(e.target).popover(&#039;hide&#039;);
+            });
+        }
+    }
+     SnippetAdSetupWidget = window.SnippetAdSetupWidget || {
+        validate: function(variable_id) {
+            var adhesionFields = AdSetup.getAdhesionFields();
+            var desktopFields = AdSetup.getAdSlotIdSize();
+
+            AdSetup.unsetUnnecessaryFields();
+            AdSetup.setAllowEmpty(adhesionFields, false);
+            AdSetup.setAllowEmpty(desktopFields, false);
+            
+            if (AdSetup.areAllEmpty()) {
+                return false;
+            }
+            if (AdSetup.areMandatoryEmpty() || AdSetup.checkSlotIds()) {
+                return false;
+            }
+            return true;
+        },
+        init: function(variable_id) {},
+        events: {
+          postInit: function() {
+              AdSetup.init();
+          },
+        }
+    };
+
+}(jQuery || django.jQuery));
+
+
+
+SnippetWidgetRegistry.registerWidget(&#039;ad-setup&#039;, SnippetAdSetupWidget);
+SnippetWidgetRegistry.registerVariable(&#039;ad-setup&#039;, SnippetAdSetupWidget);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

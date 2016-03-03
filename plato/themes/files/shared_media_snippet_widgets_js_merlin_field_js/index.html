@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - shared/media/snippet-widgets/js/merlin-field.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>shared/media/snippet-widgets/js/merlin-field.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">71.58</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">528</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">60.24</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">5.83</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function($) {
+
+    MerlinLookup = {
+        addItem: function(){
+            var items = this.getMerlinItems();
+            var first = items.filter(&quot;:hidden&quot;).first();
+            first.css(&quot;display&quot;, &quot;&quot;).find(&#039;.widget-body&#039;).addClass(&#039;on&#039;);
+            first.find(&#039;.widget-anchor&#039;).removeClass(&#039;collapsed&#039;);
+
+            var height = first.find(&#039;table&#039;).outerHeight();
+            first.find(&#039;.widget-body.on&#039;).css(&#039;height&#039;, height);
+
+
+            if(items.length == items.filter(&quot;:visible&quot;).length){
+                items.parent().find(&#039;.addLink&#039;).closest(&#039;tr&#039;).remove();
+            }
+        },
+        updateAddMore: function(){
+            var self = this;
+            var items = self.getMerlinItems();
+            items.parent().find(&#039;.addLink&#039;).closest(&#039;tr&#039;).remove();
+            if(items.length &gt; items.filter(&#039;:visible&#039;).length){
+                $(&quot;&lt;a&gt;&lt;/a&gt;&quot;)
+                    .addClass(&#039;addLink btn&#039;)
+                    .attr(&#039;href&#039;, &#039;javascript:void(0)&#039;)
+                    .text(&quot;Add another item (Max &quot;+ items.length + &quot;)&quot;)
+                    .insertAfter(items.last())
+                    .wrap(&quot;&lt;tr&gt;&lt;td colspan=&#039;2&#039;&gt;&lt;/td&gt;&lt;/tr&gt;&quot;)
+                    .click(function(){
+                        self.addItem()
+                    });
+            }
+        },
+        isItemEmpty: function(elem){
+            if(!elem){
+                return false;
+            }
+            var isEmpty = true;
+            elem.find(&#039;tr.field input, tr.field textarea&#039;).each(function(){
+                var hasVal = $(this).val() !== &#039;&#039;;
+                if(hasVal){
+                    isEmpty = false;
+                    return false;
+                }
+            });
+
+            return isEmpty;
+        },
+        getMerlinItems: function(){
+            var items = SnippetWidgetRegistry.get_variables(&#039;merlin&#039;);
+            return $(&#039;tr[class^=&quot;section_&quot;]&#039;).filter(function(){
+                var variable_id = $(this).attr(&#039;class&#039;).replace(&#039;section_&#039;, &#039;var_&#039;);
+                return items.indexOf(variable_id) !== -1;
+            });
+        },
+        updateItemsPosition: function(){
+            var self = this;
+            var items = SnippetWidgetRegistry.get_variables(&#039;merlin&#039;);
+            var allMerlinItems = self.getMerlinItems();
+
+            // replace all sections data to reorder with the original positions
+            $.each(items, function (idx, variable_id){
+                var original_field_name = variable_id.replace(&#039;var_&#039;, &#039;&#039;).split(&#039;_&#039;)[0];
+                var item = $(allMerlinItems[idx]);
+                var current_field_name = item.attr(&#039;class&#039;).split(&#039;_&#039;)[1];
+
+                // change section class with the original one
+                var initial_title = item.find(&#039;.widget-title&#039;);
+                initial_title.html(
+                    initial_title.html()
+                        .replace(current_field_name, original_field_name)
+                );
+
+                item.find(&#039;.widget-header, .widget-body, input, textarea, label, span, a&#039;).andSelf().each(function(){
+                    var original_elem = $(this).get(0),
+                        attributes = original_elem.attributes,
+                        attr_name,
+                        attr_value,
+                        tag_name;
+
+                    // go through all attributes of an element and
+                    // replace them with new field name...
+                    for(var index=0; index&lt;attributes.length; index++){
+                        attr_name = attributes[index].name;
+                        attr_value = attributes[index].value;
+
+                        tag_name = typeof $.fn.prop !== &quot;undefined&quot; ?
+                                   $(this).prop(&quot;tagName&quot;) :
+                                   this.nodeName;
+
+                        //...except the value and type
+                        if(attr_name !== &#039;value&#039; &amp;&amp; attr_name !== &quot;type&quot; &amp;&amp; attr_name !== &quot;size&quot; &amp;&amp; attr_name !== &quot;maxlength&quot; &amp;&amp; attr_name != &quot;style&quot; ){
+                            try {
+                                $(this).attr(attr_name, attr_value.replace(
+                                    current_field_name,
+                                    original_field_name
+                                ));
+                            } catch(e){ }
+                        }
+                    }
+                });
+
+                //reattach lookup handlers to match the new inputs&#039; attributes
+                var merlin_vars = SnippetWidgetRegistry.get_variables(&#039;merlin&#039;);
+                $.each(merlin_vars, function(i, variable_id){
+                    var field_name = variable_id.replace(&#039;var_&#039;, &#039;&#039;);
+                    self.init(field_name);
+                    SnippetWidgetRegistry.get_widget_class(&#039;filer&#039;).init(field_name + &quot;_image&quot;);
+
+                });
+            });
+
+            toggleEmptyMerlin(3, &#039;update&#039;);
+        },
+        deleteItem: function(item){
+             var items = this.getMerlinItems();
+
+            if(item[0] !== items.last()[0]){
+                item.insertAfter(items.last());
+            }
+
+            item.find(&#039;input&#039;).val(&quot;&quot;);
+            item.find(&#039;textarea&#039;).val(&quot;&quot;);
+
+            item.hide();
+        },
+        afterDeleteItem: function(){
+            this.updateItemsPosition();
+            this.updateAddMore();
+        },
+         errorMsgHighlight: function() {
+            var items = this.getMerlinItems();
+
+            // testing if there is a message error from Filer, if so, we add the &quot;error&quot; class on the input as well
+            items.find(&#039;.widget-box .invalid_filer_type&#039;).each(function(){
+                if($(this).html()) {
+                    $(this).closest(&#039;tr&#039;).siblings().each(function(){
+                        $(this).find(&#039;input, textarea&#039;).addClass(&#039;error merlin-attr-error&#039;);
+                    });
+                }
+            });
+        },
+        image_default_resize: function(imageEl, value){
+            if (! _image_resize_url) {
+                imageEl.val(value).trigger(&#039;change&#039;);
+                return;
+            }
+             $.ajax({
+                url: _image_resize_url,
+                data: { img_url: value, arg: _resize_args },
+                success: function(resized_url) {
+                    imageEl.val(resized_url).trigger(&#039;change&#039;);
+                },
+                error: function() {
+                    imageEl.val(value).trigger(&#039;change&#039;);
+                }
+            });
+        },
+        addMerlinTitleOnTop: function (field_name) {
+            var item = $(&#039;#&#039; + field_name + &#039;_title&#039;);
+
+            if (item.val()) {
+                $(&#039;.merlin-&#039; + field_name + &#039;-title&#039;).text(&#039;: &#039; + $(&#039;#&#039; + field_name + &#039;_title&#039;).val());
+            }
+        },
+        populate_merlin_data: function (merlin_dict, field_name) {
+            var field, key, i, self = this;
+
+            function update_field(field) {
+                var max_length = 260;
+                var value = &#039;&#039;;
+
+                if (field &amp;&amp; merlin_dict[field]){
+                    value = merlin_dict[field].substring(0, max_length);
+                }
+                var fieldId = &quot;#&quot; + field_name + &quot;_&quot; + field;
+                if (field == &#039;image&#039;) {
+                    self.image_default_resize($(fieldId), value);
+                } else {
+                    $(fieldId).val(value).trigger(&#039;change&#039;);
+                }
+            }
+
+            if (cmsplugin_merlin_fields) {
+                for (var i in cmsplugin_merlin_fields){
+                    if(cmsplugin_merlin_fields.hasOwnProperty(i)){
+                        update_field(cmsplugin_merlin_fields[i]);
+                    }
+                }
+            } else if (merlin_dict) {
+                for (key in merlin_dict) {
+                    update_field(merlin_dict[key])
+                }
+            }
+            this.addMerlinTitleOnTop(field_name);
+        },
+        deletePopup: function(elem){
+            var self = this;
+            $( &quot;.widget-box-overlay &quot;).removeClass(&#039;hide&#039;);
+            $( &quot;#dialog-confirm&quot; ).removeClass(&#039;hide&#039;).dialog({
+                resizable: false,
+                modal: true,
+                closeOnEscape: false,
+                title: &quot;Delete item&quot;,
+                buttons: [
+                    {
+                        html: &quot;Cancel&quot;,
+                        &quot;class&quot; : &quot;btn no-radius&quot;,
+                        click: function() {
+                            $( this ).dialog( &quot;close&quot; ).dialog( &quot;destroy&quot;).addClass(&#039;hide&#039;);
+                            $( &quot;.widget-box-overlay &quot;).addClass(&#039;hide&#039;);
+                        }
+                    },
+                    {
+                        html: &quot;Confirm&quot;,
+                        &quot;class&quot; : &quot;btn btn-info no-radius&quot;,
+                        click: function() {
+                            self.deleteItem(elem);
+                            self.afterDeleteItem();
+
+                            $(this).dialog( &quot;destroy&quot;).addClass(&#039;hide&#039;);
+                            $( &quot;.widget-box-overlay &quot;).addClass(&#039;hide&#039;);
+                        }
+                    }
+                ]
+            })
+        },
+        dismissPopup: function (win, merlin_dict, field_name) {
+            var self = this;
+            var merlin_dict_copy = {};
+            for (var item in merlin_dict) {
+                merlin_dict_copy[item] = merlin_dict[item];
+            }
+            win.close();
+
+            // run confirmation code in a different thread so the child window can close on FF
+            setTimeout(function () {
+                var overwrite = true;
+                // Check if any field is populated
+                for (var i in cmsplugin_merlin_fields){
+                    if(cmsplugin_merlin_fields.hasOwnProperty(i)){
+                        var selector = &quot;#&quot; + field_name + &quot;_&quot; + cmsplugin_merlin_fields[i];
+                        if ($(selector).val()) {
+                            overwrite = confirm(&quot;Are you sure you want to overwrite &quot; + field_name +&quot; fields ?&quot;);
+                            break;
+                        }
+                    }
+                }
+                if(overwrite) {
+                    MerlinLookup.populate_merlin_data(merlin_dict_copy, field_name);
+                }
+            }, 0);
+        },
+        openInPopup: function(link, title){
+            var win = window.open(
+                link.attr(&quot;href&quot;),
+                title || &#039;Merlin&#039;,
+                &quot;height=830,width=900,resizable=yes,scrollbars=no&quot;
+            );
+            win.focus();
+            return false;
+        },
+        itemToJSON: function(field_name){
+            var section = $(&quot;.section_&quot; + field_name);
+            var json_field = section.find(&#039;input.merlinfield_hidden&#039;).first();
+
+            var merlin_obj = {};
+            section.find(&#039;input, textarea&#039;).filter(&#039;[id^=&quot;&#039; + field_name + &#039;&quot;]&#039;).each(function(){
+                var attr_name = $(this).attr(&#039;id&#039;).replace(field_name + &#039;_&#039;, &#039;&#039;);
+                if(attr_name &amp;&amp; this.value){
+                    merlin_obj[attr_name] = this.value;
+                }
+            });
+            var merlin_dict_string = JSON.stringify(merlin_obj);
+            if(merlin_dict_string) {
+                json_field.val(merlin_dict_string);
+            }
+        },
+        init: function(field_name){
+            var self = this;
+            var section = $(&quot;.section_&quot; + field_name);
+            section.find(&#039;.merlin-lookup&#039;).first().unbind(&#039;click&#039;).bind(&#039;click&#039;, function(e){
+                e.preventDefault();
+                return self.openInPopup($(this));
+            });
+            section.find(&#039;.pmp-lookup&#039;).first().unbind(&#039;click&#039;).bind(&#039;click&#039;, function(e){
+                e.preventDefault();
+                return self.openInPopup($(this), &#039;PMP&#039;);
+            });
+            section.find(&#039;.deletelink&#039;).unbind(&#039;click&#039;).bind(&#039;click&#039;, function(e){
+                e.preventDefault();
+                return self.deletePopup(section);
+            });
+
+            section.find(&quot;.widget-anchor&quot;).unbind(&#039;click&#039;).bind(&#039;click&#039;, function(e){
+                e.preventDefault();
+                return self.collapseItem(section);
+            });
+        },
+        isRequired: function(fieldEl){
+            if (!fieldEl){
+                return false;
+            }
+            var requiredAttr = fieldEl.attr(&#039;data-required&#039;);
+            if (requiredAttr === &#039;required&#039; || requiredAttr === &#039;true&#039;){
+                return true;
+            }
+            return false;
+        },
+        hasRequiredData: function(fieldEl){
+            var hasData = true;
+            fieldEl.find(&#039;tr.field input, tr.field textarea&#039;).each(function(){
+                var emptyAllowed = $(this).attr(&#039;data-allow-empty&#039;) === &#039;true&#039;;
+                var noVal = $(this).val() === &#039;&#039;;
+                if(noVal &amp;&amp; !emptyAllowed){
+                    hasData = false;
+                    return false;
+                }
+            });
+            return hasData;
+        },
+        highlightRequired: function (fieldEl) {
+
+            function highlightInput (input) {
+                var emptyAllowed = input.attr(&#039;data-allow-empty&#039;) === &#039;true&#039;;
+                var hasVal = input.val() !== &#039;&#039;;
+
+                input.closest(&#039;tr&#039;).removeClass(&#039;has-error&#039;);
+
+                if (hasVal || emptyAllowed){
+                    input.removeClass(&#039;error merlin-attr-error&#039;);
+                } else {
+                    input.addClass(&#039;error merlin-attr-error&#039;).closest(&#039;tr&#039;).addClass(&#039;has-error&#039;);
+                }
+            }
+
+            fieldEl.find(&#039;tr.field input, tr.field textarea&#039;)
+                .unbind(&#039;change&#039;)
+                .bind(&#039;change&#039;, function(){
+                    var inputEl = $(this);
+                    setTimeout(function() { highlightInput(inputEl); }, 0);
+                }).each(function () {
+                    highlightInput($(this));
+                });
+        },
+         // Adds custom description above the form
+        customText: function() {
+            var html = &#039;&lt;div class=&quot;description widget-main&quot;&gt;&lt;/div&gt;&#039;;
+            $(&#039;#accordion&#039;).before(html);
+        },
+        // Styles the labels
+        labelStyle: function() {
+            $(&#039;#accordion .field label&#039;).each(function(){
+                var self = $(this);
+                self.html(self.html().replace(/_/g, &#039; &#039;));
+            });
+        },
+
+        // Collpsible effect added on all slides
+        collapseItem: function(elem) {
+            var link = elem.find(&#039;.widget-anchor&#039;);
+            link.toggleClass(&#039;collapsed&#039;);
+
+            var visibleItem = elem.find(&#039;.widget-body&#039;);
+
+            var height = $(visibleItem).find(&#039;table&#039;).outerHeight();
+
+            if (visibleItem.hasClass(&#039;on&#039;)) {
+                visibleItem.css(&#039;height&#039;, &#039;0&#039;).removeClass(&#039;on&#039;);
+            }
+            else {
+                visibleItem.css(&#039;height&#039;, height).addClass(&#039;on&#039;);
+            }
+        },
+
+        // Adds the custom text and wrappers for making the form **beautiful**
+        beautifyForm: function(variable_id) {
+            var self = this;
+            $(&#039;.grouped&#039;).parents(&#039;tbody&#039;).siblings(&#039;thead&#039;).remove();
+            $(&#039;.grouped&#039;).parents(&#039;table&#039;).attr(&#039;id&#039;, &#039;accordion&#039;);
+            $(&#039;#accordion .widget-box&#039;).parent().css(&#039;width&#039;, $(&#039;#accordion .widget-box&#039;).outerWidth());
+
+            $(&#039;#accordion textarea&#039;).resize(function(){
+                var item = $(this).parents(&#039;.collapse-item&#039;);
+                if (item.height() &gt; 0) {
+                    item.css(&#039;height&#039;, &#039;auto&#039;);
+                }
+            });
+
+            self.addModal($(&#039;body&#039;));
+            self.labelStyle();
+        },
+        // Add the modal wrappers and the overlay that has to appear when the modal is displayed
+        addModal: function(content) {
+           var html = &#039;&lt;div id=&quot;dialog-confirm&quot; class=&quot;hide&quot;&gt;&#039;;
+           html += &#039;&lt;p&gt; Are you sure you want to delete this slide? &lt;/p&gt;&#039;;
+           html += &#039;&lt;/div&gt;&#039;;
+           html += &#039;&lt;div class=&quot;widget-box-overlay ui-front hide&quot;&gt;&lt;/div&gt;&#039;;
+
+           content.append(html);
+        },
+        validate: function(field_name){
+            var self = this;
+            var section = $(&quot;.section_&quot; + field_name);
+
+            if ((self.isRequired(section) || !self.isItemEmpty(section)) &amp;&amp; !self.hasRequiredData(section)){
+                self.highlightRequired(section);
+                return false;
+            }
+
+            if (self.isItemEmpty(section)){
+                self.deleteItem(section);
+            }
+
+            self.itemToJSON(field_name);
+            return true;
+        }
+    }
+
+    function removeAdditionalHelpText() {
+        $(&#039;.help-text:not(:first)&#039;).remove();
+    }
+
+    function groupMerlinTogheter(){
+        /**
+        * MOTO : &quot;United we stand, divided we fall&quot;
+        *
+        * Group merlin objects togheter in case they are not.
+        * This usualy happens when they don&#039;t have variable names in alphabetical order
+        * in smart snippet.
+        * Ex: &lt;!-- SmartSnippets Variables
+        *        bac=Select|values=Yes,No
+        *        abc=MerlinField
+        *        cba=MerlinField
+        *        --&gt;
+        *   The above will actually be rendered in the admin in the following order:
+        *   abc (Merlin)
+        *   bac (Select)
+        *   cba (Merlin)
+        */
+
+        var merlinItems = MerlinLookup.getMerlinItems();
+
+        merlinItems.each(function(iter){
+            if(iter &gt; 0){
+                $(this).insertAfter($(&#039;tr[class^=&quot;section_&quot;]:eq(&#039;+(iter - 1)+&#039;)&#039;));
+            }
+        });
+    }
+
+    function makeSortable(){
+        var merlinItems = MerlinLookup.getMerlinItems();
+        var item_classes = $.map(merlinItems, function(val, i){
+            return &quot;.&quot; + $(val).attr(&#039;class&#039;);
+        }).join(&#039;,&#039;);
+
+        merlinItems.parent().sortable({
+            handle: &#039;.widget-drag&#039;,
+            items: item_classes,
+            update: function( event, ui ) {
+                if(merlinItems.length &lt; 2){
+                    return;
+                }
+                MerlinLookup.updateItemsPosition();
+            }
+        });
+    }
+
+    function toggleEmptyMerlin(defaultDisplayNo, state){
+        var merlinItems = MerlinLookup.getMerlinItems();
+        var minimumDisplayNo = Math.min(
+            defaultDisplayNo || 0, merlinItems.length);
+
+        merlinItems.each(function(idx){
+            var item = $(this);
+
+            if (idx &gt;= minimumDisplayNo) {
+
+                if (state == &#039;init&#039;) {
+                    item
+                        .css(&quot;display&quot;, (MerlinLookup.isItemEmpty(item)) ? &quot;none&quot;: &quot;&quot;)
+                        .find(&#039;.widget-anchor&#039;).addClass(&#039;collapsed&#039;);
+                }
+            }
+            else {
+                if (state == &#039;init&#039;) {
+                    item.find(&#039;.widget-body&#039;).addClass(&#039;on&#039;);
+                }
+            }
+        });
+    }
+    //used later
+    var saved_var_id;
+
+    SnippetMerlinWidget = window.SnippetMerlinWidget || {
+        validate: function(variable_id){
+            return MerlinLookup.validate(variable_id.replace(&#039;var_&#039;, &#039;&#039;));
+        },
+        init: function(variable_id){
+            saved_var_id = variable_id;
+            MerlinLookup.init(variable_id.replace(&#039;var_&#039;, &#039;&#039;));
+            MerlinLookup.addMerlinTitleOnTop(variable_id.replace(&#039;var_&#039;, &#039;&#039;));
+
+        },
+        events: {
+            preInit: function(){
+                removeAdditionalHelpText();
+                groupMerlinTogheter();
+            },
+            postInit: function(){
+                toggleEmptyMerlin(3, &#039;init&#039;);
+                MerlinLookup.updateAddMore();
+                MerlinLookup.customText();
+                MerlinLookup.beautifyForm();
+                makeSortable();
+            },
+            postValidate: function() {
+                MerlinLookup.afterDeleteItem();
+                MerlinLookup.errorMsgHighlight();
+            }
+        }
+    };
+
+    dismissMerlinBrowserPopup = window.dismissMerlinBrowserPopup || MerlinLookup.dismissPopup;
+
+}(jQuery || django.jQuery));
+
+SnippetWidgetRegistry.registerWidget(&#039;merlin&#039;, SnippetMerlinWidget);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

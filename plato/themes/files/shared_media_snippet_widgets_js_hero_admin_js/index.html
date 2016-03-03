@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - shared/media/snippet-widgets/js/hero-admin.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>shared/media/snippet-widgets/js/hero-admin.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">70.67</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">603</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">56.00</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">6.48</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function ($) {
+HeroListener = {
+    heroFields: {
+        image: {
+            help: &quot;Image must be 18:7 aspect ratio and at least 1440 x 560 px.&quot;,
+            required: true,
+            placeholder: &#039;No file&#039;
+        },
+        logo: {
+            help: &quot;Logo must be a transparent white png and have a max height of 100px and a max width of 300 px.&quot;,
+            tooltip: &quot;&lt;span&gt;Logo should retain its original aspect ratio and include no additional drop shadow. Logo will automatically be justified to bottom-left of the 300x100 px space.&lt;/span&gt;&quot;,
+            tooltip_image: &quot;logo_help&quot;,
+            placeholder: &#039;No file&#039;
+        },
+        alternate_title: {
+            placeholder: &quot;Title here&quot;,
+            tooltip: &quot;Displays at all breakpoints below 960. Displays at desktop only if no logo is uploaded. Max: 36 characters, including spaces.&quot;,
+            limited: true
+        },
+        description: {
+            placeholder: &quot;Default text&quot;,
+            tooltip: &#039;Optional. Max: 104 characters, including spaces.&#039;,
+        },
+        call_to_action: {
+            placeholder: &quot;Call-to-action text&quot;,
+            tooltip: &#039;Optional. Max: 24 characters, including spaces.&#039;,
+            limited: true
+        },
+        link: {
+            placeholder: &quot;URL here&quot;,
+        }
+    },
+    getHeroItems: function(){
+        var items = SnippetWidgetRegistry.get_variables(&#039;hero-admin&#039;);
+            return $(&#039;tr[class^=&quot;section_&quot;]&#039;).filter(function(){
+                var variable_id = $(this).attr(&#039;class&#039;).replace(&#039;section_&#039;, &#039;var_&#039;);
+                return items.indexOf(variable_id) !== -1;
+            });
+    },
+    // Adds another item opened by default
+    addItem: function(){
+        var items = this.getHeroItems();
+        var first = items.filter(&quot;:hidden&quot;).first();
+
+        first.css(&quot;display&quot;, &quot;&quot;).find(&#039;.widget-body&#039;).addClass(&#039;on&#039;);
+        first.find(&#039;.widget-anchor&#039;).removeClass(&#039;collapsed&#039;);
+
+        var height = first.find(&#039;table&#039;).outerHeight();
+        first.find(&#039;.widget-body.on&#039;).css(&#039;height&#039;, height);
+
+        if(items.length == items.filter(&quot;:visible&quot;).length){
+            items.parent().find(&#039;.addLink&#039;).closest(&#039;tr&#039;).remove();
+        }
+    },
+    // Creates the button for adding other slides
+    updateAddMore: function(){
+        var self = this;
+        var items = self.getHeroItems();
+
+        items.parent().find(&#039;.addLink&#039;).closest(&#039;tr&#039;).remove();
+
+        if(items.length &gt; items.filter(&#039;:visible&#039;).length){
+            $(&quot;&lt;a&gt;&lt;/a&gt;&quot;)
+                .addClass(&#039;addLink btn&#039;)
+                .attr(&#039;href&#039;, &#039;javascript:void(0)&#039;)
+                .text(&quot;+ Add another slide&quot;)
+                .insertAfter(items.last())
+                .wrap(&quot;&lt;tr&gt;&lt;td colspan=&#039;2&#039;&gt;&lt;/td&gt;&lt;/tr&gt;&quot;)
+                .click(function(){
+                    self.addItem()
+                });
+        }
+    },
+
+    // Updates the position of slides. It is called after re-ordering or deleting an item.
+    updateItemsPosition: function(){
+        var items = SnippetWidgetRegistry.get_variables(&#039;hero-admin&#039;);
+        var allHeroItems = this.getHeroItems();
+
+        // replace all sections data to reorder with the original positions
+        $.each(items, function (idx, variable_id){
+            var original_field_name = variable_id.replace(&#039;var_&#039;, &#039;&#039;).split(&#039;_&#039;)[0];
+            var item = $(allHeroItems[idx]);
+            var current_field_name = item.attr(&#039;class&#039;).split(&#039;_&#039;)[1];
+            // change section class with the original one
+            item.attr(
+                &#039;class&#039;,
+                item.attr(&#039;class&#039;).replace(
+                    current_field_name,
+                    original_field_name
+                )
+            );
+            var initial_title = item.find(&#039;.widget-title&#039;);
+            initial_title.text(
+                initial_title.text()
+                    .replace(current_field_name, original_field_name)
+            );
+            item.find(&#039;.widget-header, .widget-body, input, textarea, label, span, a&#039;).andSelf().each(function(){
+                var original_elem = $(this).get(0),
+                    attributes = original_elem.attributes,
+                    attr_name,
+                    attr_value,
+                    tag_name;
+
+                // go through all attributes of an element and
+                // replace them with new field name...
+                for(var index=0; index&lt;attributes.length; index++){
+                    attr_name = attributes[index].name;
+                    attr_value = attributes[index].value;
+
+                    tag_name = typeof $.fn.prop !== &quot;undefined&quot; ?
+                               $(this).prop(&quot;tagName&quot;) :
+                               this.nodeName;
+
+                    //...except the value and type
+                    if(attr_name !== &#039;value&#039; &amp;&amp; attr_name !== &quot;type&quot; &amp;&amp; attr_name !== &quot;size&quot; &amp;&amp; attr_name !== &quot;maxlength&quot; &amp;&amp; attr_name != &quot;style&quot; ){
+                        try {
+                            $(this).attr(attr_name, attr_value.replace(
+                                current_field_name,
+                                original_field_name
+                            ));
+                        } catch(e){ }
+                    }
+                }
+            });
+
+            //reattach lookup handlers to match the new inputs&#039; attributes
+            var hero_vars = SnippetWidgetRegistry.get_variables(&#039;hero-admin&#039;);
+            $.each(hero_vars, function(i, variable_id){
+                var field_name = variable_id.replace(&#039;var_&#039;, &#039;&#039;);
+                HeroListener.init(field_name);
+                SnippetWidgetRegistry.get_widget_class(&#039;filer&#039;).init(field_name + &quot;_image&quot;);
+                SnippetWidgetRegistry.get_widget_class(&#039;filer&#039;).init(field_name + &quot;_logo&quot;);
+
+            });
+
+        });
+
+        displayMandatoryHero(1, &#039;update&#039;);
+
+    },
+
+    // Delete a slide.
+    deleteItem: function(item){
+        var items = this.getHeroItems();
+
+        if(item[0] !== items.last()[0]){
+            item.insertAfter(items.last());
+        }
+
+        item.find(&#039;input&#039;).val(&quot;&quot;);
+        item.find(&#039;textarea&#039;).val(&quot;&quot;);
+
+        item.hide();
+    },
+
+    afterDeleteItem: function(){
+        this.updateItemsPosition();
+        this.updateAddMore();
+    },
+
+    // Check if element is empty
+    isItemEmpty: function(elem){
+        if(!elem){
+            return false;
+        }
+        var isEmpty = true;
+        elem.find(&#039;tr.field input, tr.field textarea&#039;).each(function(){
+            var hasVal = $(this).val() !== &#039;&#039;;
+            if(hasVal){
+                isEmpty = false;
+                return false;
+            }
+        });
+
+        return isEmpty;
+    },
+
+    // Pop-up window for confirmation when deleting a slide
+    openInPopup: function(elem){
+        $( &quot;.widget-box-overlay &quot;).removeClass(&#039;hide&#039;);
+        $( &quot;#dialog-confirm&quot; ).removeClass(&#039;hide&#039;).dialog({
+            resizable: false,
+            modal: true,
+            closeOnEscape: false,
+            title: &quot;Delete slide&quot;,
+            buttons: [
+                {
+                    html: &quot;Cancel&quot;,
+                    &quot;class&quot; : &quot;btn no-radius&quot;,
+                    click: function() {
+                        $( this ).dialog( &quot;close&quot; ).dialog( &quot;destroy&quot;).addClass(&#039;hide&#039;);
+                        $( &quot;.widget-box-overlay &quot;).addClass(&#039;hide&#039;);
+                    }
+                },
+                {
+                    html: &quot;Confirm&quot;,
+                    &quot;class&quot; : &quot;btn btn-info no-radius&quot;,
+                    click: function() {
+                        HeroListener.deleteItem(elem);
+                        HeroListener.afterDeleteItem();
+
+                        $(this).dialog( &quot;destroy&quot;).addClass(&#039;hide&#039;);
+                        $( &quot;.widget-box-overlay &quot;).addClass(&#039;hide&#039;);
+                    }
+                }
+            ]
+        })
+    },
+
+    // Styles the labels
+    labelStyle: function() {
+        $(&#039;#accordion label&#039;).each(function(){
+            var self = $(this);
+
+            self.text(self.text().replace(/_/g, &#039; &#039;));
+            self.append(&#039;:&#039;);
+        });
+    },
+
+    // Updates on all Hero slide elements by adding their custom attributes and tooltips
+    beautifyFields: function(field_name) {
+         $.each(this.heroFields, function (idx, variable){
+            var tooltip = &#039;&#039;;
+            var elem = $(&#039;.section_&#039; + field_name);
+
+            elem.find(&#039;input, textarea&#039;).filter(&#039;[id*=&quot;&#039; + idx + &#039;&quot;]&#039;).each(function(){
+
+                if (variable.help) {
+                    $(this).siblings(&#039;.help-block&#039;).text(variable.help);
+                }
+
+                if (variable.limited) {
+                    $(this).addClass(&#039;limited&#039;);
+                }
+
+                if (variable.placeholder) {
+                    $(this).attr(&#039;placeholder&#039;, variable.placeholder);
+                }
+
+                if (variable.required) {
+                    $(this).attr(&#039;data-allow-empty&#039;,&#039;false&#039;);
+
+                    var label = $(this).parents(&#039;table.no-border&#039;).parent().find(&#039;label&#039;);
+                    if (!label.hasClass(&#039;mandatory&#039;)) {
+                        label.addClass(&#039;mandatory&#039;);
+                        label.text(label.text() + &#039;*&#039;);
+                    }
+                }
+                else {
+                    $(this).attr(&#039;data-allow-empty&#039;,&#039;true&#039;);
+                }
+
+                if (variable.tooltip) {
+                    var help_text = &quot;&quot; + variable.tooltip;
+
+                    $.each((window.heroTooltipImages || {})[variable.tooltip_image] || [], function(idx, img){
+                        help_text += &quot;&lt;img src=&#039;&quot; + img + &quot;&#039;/&gt;&quot;;
+                    });
+
+                    var tooltip = &#039;&lt;span class=&quot;help-button&quot; data-rel=&quot;popover&quot; data-trigger=&quot;hover&quot; data-placement=&quot;right&quot; data-content=&quot;&#039; + help_text + &#039;&quot; title=&quot;&quot;&gt;?&lt;/span&gt;&#039;;
+
+                    // if the help-button was not added before we add it now
+                    if (!($(this).siblings(&#039;.help-button&#039;).length)) {
+
+                        // if image filer: we display the tooltip after the &quot;choose&quot; button.
+                        if ($(this).hasClass(&#039;filer_field&#039;)) {
+                            $(this).siblings(&#039;a&#039;).after(tooltip);
+                        }
+                        else {
+                            // otherwise, we display the tooltip after the input field.
+                            $(this).after(tooltip);
+                        }
+                        //either way, we add a helper class to style the error message
+                        $(this).parents(&#039;.input-icon&#039;).addClass(&#039;with-tooltip&#039;);
+                    }
+                }
+            });
+        });
+    },
+
+    // Updates just the menu-logo item from the slide
+    menuLogoCustomize: function () {
+        var tooltip = &quot;&quot;;
+        var help_img = &quot;&quot;;
+
+        $.each((window.heroTooltipImages || {})[&#039;menu_logo_help&#039;] || [], function(idx, img){
+            help_img += &quot;&lt;img src=&#039;&quot; + img + &quot;&#039;/&gt;&quot;;
+        });
+
+        tooltip = &#039;&lt;span&gt;Appears on the navigation bar at mobile breakpoints below 960 on. Required only when using explorer_producer_hero or explorer_producer_hero_one-column templates.&lt;/span&gt;&#039; + help_img;
+
+        $(&#039;#var_Menu_logo&#039;)
+            .attr(&#039;placeholder&#039;, &#039;No file&#039;)
+            .siblings(&#039;a&#039;).after(&#039;&lt;span class=&quot;help-button&quot; data-rel=&quot;popover&quot; data-trigger=&quot;hover&quot; data-placement=&quot;right&quot; data-content=&quot;&#039; + tooltip + &#039;&quot; title=&quot;&quot;&gt;?&lt;/span&gt;&#039;)
+            .siblings(&#039;.help-block&#039;).text(&#039;Logo must be a transparent white png and have max height of 61px and a max width of 200px.&#039;)
+            .parents(&#039;.input-icon&#039;).addClass(&#039;with-tooltip&#039;);
+
+    },
+    // Updates on buttons (cancel and save)
+    buttonsStyle: function() {
+        // Beautify the form buttons
+        $(&#039;&lt;div class=&quot;error hidden slide-error red&quot;&gt;You must have at least one slide on your Hero Carousel. &lt;/div&gt;&#039;).insertAfter(&#039;.smartsnippet-description&#039;);
+        $(&#039;.plugin-submit-row .btn-info&#039;).val(&#039;Submit&#039;).wrap( &quot;&lt;div class=&#039;submit-button&#039;&gt;&lt;/div&gt;&quot; );
+    },
+
+    // Collpsible effect added on all slides
+    collapseItem: function(elem) {
+        var link = elem.find(&#039;.widget-anchor&#039;);
+        link.toggleClass(&#039;collapsed&#039;);
+
+        var visibleItem = elem.find(&#039;.widget-body&#039;);
+
+        var height = $(visibleItem).find(&#039;table&#039;).outerHeight();
+
+        if (visibleItem.hasClass(&#039;on&#039;)) {
+            visibleItem.css(&#039;height&#039;, &#039;0&#039;).removeClass(&#039;on&#039;);
+        }
+        else {
+            visibleItem.css(&#039;height&#039;, height).addClass(&#039;on&#039;);
+        }
+    },
+
+    // Adds the custom text and wrappers for making the form **beautiful**
+    beautifyForm: function() {
+        var self = this;
+
+        $(&#039;.grouped&#039;).parents(&#039;tbody&#039;).siblings(&#039;thead&#039;).remove();
+        $(&#039;.grouped&#039;).parents(&#039;table&#039;).attr(&#039;id&#039;, &#039;accordion&#039;);
+        $(&#039;#accordion .widget-box&#039;).parent().css(&#039;width&#039;, $(&#039;#accordion .widget-box&#039;).outerWidth());
+
+        self.addModal($(&#039;body&#039;));
+        self.labelStyle();
+        self.buttonsStyle();
+
+        $(&#039;[data-rel=tooltip]&#039;).tooltip({container:&#039;body&#039;});
+        $(&#039;[data-rel=popover]&#039;).popover({
+            container: &#039;body&#039;,
+            html: true
+        });
+        $(&#039;.limited&#039;).inputlimiter({
+            remText: &#039;%n character%s left. &#039;,
+            limitText: &#039;%n character%s limit.&#039;,
+            limitTextShow: false
+        });
+
+        var height = $(&#039;#accordion .widget-body.on&#039;).find(&#039;table&#039;).outerHeight();
+        $(&#039;#accordion .widget-body.on&#039;).css(&#039;height&#039;, height);
+
+    },
+
+    // Add the modal wrappers and the overlay that has to appear when the modal is displayed
+    addModal: function(content) {
+       var html = &#039;&lt;div id=&quot;dialog-confirm&quot; class=&quot;hide&quot;&gt;&#039;;
+       html += &#039;&lt;p&gt; Are you sure you want to delete this slide? &lt;/p&gt;&#039;;
+       html += &#039;&lt;/div&gt;&#039;;
+       html += &#039;&lt;div class=&quot;widget-box-overlay ui-front hide&quot;&gt;&lt;/div&gt;&#039;;
+
+       content.append(html);
+    },
+
+    itemToJSON: function(field_name){
+        var section = $(&quot;.section_&quot; + field_name);
+        var json_field = section.find(&#039;input.herofield_hidden&#039;).first();
+
+        var hero_obj = {};
+        section.find(&#039;input,textarea&#039;).filter(&#039;[id^=&quot;&#039; + field_name + &#039;&quot;]&#039;).each(function(){
+            var attr_name = $(this).attr(&#039;id&#039;).replace(field_name + &#039;_&#039;, &#039;&#039;);
+            if(attr_name &amp;&amp; this.value){
+                hero_obj[attr_name] = this.value;
+            }
+        });
+        var hero_dict_string = JSON.stringify(hero_obj);
+        if(hero_dict_string) {
+            json_field.val(hero_dict_string);
+        }
+    },
+
+    init: function(field_name) {
+        var self = this;
+
+        var section = $(&quot;.section_&quot; + field_name);
+
+        section.find(&#039;.deletelink&#039;).unbind(&#039;click&#039;).bind(&#039;click&#039;, function(e){
+            e.preventDefault();
+            return self.openInPopup(section);
+        });
+
+        section.find(&quot;.widget-anchor&quot;).unbind(&#039;click&#039;).bind(&#039;click&#039;, function(e){
+            e.preventDefault();
+            return self.collapseItem(section);
+        });
+        self.beautifyFields(field_name);
+    },
+
+    // Checks if the slide is required
+    isRequired: function(fieldEl){
+        if (!fieldEl){
+            return false;
+        }
+        var requiredAttr = fieldEl.attr(&#039;data-required&#039;);
+        if (requiredAttr === &#039;required&#039; || requiredAttr === &#039;true&#039;){
+            return true;
+        }
+        return false;
+    },
+
+    // Checks if the field is mandatory
+    hasRequiredData: function(fieldEl){
+        var hasData = true;
+        fieldEl.find(&#039;tr.field input&#039;).each(function(){
+            var emptyAllowed = $(this).attr(&#039;data-allow-empty&#039;) === &#039;true&#039;;
+            var noVal = $(this).val() === &#039;&#039;;
+            if(noVal &amp;&amp; !emptyAllowed){
+                hasData = false;
+                return false;
+            }
+        });
+        return hasData;
+    },
+    areAllHidden: function() {
+        var allHeroItems = this.getHeroItems();
+        var is_bool = true;
+
+        allHeroItems.each(function (){
+            if ($(this).is(&#039;:visible&#039;)) {
+                is_bool = false;
+            }
+        });
+        return is_bool;
+    },
+    // Highlighs the inputs if validation fails
+    highlightRequired: function (fieldEl) {
+
+        function highlightInput (input) {
+            var emptyAllowed = input.attr(&#039;data-allow-empty&#039;) === &#039;true&#039;;
+            var hasVal = input.val() !== &#039;&#039;;
+
+            input.closest(&#039;tr&#039;).removeClass(&#039;has-error&#039;);
+
+            if (hasVal || emptyAllowed){
+                input.removeClass(&#039;error hero-attr-error&#039;);
+            } else {
+                input.addClass(&#039;error hero-attr-error&#039;).closest(&#039;tr&#039;).addClass(&#039;has-error&#039;);
+            }
+        }
+        fieldEl.find(&#039;tr.field input&#039;)
+            .unbind(&#039;change keydown keypress&#039;)
+            .bind(&#039;change keydown keypress&#039;, function(){
+                var inputEl = $(this);
+                setTimeout(function() { highlightInput(inputEl); }, 0);
+            }).each(function () {
+                highlightInput($(this));
+            });
+
+        var body = fieldEl.find(&#039;widget-body&#039;);
+
+        if (!body.hasClass(&#039;on&#039;)) {
+            body.addClass(&#039;on&#039;);
+        }
+    },
+    errorMsgHighlight: function() {
+       var heroItems = this.getHeroItems();
+
+        // custom validation for Menu logo because its html structure is different than the others
+            if ($(&#039;.error_var_Menu_logo.invalid_filer_type&#039;).html()) {
+                $(&#039;#var_Menu_logo&#039;).addClass(&#039;error hero-attr-error&#039;);
+            }
+
+            // testing if there is a message error from Filer, if so, we add the &quot;error&quot; class on the input as well
+            heroItems.find(&#039;.widget-box .invalid_filer_type&#039;).each(function(){
+                if($(this).html()) {
+                    $(this).closest(&#039;tr&#039;).siblings().each(function(){
+                        $(this).find(&#039;input&#039;).addClass(&#039;error hero-attr-error&#039;);
+                    });
+                }
+            });
+
+            // testing if there are elements with error class (added from highlightRequired method), if so, we add a message as well
+            heroItems.find(&#039;.widget-box .error.hero-attr-error&#039;).each(function(){
+                $(this).closest(&#039;tr&#039;).siblings().each(function(){
+                  $(this).find(&#039;td.invalid_filer_type&#039;).text(&#039;Please select a valid image type.&#039;);
+                })
+            });
+
+    },
+    validate: function(field_name) {
+        var self = this;
+        var section = $(&quot;.section_&quot; + field_name);
+
+        if ((self.isRequired(section) || !self.isItemEmpty(section)) &amp;&amp; !self.hasRequiredData(section) ){
+            self.highlightRequired(section);
+            return false;
+        }
+
+        if (self.isItemEmpty(section)){
+            self.deleteItem(section);
+        }
+
+        self.itemToJSON(field_name);
+
+        return true;
+    }
+
+}
+/* Setup the default opened slides
+** -- defaultDisplayNo: the number of default displyed slides
+** -- state: &#039;init&#039; or &#039;update&#039;
+*/
+function displayMandatoryHero(defaultDisplayNo, state){
+    var heroItems = HeroListener.getHeroItems();
+    var minimumDisplayNo = Math.min(
+        defaultDisplayNo || 0, heroItems.length);
+
+    heroItems.each(function(idx){
+        var item = $(this);
+
+        if (idx &gt;= minimumDisplayNo) {
+            item.attr(&#039;data-required&#039;, &#039;false&#039;);
+
+            if (state == &#039;init&#039;) {
+                item
+                    .css(&quot;display&quot;, (HeroListener.isItemEmpty(item)) ? &quot;none&quot;: &quot;&quot;)
+                    .find(&#039;.widget-anchor&#039;).addClass(&#039;collapsed&#039;);
+            }
+        }
+        else {
+            item.attr(&#039;data-required&#039;, &#039;required&#039;);
+
+            if (state == &#039;init&#039;) {
+                item.find(&#039;.widget-body&#039;).addClass(&#039;on&#039;);
+            }
+        }
+    });
+}
+
+function makeSortable(){
+    var heroItems = HeroListener.getHeroItems();
+    var item_classes = $.map(heroItems, function(val, i){
+        return &quot;.&quot; + $(val).attr(&#039;class&#039;);
+    }).join(&#039;,&#039;);
+
+    heroItems.parent().sortable({
+        handle: &#039;.widget-drag&#039;,
+        items: item_classes,
+        update: function( event, ui ) {
+            if(heroItems.length &lt; 2){
+                return;
+            }
+            HeroListener.updateItemsPosition();
+        }
+    });
+}
+function groupHeroTogheter(){
+    var heroItems = HeroListener.getHeroItems();
+
+    heroItems.each(function(iter){
+        if(iter &gt; 0){
+            $(this).insertAfter(heroItems.eq(iter - 1));
+        }
+    });
+}
+
+SnippetHeroWidget = window.SnippetHeroWidget || {
+    validate: function(variable_id){
+        return HeroListener.validate(variable_id.replace(&#039;var_&#039;, &#039;&#039;))
+    },
+    init: function(variable_id){
+        HeroListener.init(variable_id.replace(&#039;var_&#039;, &#039;&#039;))
+    },
+    events: {
+        preInit: function(){
+            groupHeroTogheter();
+
+            $.each(window.heroTooltipImages || {}, function (key, images) {
+                $.each(images, function(idx, img_src){
+                    $(&quot;&lt;img /&gt;&quot;).attr(&quot;src&quot;, img_src);
+                });
+            });
+        },
+        postInit: function(){
+            displayMandatoryHero(1, &#039;init&#039;);
+            HeroListener.updateAddMore();
+            HeroListener.menuLogoCustomize();
+            HeroListener.beautifyForm();
+            makeSortable();
+        },
+        preValidate: function(){
+        },
+        postValidate: function(){
+            HeroListener.afterDeleteItem();
+            HeroListener.errorMsgHighlight();
+
+            if (HeroListener.areAllHidden()) {
+                $(&#039;.slide-error&#039;).removeClass(&#039;hidden&#039;);
+            }
+        }
+    }
+};
+
+}(jQuery || django.jQuery));
+
+SnippetWidgetRegistry.registerWidget(&#039;hero-admin&#039;, SnippetHeroWidget);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

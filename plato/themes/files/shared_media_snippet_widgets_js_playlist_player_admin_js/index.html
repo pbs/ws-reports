@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - shared/media/snippet-widgets/js/playlist-player-admin.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>shared/media/snippet-widgets/js/playlist-player-admin.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">73.67</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">270</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">36.19</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.47</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function($) {
+
+    SnippetPlaylistPlayerWidget = {
+        //returns the input of the Playlist Title
+        getTitleField: function(){
+            var items =  SnippetWidgetRegistry.get_variables(&#039;playlist-player&#039;);
+
+            return $(&#039;.custom-style input&#039;).filter(function(){
+                var variable_id = $(this).attr(&#039;id&#039;);
+                return items.indexOf(variable_id) !== -1;
+            });
+        },
+
+        //returns the tr that wrapps the Playlist Title
+        getPlaylistTitle: function() {
+            return this.getTitleField().closest(&#039;tr.field&#039;);
+        },
+
+        //returns all videos wrapped in their tr
+        getPlaylistFields: function(){
+            return this.getTitleField().closest(&#039;tr&#039;).parent().find(&quot;tr[class^=&#039;section_video&#039;]&quot;);
+        },
+
+        //returns the hidden input of a specific switcher
+        getHiddenSwitcher: function(field_name) {
+            var switchers = SnippetWidgetRegistry.get_variables(&#039;switcher-field&#039;);
+
+            return this.getPlaylistTitle().siblings().find(&quot;#var_&quot; + field_name).filter(function(){
+                var variable_id = $(this).attr(&#039;id&#039;);
+                return switchers.indexOf(variable_id) !== -1;
+            });
+        },
+
+        //returns the visible input of a specific switcher
+        getSwitcher: function(field_name) {
+            return this.getHiddenSwitcher(field_name).closest(&#039;tr&#039;).find(&#039;#switcher_&#039; + field_name);
+        },
+
+        setInputLimiter: function() {
+            var allItemsWrapper = this.getPlaylistFields().closest(&#039;table&#039;);
+
+            allItemsWrapper.find(&#039;#var_PlaylistTitle, .object_short_description, .object_title&#039;).each(function() {
+                $(this).inputlimiter({
+                    remText: &#039;%n character%s left. &#039;,
+                    limitText: &#039;%n character%s limit.&#039;,
+                    limitTextShow: false
+                });
+            });
+        },
+        // Adds custom description above the form
+        customText: function() {
+            var html = &#039;&lt;div class=&quot;error hidden slide-error red&quot;&gt;You must have at least 2 videos in order to create a playlist. &lt;/div&gt;&lt;/div&gt;&#039;;
+
+            var allItemsWrapper = this.getPlaylistFields().closest(&#039;table&#039;);
+
+            allItemsWrapper.before(html);
+            allItemsWrapper.find(&#039;.help-text p&#039;).text(&#039;Selecting a COVE video from the COVE library will autopopulate the corresponding fields. Fields can be overwritten.&#039;);
+
+            var autoplay = this.getHiddenSwitcher(&#039;Autoplay&#039;);   
+            if (autoplay) {
+                this.getPlaylistTitle().insertBefore(autoplay.parents(&#039;tr&#039;));
+                autoplay.siblings(&#039;label&#039;).text(&#039;Autoplay next video: &#039;);       
+            }
+           
+
+            var enableSharing = this.getHiddenSwitcher(&#039;SocialSharing&#039;); 
+            if (enableSharing) {
+                enableSharing.siblings(&#039;label&#039;).text(&#039;Enable COVE Social Sharing Bar: &#039;);    
+
+                var visualEnableSharing = this.getSwitcher(&#039;SocialSharing&#039;);
+                
+                //added tooltip for social sharing
+                var help_text = &quot;Social media sharing bar is added on top of the video currently being played.&quot;;   
+                $.each((window.playlistTooltipImage || {})[&#039;social_sharing&#039;] || [], function(idx, img){
+                    help_text += &quot;&lt;img src=&#039;&quot; + img + &quot;&#039; width=&#039;306&#039; height=&#039;232&#039;/&gt;&quot;;
+                });
+                
+                var tooltip = &#039;&lt;span class=&quot;help-button&quot; data-rel=&quot;popover&quot; data-trigger=&quot;hover&quot; data-placement=&quot;right&quot; data-content=&quot;&#039; + help_text + &#039;&quot; title=&quot;&quot;&gt;?&lt;/span&gt;&#039;;
+                // if the help-button was not added before we add it now
+                if (!(visualEnableSharing.siblings(&#039;.help-button&#039;).length)) {
+                    visualEnableSharing.parent().after(tooltip);
+                }
+            }
+        },
+        
+        beautifyForm: function() {
+            $(&#039;[data-rel=tooltip]&#039;).tooltip({container:&#039;body&#039;});
+            $(&#039;[data-rel=popover]&#039;).popover({
+                container: &#039;body&#039;, 
+                html: true
+            });
+
+            var allItemsWrapper = this.getPlaylistFields();
+            allItemsWrapper.each(function() {
+                $(this).find(&#039;.object_short_description&#039;).attr(&#039;maxlength&#039;, 90).attr(&#039;size&#039;, 90);
+                $(this).find(&#039;.object_title&#039;).attr(&#039;maxlength&#039;, 60).attr(&#039;size&#039;, 60);
+
+            });
+        },
+
+        labelStyle: function() {
+            var self = this;
+            var items = self.getPlaylistFields();
+
+            function dataRequired (label) {
+                var item = label.parents(&#039;tr.field&#039;).find(&#039;input, textarea&#039;);
+
+                if (item.attr(&#039;data-allow-empty&#039;) === &#039;false&#039;) {
+                    label.append(&#039;*:&#039;); 
+                }
+                else {
+                    label.append(&#039;:&#039;); 
+                }
+            }
+            items.each(function(){
+                $(this).find(&#039;label&#039;).each(function(){
+                    dataRequired($(this));
+                })
+            });            
+        },
+
+        setMandatory: function() {
+            var items = this.getPlaylistFields();
+            items.find(&#039;input[type=&quot;text&quot;], textarea&#039;).each(function(){
+                $(this).attr(&#039;data-allow-empty&#039;, &quot;true&quot;);
+            });
+
+            items.find(&#039;.object_contentchannel, .object_published, .object_short_description, .object_title, .object_url&#039;).each(function(){
+                $(this).attr(&#039;data-allow-empty&#039;, &quot;false&quot;);
+            });
+        },
+
+        areEmptyMandatoryFields: function(requiredItems){
+            var self = this,
+                items = self.getPlaylistFields(),
+                emptyTitle = false,
+                nrNotEmpty = 0,
+                playlistTitle = self.getPlaylistTitle(),
+                minimumMandatory = Math.min(requiredItems || 0, items.length);
+
+            items.each(function(idx){
+                var item = $(this);
+
+                if (!self.isItemEmpty(item) &amp;&amp; !self.hasRequiredData(item)) {
+                    self.highlightRequired(item);
+                }
+                else if (!self.isItemEmpty(item) &amp;&amp; self.hasRequiredData(item)) {
+                    nrNotEmpty++;
+                }
+            });
+
+            if (self.isItemEmpty(playlistTitle) &amp;&amp; !self.hasRequiredData(playlistTitle)) {
+                self.highlightRequired(playlistTitle);
+                emptyTitle = true;
+            }
+
+            if (emptyTitle) {
+                return emptyTitle;
+            }
+            else if (nrNotEmpty &lt; requiredItems) {
+                return true;
+            }
+            return false;
+
+        },
+
+        highlightRequired: function (fieldEl) {
+            function highlightInput (input) {
+                var emptyAllowed = input.attr(&#039;data-allow-empty&#039;) === &#039;true&#039;;
+                var hasVal = input.val() !== &#039;&#039;;
+
+                input.closest(&#039;tr&#039;).removeClass(&#039;has-error&#039;);
+
+                if (hasVal || emptyAllowed){
+                    input.removeClass(&#039;error merlin-attr-error&#039;);
+                } else {
+                    input.addClass(&#039;error merlin-attr-error&#039;).closest(&#039;tr&#039;).addClass(&#039;has-error&#039;);
+                }
+            }
+        
+            fieldEl.find(&#039;input[type=&quot;text&quot;], textarea&#039;)
+                .unbind(&#039;change&#039;)
+                .bind(&#039;change&#039;, function(){
+                    var inputEl = $(this);
+                    setTimeout(function() { highlightInput(inputEl); }, 0);
+                }).each(function () {
+                    highlightInput($(this));
+                });
+        
+        },
+
+        hasRequiredData: function(fieldEl){
+            var hasData = true;
+            fieldEl.find(&#039;input[type=&quot;text&quot;], textarea&#039;).each(function(){
+                var emptyAllowed = $(this).attr(&#039;data-allow-empty&#039;) === &#039;true&#039;;
+                var noVal = $(this).val() === &#039;&#039;;
+                
+                if(noVal &amp;&amp; !emptyAllowed){
+                    hasData = false;
+                    return false;
+                }
+            });
+            return hasData;
+        },
+
+        isItemEmpty: function(fieldEl){
+            if(!fieldEl){
+                return false;
+            }
+            var isEmpty = true;
+            fieldEl.find(&#039;tr.field input, tr.field textarea&#039;).each(function(){
+                var hasVal = $(this).val() !== &#039;&#039;;
+                if(hasVal){
+                    isEmpty = false;
+                    return false;
+                }
+            });
+
+            return isEmpty;
+        },
+
+        showMandatory: function(fieldsMandatory) {
+            var self = this,
+                items = self.getPlaylistFields(),
+                minimumMandatory = Math.min(fieldsMandatory || 0, items.length);
+
+            items.each(function(idx){
+                var item = $(this);
+
+                if (idx &lt; minimumMandatory) {
+                    item.show();
+                    item.find(&#039;.collapse-item&#039;).addClass(&#039;on&#039;);
+
+                    if (self.isItemEmpty(item)) {
+                        self.highlightRequired(item);
+                    }
+                }
+            });
+        },
+
+        validate: function(field_name) {  
+            var self = this;
+
+            if (self.areEmptyMandatoryFields(2)) {
+                return false;
+            }       
+            return true;
+        },
+        init : function(field_name){
+        }, 
+        events: {           
+            postInit: function(){
+                SnippetPlaylistPlayerWidget.customText();
+                SnippetPlaylistPlayerWidget.setMandatory();
+                SnippetPlaylistPlayerWidget.labelStyle();
+                SnippetPlaylistPlayerWidget.beautifyForm();
+                SnippetPlaylistPlayerWidget.setInputLimiter();
+
+            },
+            postValidate: function(){
+                SnippetPlaylistPlayerWidget.showMandatory(2);
+            }
+        }
+    }
+
+    SnippetPlaylistPlayerWidget = window.SnippetPlaylistPlayerWidget || SnippetPlaylistPlayerWidget;
+
+}(jQuery || django.jQuery));
+
+SnippetWidgetRegistry.registerWidget(&#039;playlist-player&#039;, SnippetPlaylistPlayerWidget);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

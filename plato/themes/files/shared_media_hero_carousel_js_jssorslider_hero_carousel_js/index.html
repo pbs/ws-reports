@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - shared/media/hero_carousel/js/jssorslider.hero-carousel.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>shared/media/hero_carousel/js/jssorslider.hero-carousel.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">63.34</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">218</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">27.69</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.07</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/* global PBS, jQuery */
+(function($, PBS){
+    PBS = window.PBS = PBS || {};
+
+    function ConfigException(message){
+        this.message = message;
+        this.name = &#039;ConfigException&#039;;
+    }
+
+    function HeroCarousel(snippetOps){
+        var self = this;
+        this.snippetOps = snippetOps;
+        this.snippetEl = $(&#039;#&#039;+snippetOps.snippetId);
+
+        this.snippetEl.parent().find(&#039;.slider-container&#039;).removeClass(&#039;hide&#039;);
+
+        if(typeof $JssorSlider$ === &#039;function&#039; &amp;&amp; snippetOps &amp;&amp; snippetOps.snippetId &amp;&amp; $(&#039;#&#039; + snippetOps.snippetId).length){
+            this.carousel = new $JssorSlider$(snippetOps.snippetId, this.getJssorSliderOptions());
+        }else{
+            throw new ConfigException(&#039;Invalid HeroCarousel config!&#039;);
+        }
+
+        function positionMobileCaptions(snippetEl){
+            snippetEl = snippetEl || $(&#039;#&#039;+snippetOps.snippetId);
+            var scaleFactor = Math.min(document.body.clientWidth, snippetOps.maxWidth) / snippetOps.maxWidth,
+                snippetWidth = Math.min(document.body.clientWidth, snippetOps.maxWidth) * scaleFactor,
+                snippetHeight = snippetWidth / snippetOps.aspectRatio,
+                navDots = $(&#039;div[u=&quot;navigator&quot;]&#039;),
+                mobileCaptions = snippetEl.find(&#039;.slides &gt; div:visible .mobile-caption.caption&#039;),
+                transformFunction = &#039;scale(&#039;+ (1 / scaleFactor) +&#039;)&#039;;
+
+
+                mobileCaptions.css({
+                    // prevent mobile caption from scaling
+                    &#039;transform&#039;: transformFunction,
+                    &#039;-ms-transform&#039;: transformFunction,
+                    &#039;-webkit-transform&#039;: transformFunction,
+                    &#039;-moz-transform&#039;: transformFunction,
+                    &#039;width&#039;: document.body.clientWidth,
+                    &#039;left&#039;:0,
+                });
+                navDots.css({
+                    //prevent mobile caption from scaling
+                    &#039;transform&#039;: transformFunction,
+                    &#039;-ms-transform&#039;: transformFunction,
+                    &#039;-webkit-transform&#039;: transformFunction,
+                    &#039;-moz-transform&#039;: transformFunction,
+                });
+
+        }
+
+        function equalizeMobileCaptions(snippetEl){
+            snippetEl = snippetEl || $(&#039;#&#039;+snippetOps.snippetId);
+            var mobileCaptions = snippetEl.find(&#039;.slides &gt; div:visible .mobile-caption.caption&#039;),
+                mCaptionsMaxHeight =  Math.max.apply(null,
+                                                     mobileCaptions.map(function (){
+                                                        $(this).css(&#039;height&#039;, &#039;auto&#039;);
+                                                        return $(this).height();
+                                                    }).get());
+
+            mobileCaptions.css({
+                //equalize mobile caption height
+                &#039;height&#039;: mCaptionsMaxHeight,
+            });
+
+            snippetEl.css({
+                //make room under the snippet for mobile captions
+                &#039;margin-bottom&#039;: mobileCaptions.outerHeight()
+            });
+        }
+
+        //responsive code begin
+        function scaleSlider() {
+            var width = Math.min(document.body.clientWidth, snippetOps.maxWidth),
+                snippet = self.snippetEl || $(&#039;#&#039;+snippetOps.snippetId),
+                scaleFactor = Math.min(document.body.clientWidth, snippetOps.maxWidth) / snippetOps.maxWidth,
+                transformFunction = &#039;scale(&#039;+ (1 / scaleFactor) +&#039;)&#039;,  //undo the scaling for logo, title and description
+                lanscape = (Math.abs(window.orientation) / 90 === 1);
+
+
+            if (width){
+                self.carousel.$ScaleWidth(width);
+                positionMobileCaptions(self.snippetEl);
+                //captions are scalled too much on iPad lanscape and text is not legible
+                if (navigator.userAgent.match(/iPad/) &amp;&amp; lanscape) {
+                    snippet
+                        .find(&#039;.caption:not(.mobile-caption)&#039;)
+                        .css({
+                            //prevent mobile caption from scaling
+                            &#039;-webkit-transform&#039;: transformFunction,
+                            &#039;-webkit-transform-origin&#039;: &#039;bottom left&#039;
+                        })
+                        .find(&#039;.title, .description, .call-to-action, .hero-logo&#039;)
+                        .css({
+                            &#039;-webkit-transform&#039;: &#039;perspective(0)&#039;
+                        });
+                }
+            }
+            else{
+                window.setTimeout(scaleSlider, 30);
+            }
+        }
+        //responsive code end
+
+        function isProducer(){
+            return $(&#039;body&#039;).hasClass(&#039;tpl-producer&#039;);
+        }
+
+        function handleCallToAction(){
+            var link = $(&#039;#&#039;+snippetOps.snippetId).find(&#039;.slides&#039;).parent(&#039;a&#039;);
+
+            if(!link.length){return;}
+
+            link.off(&#039;click&#039;);
+            if(document.body.clientWidth &lt;= 960){
+                link.on(&#039;click&#039;, function(e){
+                    e.preventDefault();
+                    return false;
+                });
+            }
+
+        }
+
+        function handleSiblingSnippets(){
+            var carousel = self.snippetEl.closest(&#039;.pbs-hero-carousel&#039;),
+                snippets = carousel.siblings().not(&#039;script&#039;),
+                heroWidth = self.snippetEl.width(),
+                snippetsWrapper;
+
+            $(&#039;.hero-snippets&#039;).remove();
+
+            if(!snippets.length){ return;}
+
+            $(&#039;.hero-placeholder&#039;).append(&#039;&lt;div class=&quot;hero-snippets span12&quot;&gt;&lt;/div&gt;&#039;);
+            snippetsWrapper = $(&#039;.hero-snippets&#039;);
+            snippets.appendTo(snippetsWrapper);
+            snippetsWrapper.insertBefore($(&#039;.page-content&#039;));
+            snippets.css({
+                width: 100 / snippets.length + &#039;%&#039;,
+                visibility: &#039;visible&#039;,
+                height: &#039;auto&#039;
+            });
+            snippetsWrapper
+                .find(&#039;.airdates-container .airdates-header&#039;)
+                .find(&#039;.right&#039;).each(function(){
+                    $(this).removeClass(&#039;right&#039;).addClass(&#039;left&#039;);
+                    $(this).prev(&#039;.left&#039;).removeClass(&#039;left&#039;).addClass(&#039;right&#039;);
+                    $(this).insertBefore($(this).prev(&#039;.right&#039;));
+                });
+
+        }
+
+        if (!navigator.userAgent.match(/(iPhone|iPod|iPad|BlackBerry|IEMobile)/)) {
+            $(window).bind(&#039;resize&#039;, function(){
+                scaleSlider();
+                handleCallToAction();
+                equalizeMobileCaptions(self.snippetEl);
+            });
+        }
+        if (navigator.userAgent.match(/(iPhone|iPod|iPad|BlackBerry|IEMobile)/)) {
+            $(window).bind(&quot;orientationchange&quot;, function(){
+                scaleSlider();
+                handleCallToAction();
+                equalizeMobileCaptions(self.snippetEl);
+            });
+        }
+
+        scaleSlider();
+        handleCallToAction();
+        equalizeMobileCaptions(self.snippetEl);
+        handleSiblingSnippets();
+        return this;
+    }
+
+    HeroCarousel.fn = HeroCarousel.prototype;
+
+    HeroCarousel.fn.getJssorSliderOptions = function(){
+        return {
+            $FillMode: 5,                                       //[Optional] The way to fill image in slide, 0 stretch, 1 contain (keep aspect ratio and put all inside slide), 2 cover (keep aspect ratio and cover whole slide), 4 actual size, 5 contain for large image, actual size for small image, default value is 0
+            $AutoPlay: true,                                    //[Optional] Whether to auto play, to enable slideshow, this option must be set to true, default value is false
+            $AutoPlayInterval: 4000,                            //[Optional] Interval (in milliseconds) to go for next slide since the previous stopped if the slider is auto playing, default value is 3000
+            $PauseOnHover: 1,                                   //[Optional] Whether to pause when mouse over if a slider is auto playing, 0 no pause, 1 pause for desktop, 2 pause for touch device, 3 pause for desktop and touch device, 4 freeze for desktop, 8 freeze for touch device, 12 freeze for desktop and touch device, default value is 1
+
+            $ArrowKeyNavigation: true,                          //[Optional] Allows keyboard (arrow key) navigation or not, default value is false
+            $SlideEasing: $JssorEasing$.$EaseOutQuint,          //[Optional] Specifies easing for right to left animation, default value is $JssorEasing$.$EaseOutQuad
+            $SlideDuration: 800,                                //[Optional] Specifies default duration (swipe) for slide in milliseconds, default value is 500
+            $MinDragOffsetToSlide: 20,                          //[Optional] Minimum drag offset to trigger slide , default value is 20
+            // $SlideWidth: width,                              //[Optional] Width of every slide in pixels, default value is width of &#039;slides&#039; container
+            // $SlideHeight: height,                            //[Optional] Height of every slide in pixels, default value is height of &#039;slides&#039; container
+            $SlideSpacing: 0,                                   //[Optional] Space between each slide in pixels, default value is 0
+            $DisplayPieces: 1,                                  //[Optional] Number of pieces to display (the slideshow would be disabled if the value is set to greater than 1), the default value is 1
+            $ParkingPosition: 0,                                //[Optional] The offset position to park slide (this options applys only when slideshow disabled), default value is 0.
+            $UISearchMode: 1,                                   //[Optional] The way (0 parellel, 1 recursive, default value is 1) to search UI components (slides container, loading screen, navigator container, arrow navigator container, thumbnail navigator container etc).
+            $PlayOrientation: 1,                                //[Optional] Orientation to play slide (for auto play, navigation), 1 horizental, 2 vertical, 5 horizental reverse, 6 vertical reverse, default value is 1
+            $DragOrientation: 1,                                //[Optional] Orientation to drag slide, 0 no drag, 1 horizental, 2 vertical, 3 either, default value is 1 (Note that the $DragOrientation should be the same as $PlayOrientation when $DisplayPieces is greater than 1, or parking position is not 0)
+
+            $BulletNavigatorOptions: {                          //[Optional] Options to specify and enable navigator or not
+                $Class: $JssorBulletNavigator$,                 //[Required] Class to create navigator instance
+                $ChanceToShow: 2,                               //[Required] 0 Never, 1 Mouse Over, 2 Always
+                $AutoCenter: 1,                                 //[Optional] Auto center navigator in parent container, 0 None, 1 Horizontal, 2 Vertical, 3 Both, default value is 0
+                $Steps: 1,                                      //[Optional] Steps to go for each navigation request, default value is 1
+                $Lanes: 1,                                      //[Optional] Specify lanes to arrange items, default value is 1
+                $SpacingX: 9,                                   //[Optional] Horizontal space between each item in pixel, default value is 0
+                $SpacingY: 8,                                   //[Optional] Vertical space between each item in pixel, default value is 0
+                $Orientation: 1                                 //[Optional] The orientation of the navigator, 1 horizontal, 2 vertical, default value is 1
+            },
+
+            $ArrowNavigatorOptions: {                           //[Optional] Options to specify and enable arrow navigator or not
+                $Class: $JssorArrowNavigator$,                  //[Requried] Class to create arrow navigator instance
+                $ChanceToShow: 1,                               //[Required] 0 Never, 1 Mouse Over, 2 Always
+                $AutoCenter: 2,                                 //[Optional] Auto center arrows in parent container, 0 No, 1 Horizontal, 2 Vertical, 3 Both, default value is 0
+                $Steps: 1                                       //[Optional] Steps to go for each navigation request, default value is 1
+            }
+        };
+    };
+
+    //export HeroCarousel class in the global PBS namespace
+    PBS.HeroCarousel = HeroCarousel;
+})(window.jQuery, window.PBS);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

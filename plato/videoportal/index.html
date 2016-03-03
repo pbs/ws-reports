@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - JavaScript Introspection</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <script>
+    var __options = {"title":"Videoportal code report","flags":{"complexity":{"logicalor":true,"switchcase":true,"forin":false,"trycatch":false,"newmi":true},"jshint":{"globals":{"angular":false,"jQuery":true},"options":{"node":true,"browser":true,"esnext":true,"bitwise":true,"camelcase":false,"curly":true,"eqeqeq":true,"immed":true,"indent":4,"latedef":true,"newcap":true,"noarg":true,"quotmark":false,"undef":true,"unused":false,"strict":true,"trailing":true,"smarttabs":true,"sub":true}}}}
+  </script>
+
+  <link href="assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="assets/css/plato.css" rel="stylesheet">
+  <link href="assets/css/plato-overview.css" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li class="active">
+        <a href="index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>Videoportal code report</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <h1 class="col-md-12">Summary</h1>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Total/Average Lines <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code" data-original-title="SLOC" data-container="body"></i></h2>
+      <p class="stat">5053 / 157</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Average Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index" data-container="body"></i></a></h2>
+      <p class="stat">66.50</p>
+    </div>
+  </div>
+</div>
+<div class="container historical">
+  <div class="row">
+    <div class="col-md-6">
+      <div id="chart_historical_sloc" class="chart js-chart"></div>
+    </div>
+    <div class="col-md-6">
+      <div id="chart_historical_maint" class="chart js-chart"></div>
+    </div>
+  </div>
+</div>
+
+
+<div class="container overview">
+  <div class="row">
+    <h2 class="col-md-12">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index" data-container="body"></i></a></h2>
+    <div class="col-md-12"><div id='chart_maintainability' class='chart js-chart'></div></div>
+  </div>
+  <div class="row">
+    <h2 class="col-md-12">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code" data-original-title="SLOC" data-container="body"></i></h2>
+    <div class="col-md-12"><div id='chart_sloc' class='chart js-chart'></div></div>
+  </div>
+  <div class="row">
+    <h2 class="col-md-12">Estimated errors in implementation <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+    <div class="col-md-12"><div id='chart_bugs' class='chart js-chart'></div></div>
+  </div>
+  
+  <div class="row">
+    <h2 class="col-md-12">Lint errors</h2>
+    <div class="col-md-12"><div id='chart_lint' class='chart js-chart'></div></div>
+  </div>
+  
+</div>
+
+<div class="container">
+  <div class="row">
+    <h1 class="col-md-12">Files</h1>
+  </div>
+
+  <div class="row">
+    <div class="span12 group-header">
+      <div class="btn-group">
+        <button type="button" id="button-complexity" class="btn btn-default complexity">complexity</button>
+        <button type="button" id="button-sloc" class="btn btn-default sloc">sloc</button>
+        <button type="button" id="button-bugs" class="btn btn-default bugs">est errors</button>
+        
+        <button type="button" id="button-lint" class="btn btn-default lint">lint errors</button>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    &nbsp;
+  </div>
+
+  <div class="row">
+    <ul class="file-list list-unstyled">
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_chapterCarousel_js/index.html">js/chapterCarousel.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="1"
+              data-sloc="92"
+              data-bugs="0.80"
+              data-complexity="10"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_fastscroll_js/index.html">js/fastscroll.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="35"
+              data-sloc="137"
+              data-bugs="1.57"
+              data-complexity="18"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_ga_pbs_adapter_js/index.html">js/ga.pbs.adapter.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="3"
+              data-sloc="104"
+              data-bugs="0.75"
+              data-complexity="14"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_heroCarousel_js/index.html">js/heroCarousel.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="3"
+              data-sloc="178"
+              data-bugs="1.43"
+              data-complexity="22"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_gaPageEventTracking_js/index.html">js/jquery.gaPageEventTracking.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="0"
+              data-sloc="217"
+              data-bugs="2.13"
+              data-complexity="24"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_jw_goonhilly_js/index.html">js/jquery.jw.goonhilly.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="0"
+              data-sloc="84"
+              data-bugs="0.58"
+              data-complexity="6"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_jw_videoInfo_js/index.html">js/jquery.jw.videoInfo.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="0"
+              data-sloc="76"
+              data-bugs="0.60"
+              data-complexity="9"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_jw_video_js/index.html">js/jquery.jw.video.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="0"
+              data-sloc="153"
+              data-bugs="1.13"
+              data-complexity="12"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_ads_js/index.html">js/jquery.pbs.ads.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="4"
+              data-sloc="85"
+              data-bugs="0.48"
+              data-complexity="7"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_content_js/index.html">js/jquery.pbs.content.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="15"
+              data-sloc="267"
+              data-bugs="2.28"
+              data-complexity="29"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_cookie_js/index.html">js/jquery.pbs.cookie.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="2"
+              data-sloc="46"
+              data-bugs="0.55"
+              data-complexity="15"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_helper_js/index.html">js/jquery.pbs.helper.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="3"
+              data-sloc="258"
+              data-bugs="2.66"
+              data-complexity="27"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_local_js/index.html">js/jquery.pbs.local.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="5"
+              data-sloc="47"
+              data-bugs="0.20"
+              data-complexity="3"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_mobileweb_js/index.html">js/jquery.pbs.mobileweb.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="0"
+              data-sloc="429"
+              data-bugs="3.45"
+              data-complexity="29"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_modalLogin_js/index.html">js/jquery.pbs.modalLogin.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="0"
+              data-sloc="68"
+              data-bugs="0.43"
+              data-complexity="4"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_modalPlayback_js/index.html">js/jquery.pbs.modalPlayback.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="6"
+              data-sloc="190"
+              data-bugs="1.50"
+              data-complexity="14"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_modalSearchFilters_js/index.html">js/jquery.pbs.modalSearchFilters.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="2"
+              data-sloc="72"
+              data-bugs="0.40"
+              data-complexity="2"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_postMessage_js/index.html">js/jquery.pbs.postMessage.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="0"
+              data-sloc="45"
+              data-bugs="0.29"
+              data-complexity="8"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_profile_js/index.html">js/jquery.pbs.profile.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="1"
+              data-sloc="319"
+              data-bugs="2.63"
+              data-complexity="19"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_programs_az_js/index.html">js/jquery.pbs.programs-az.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="20"
+              data-sloc="95"
+              data-bugs="0.84"
+              data-complexity="9"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_programs_js/index.html">js/jquery.pbs.programs.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="0"
+              data-sloc="124"
+              data-bugs="1.03"
+              data-complexity="21"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_responsiveimg_js/index.html">js/jquery.pbs.responsiveimg.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="4"
+              data-sloc="90"
+              data-bugs="0.70"
+              data-complexity="13"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_schedules_js/index.html">js/jquery.pbs.schedules.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="3"
+              data-sloc="358"
+              data-bugs="5.42"
+              data-complexity="70"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_storage_js/index.html">js/jquery.pbs.storage.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="4"
+              data-sloc="42"
+              data-bugs="0.15"
+              data-complexity="2"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_user_js/index.html">js/jquery.pbs.user.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="3"
+              data-sloc="336"
+              data-bugs="2.84"
+              data-complexity="46"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_video_iframe_js/index.html">js/jquery.pbs.video.iframe.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="2"
+              data-sloc="79"
+              data-bugs="0.47"
+              data-complexity="7"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_videoPage_js/index.html">js/jquery.pbs.videoPage.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="1"
+              data-sloc="478"
+              data-bugs="5.45"
+              data-complexity="55"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_jquery_pbs_watchlist_js/index.html">js/jquery.pbs.watchlist.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="0"
+              data-sloc="87"
+              data-bugs="0.61"
+              data-complexity="10"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_main_js/index.html">js/main.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="2"
+              data-sloc="31"
+              data-bugs="0.17"
+              data-complexity="2"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_programCarousel_js/index.html">js/programCarousel.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="24"
+              data-sloc="197"
+              data-bugs="1.97"
+              data-complexity="22"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_smallCarousel_js/index.html">js/smallCarousel.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="2"
+              data-sloc="119"
+              data-bugs="0.86"
+              data-complexity="14"
+          ></span>
+        </div>
+      </li>
+      
+      <li class="col-md-12">
+        <div class="row">
+          <span class="fade-left fadeout visible-large"></span>
+          <span class="col-md-4 file"><a class="file-link" href="./files/js_uga_pbs_adapter_js/index.html">js/uga.pbs.adapter.js</a></span>
+        <span class="col-md-8 file-chart js-file-chart"
+              data-lint="0"
+              data-sloc="150"
+              data-bugs="1.19"
+              data-complexity="21"
+          ></span>
+        </div>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/javascript" src="assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="assets/scripts/plato-overview.js"></script>
+<script type="text/javascript" src="assets/scripts/plato-sortable-file-list.js"></script>
+</body>
+</html>

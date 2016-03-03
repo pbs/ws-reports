@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - shared/media/snippet-widgets/js/station_field.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>shared/media/snippet-widgets/js/station_field.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">70.46</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">419</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">38.44</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">4.26</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/*jslint browser: true*/
+/*global django*/
+/*global alert*/
+/*global id_to_windowname*/
+/*global filer_image_url*/
+/*global image_field_name*/
+
+
+(function ($) {
+
+    var IS_WHATS_ON = window.IS_WHATS_ON || false;
+    /**
+     * Returns the id of the element that has the class object_name
+     *
+     * @param {object} element The
+     * @param {string} object_name The class name of the element
+     * @return {string} The id of the element
+     */
+    function object_attribute(element, object_name) {
+        var regex, element_id, match;
+
+        regex = new RegExp(&#039;^&#039; + object_name + &#039;_(.*)&#039;);
+        element_id = element.id || $(element).attr(&quot;id&quot;);
+        match = regex.exec(element_id);
+        if (match !== null) {
+            return match[1];
+        }
+        return false;
+    }
+
+    /**
+     * Check whether a string is number.
+     *
+     * @param {string} Value to check.
+     * @return {boolean}
+     */
+    function isNumber(x) {
+        var number;
+
+        number = parseInt(x, 10);
+        return typeof number === &quot;number&quot; &amp;&amp; !isNaN(number);
+    }
+
+    /**
+     * Check whether a value is object.
+     *
+     * @param {*} Value to check.
+     * @return {boolean}
+     */
+    function isObject(x) {
+        return typeof x === &#039;object&#039;;
+    }
+
+    /**
+     * Check whether the keys of an object are numbers
+     *
+     * @param {object} Value to check.
+     * @return {boolean}
+     */
+    function keysAreNumbers(obj) {
+        var keys;
+        keys = Object.keys(obj);
+        return keys.filter(isNumber).length === keys.length;
+    }
+
+    /**
+     * Check whether an object can be converted into an array.
+     *
+     * @param {object} Object to transform
+     * @return {boolean}
+     */
+    function isArrayMappable(obj) {
+        return isObject(obj) &amp;&amp; keysAreNumbers(obj);
+    }
+
+
+    /**
+     * Transform an attribute name, value object to an array of
+     * tokens and value.
+     *
+     * @param {object} Object to transform
+     * @return {Array}
+     */
+    function input2obj(input) {
+
+        return input.name.split(&#039;_&#039;).reverse().reduce(
+            function (acc, x) {
+                var obj = {};
+                obj[x+&quot;&quot;] = acc;
+                return obj;
+            },
+            input.value
+        );
+    }
+
+    /**
+     * Transform an object to an array if possible, returns the object if not.
+     *
+     * @param {object} Object to transform
+     * @return {object}
+     */
+    function obj2array(obj) {
+        if (!isObject(obj) || Array.isArray(obj)) {
+            return obj;
+        }
+
+        if (isArrayMappable(obj)) {
+            return Object.keys(obj).reduce(
+                function (acc, x) {
+                    acc[x] = obj2array(obj[x]);
+                    return acc;
+                },
+                []
+            );
+        }
+
+        Object.keys(obj).forEach(
+            function (key) {
+                obj[key] = obj2array(obj[key]);
+            }
+        );
+        return obj;
+    }
+
+    /**
+     * Extends the first object with the keys/values of the second.
+     *
+     * @param {object} First object
+     * @param {object} Second object
+     * @return {object} Extended object
+     */
+    function extend(first, second) {
+        var firsts_complement, conjunction;
+
+        function notInFirst(key) {
+            return Object.keys(first).indexOf(key) === -1;
+        }
+
+        function inSecond(key) {
+            return Object.keys(second).indexOf(key) !== -1;
+        }
+
+        firsts_complement = Object.keys(second).filter(notInFirst);
+        conjunction = Object.keys(first).filter(inSecond);
+        firsts_complement.forEach(
+            function (key) {
+                first[key] = second[key];
+            }
+        );
+        conjunction.forEach(
+            function (key) {
+                if (!isObject(first[key]) &amp;&amp; !isObject(second[key])) {
+                    first[key] = [first[key], second[key]];
+                } else if (Array.isArray(second[key])) {
+                    first[key] = second[key].concat(first[key]);
+                } else if (Array.isArray(first[key])) {
+                    first[key] = first[key].concat(second[key]);
+                } else if (isObject(first[key]) &amp;&amp; isObject(second[key])) {
+                    first[key] = extend(first[key], second[key]);
+                }
+            }
+        );
+        return first;
+    }
+
+
+    /**
+     * Sets the json string of the input values into the hidden field.
+     *
+     * @param {string} The hidden input
+     * @param {string} The form of the hidden input
+     * @return {undefined}
+     */
+    function set_hidden_input(hidden_input, snippet_form_input) {
+        $(hidden_input).each(function () {
+            var field_name, field_id, elements, values, inputs, combined, hidden_obj, hidden_dict_string;
+
+            field_name = $(this).attr(&#039;id&#039;).split(&#039;_&#039;)[1];
+            field_id = &#039;[id^=&quot;&#039; + field_name + &#039;&quot;]&#039;;
+
+            function element2name_value() {
+                var name, value;
+                name = object_attribute(this, field_name);
+                value = $.trim(this.value);
+                if($(this).is(&#039;:checkbox&#039;)){
+                    value = $(this).is(&#039;:checked&#039;) || &#039;False&#039;;
+                }
+                if($(this).is(&#039;select&#039;)){
+                    value = $(this).find(&#039;option:selected&#039;).val()
+                }
+                if (!name) {
+                    name = &quot;&quot;;
+                    value = &quot;&quot;;
+                }
+                return {&quot;name&quot;: name, &quot;value&quot;: value};
+            }
+            elements = $(snippet_form_input).filter(field_id);
+            inputs = $.makeArray(elements.map(element2name_value));
+            values = inputs.map(input2obj);
+            combined = values.reduce(extend, {});
+            hidden_obj = obj2array(combined);
+            hidden_dict_string = JSON.stringify(hidden_obj.object || hidden_obj);
+            if (hidden_dict_string) {
+                $(this).val(hidden_dict_string);
+            }
+
+        });
+    }
+
+    function set_channels_listner(field_name) {
+        var section = $(&quot;tr.tvss_section_&quot; + field_name).first();
+        var callsign_inputs = section.find(&quot;.object_callsign&quot;);
+        function update_channels() {
+            var callsign, complete_callsign_length;
+
+            //disable Save button
+            $(&#039;input[name=_save]&#039;).attr(&quot;disabled&quot;, true);
+
+            callsign = $.trim(callsign_inputs[0].value);
+            complete_callsign_length = 4;
+
+            if (callsign.length === complete_callsign_length) {
+                $.ajax({
+                    url: &quot;/lb-tvss/station/&quot; + callsign + &quot;/channels/&quot;,
+                    success: function(channels){
+                        if(channels.length !== 0){
+                            //enable Save button
+                            $(&#039;input[name=_save]&#039;).attr(&quot;disabled&quot;, false);
+                        }
+                        return update_channels_table(field_name, channels);
+                    }
+                });
+            }
+        }
+
+        callsign_inputs.keyup(update_channels);
+    }
+
+    function drag_handler(field_name){
+        var section = $(&quot;tr.tvss_section_&quot; + field_name).first();
+        // Drag&#039;n&#039;Drop sorting/moving
+        return {
+            handle:&#039;span.drag&#039;,
+            axis:&#039;y&#039;,
+            opacity:0.9,
+            zIndex:2000,
+            dropOnEmpty:true,
+            connectWith: &#039;tvss_section_&#039; + field_name + &#039; .plugin-list&#039;,
+
+            update:function(event, ui){
+
+               section.find(&#039;.plugin-list li&#039;).each(function(index){
+                    $(this).find(&#039;input, label&#039;).each(function(){
+
+                        if($(this).is(&#039;input&#039;)){
+                            if($(this).attr(&quot;id&quot;).indexOf(&quot;_order&quot;) != -1){
+                                $(this).val(index);
+                            }
+                        }
+
+                        var elem = $(this).get(0);
+                        var attributes = elem.attributes;
+                        $(attributes).each(function(i, attrib){
+                            var regexp = /_[0-9]_/;
+                            if(regexp.test(attrib.value)){
+                                $(elem).attr(attrib.name,$(elem).attr(attrib.name).replace(regexp, &#039;_&#039;+index+&#039;_&#039;) );
+                            }
+                        });
+                    });
+
+               });
+
+            }
+        };
+    }
+
+    function string_expand(item) {
+        var placeholder_re = /{([^{}]*)}/g;
+        return this.replace(
+            placeholder_re,
+            function (acc, key) {
+                var value = item[key];
+                return typeof value === &#039;string&#039; ? value : acc;
+            }
+        );
+    }
+
+    function parseMerlinLists(listContainer){
+        var list = $(&#039;#&#039;+listContainer),
+            items = list.find(&#039;table&#039;).first().find(&#039;tr[class^=&quot;section_&quot;]&#039;),
+            input = list.find(&#039;input&#039;).first(),
+            merlinList = [],
+            merlin;
+
+        items.each(function(index, item){
+            merlin = {};
+            $(this).find(&#039;.widget-body&#039;).find(&#039;input, textarea&#039;).each(function(){
+                var field_name = listContainer + index;
+                var currentFieldName = $(this).attr(&#039;id&#039;).replace(field_name + &#039;_&#039;, &#039;&#039;);
+                merlin[currentFieldName] = $(this).val();
+                if($(this).attr(&quot;name&quot;) === &#039;guid&#039;){
+                    var id = $(this).val().match(/[\d]+/g);
+                    if(id){
+                        merlin[&quot;tp_media_object_id&quot;] = id[0];
+                    }
+                }
+            });
+
+            var isEmpty = true;
+            for(var i in merlin){
+                if(merlin[i]){
+                    isEmpty = false;
+                }
+            }
+
+            if(!isEmpty){
+                merlinList.push(merlin);
+            }
+        });
+
+        input.val(JSON.stringify(merlinList));
+        return JSON.stringify(merlinList);
+    }
+
+    function update_channels_table(field_name, channels){
+        var section = $(&quot;tr.tvss_section_&quot; + field_name).first();
+
+        if (channels){
+            var html_template = $(&#039;.channel_row_template_&#039; + field_name).first().html();
+            var logos = [];
+
+            var inner = channels.reduce(function(acc, channel, index){
+                logos.push(field_name + &quot;_channels_&quot; + index + &quot;_logo&quot;);
+                return acc + &quot;&lt;li&gt;&quot; + html_template.supplant({
+                    &#039;fullname&#039;: channel.fullname || &#039;&#039;,
+                    &#039;shortname&#039;: channel.shortname || &#039;&#039;,
+                    &#039;index&#039;: String(index)
+                }) + &quot;&lt;/li&gt;&quot;;
+            }, &#039;&#039;);
+
+            section.find(&quot;#&quot; + field_name + &quot;_channels_table&quot;).html(inner);
+            $.each(logos, function(i, var_name){
+                SnippetWidgetRegistry.deregisterVariable(var_name);
+                SnippetWidgetRegistry.registerVariable(&#039;filer&#039;, var_name);
+            });
+            SnippetWidgetRegistry.initializeVariables(logos);
+        }
+
+        // prepopulate thumbnail handler
+        section.find(&#039;.channel-logo&#039;).each(function(){
+            var logoEl = $(this);
+            var image_input = $(this).find(&#039;input.filer_field&#039;).first();
+            image_input.unbind(&#039;change&#039;).bind(&#039;change&#039;, function (){
+                var thumbnail_box = logoEl.prev();
+                thumbnail_box.attr(&#039;src&#039;, $(this).val() || &#039;&#039;);
+            }).trigger(&#039;change&#039;);
+        });
+        // make sortable
+        var channels_list = section.find(&#039;ul.plugin-list&#039;);
+        channels_list.sortable(drag_handler(field_name));
+
+         $(&#039;[data-rel=popover]&#039;).popover({
+            container: &#039;body&#039;, 
+            html: true
+        });
+    }
+
+    function validate(variable_id){
+        var section = $(&quot;tr.&quot; + variable_id.replace(&#039;var_&#039;, &#039;tvss_section_&#039;)).first();
+        var hidden = section.find(&quot;input.stationfield_hidden&quot;).first(),
+            snippet_form_input = section.find(&quot;input, select&quot;).not(&#039;[id^=merlin_items_] &gt; table input,[id^=merlin_items_] &gt; table select&#039;);
+        set_hidden_input(hidden, snippet_form_input);
+        return true;
+    }
+    function collapseItem(field_name) {
+        var section = $(&quot;tr.tvss_section_&quot; + field_name).first();
+        section.find(&quot;.custom-collapse .widget-header.tvss .widget-toolbar &gt; a.widget-anchor.tvss&quot;).on(&#039;click&#039;, function(e){
+            e.preventDefault();
+            var widget_body = $(this).parents(&#039;.widget-header&#039;).siblings(&#039;.widget-body&#039;);
+            widget_body.slideToggle();
+            widget_body.parent().toggleClass(&#039;open&#039;);
+        });
+    }
+    function initialize(variable_id) {
+        String.prototype.supplant = string_expand;
+        var field_name = variable_id.replace(&#039;var_&#039;, &#039;&#039;);
+        // move to body end so that values won&#039;t get packed into the hidden field
+        $(&#039;.channel_row_template_&#039; + field_name).detach().appendTo($(&quot;body&quot;));
+        set_channels_listner(field_name);
+        update_channels_table(field_name);
+        collapseItem(field_name);
+        var section = $(&quot;tr.tvss_section_&quot; + field_name).first();
+
+        section.find(&#039;a.program-merlin-list&#039;).click(function(ev){
+            ev.preventDefault();
+            var target = $(&#039;#&#039;+$(this).data(&#039;target&#039;));
+            target.toggleClass(&#039;hide&#039;);
+            $(this).toggleClass(&#039;hide&#039;);
+            return false;
+        });
+
+        function closeVideoList(rootElem){
+            rootElem.toggleClass(&#039;hide&#039;);
+            $(&#039;[data-target=&quot;&#039;+rootElem.attr(&#039;id&#039;)+&#039;&quot;]&#039;).toggleClass(&#039;hide&#039;);
+            // rootElem.find(&#039;.widget-anchor&#039;).slice(0, 3).removeClass(&#039;collapsed&#039;);
+        }
+
+        section.find(&#039;.save-list&#039;).click(function(){
+            var parent = $(this).closest(&#039;.list-form&#039;);
+            parseMerlinLists(parent.attr(&#039;id&#039;));
+            closeVideoList(parent);
+        });
+
+        section.find(&#039;.cancel-list&#039;).click(function(){
+            var parent = $(this).closest(&#039;.list-form&#039;);
+            closeVideoList(parent);
+        });
+    }
+
+    SnippetStationTvssWidget = window.SnippetStationTvssWidget || {
+        validate: validate,
+        init: initialize
+    };
+
+}(jQuery || django.jQuery));
+
+SnippetWidgetRegistry.registerWidget(&#039;stationfield&#039;, SnippetStationTvssWidget);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>
