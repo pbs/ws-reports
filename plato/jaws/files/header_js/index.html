@@ -44,11 +44,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
-      <p class="stat">62.23</p>
+      <p class="stat">61.86</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
-      <p class="stat">168</p>
+      <p class="stat">169</p>
     </div>
   </div>
   <div class="row historical">
@@ -62,11 +62,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
-      <p class="stat">25.54</p>
+      <p class="stat">28.77</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
-      <p class="stat">1.39</p>
+      <p class="stat">1.44</p>
     </div>
   </div>
 </div>
@@ -136,18 +136,17 @@ JAWS.Header = (function() {
             _type = _this.getAttribute(&quot;data-type&quot;),
             _query = searchInput.value;
         if (_type === &quot;local&quot;) {
-            // change the action
-            searchForm.setAttribute(&quot;action&quot;, headerOpts.local_search_url + _query);
             // send to ga
             trackEvent(&quot;GlobalChrome_Header&quot;, &quot;Search&quot;, &quot;Search This Site&quot;);
+	    // redirect to local_search_url so the rest of the GET parameters are kept
+	    window.location = headerOpts.local_search_url + _query;
         } else if (_type === &quot;global&quot;) {
             // change the action
             searchForm.setAttribute(&quot;action&quot;, headerOpts.global_search_url + _query);
             // send to ga
             trackEvent(&quot;GlobalChrome_Header&quot;, &quot;Search&quot;, &quot;Search PBS&quot;);
+            searchForm.submit();
         }
-
-        searchForm.submit();
     }
 
     function manageDropdowns(evt) {
@@ -240,7 +239,8 @@ JAWS.Header = (function() {
 // Mozilla, Opera and webkit nightlies currently support this event
 if (document.addEventListener) {
     document.addEventListener(&quot;confirmStationEvent&quot;, function(event){
-        if(event.data.donate == &quot;Donate&quot;){
+        var data = event.detail || event.data;
+        if(data &amp;&amp; data.donate == &quot;Donate&quot;){
             membership_url = event.data.link;
             confirmBtn = event.data.confirmBtn;
             document.querySelector(confirmBtn).click(window.open(membership_url, &quot;_blank&quot;));
@@ -250,7 +250,8 @@ if (document.addEventListener) {
     // If IE event model is used
 } else {
     document.attachEvent(&quot;confirmStationEvent&quot;, function(event){
-        if(event.data.donate == &quot;Donate&quot;){
+        var data = event.detail || event.data;
+        if(data &amp;&amp; data.donate == &quot;Donate&quot;){
             membership_url = event.data.link;
             confirmBtn = event.data.confirmBtn;
             document.querySelector(confirmBtn).click(window.open(membership_url, &quot;_blank&quot;));

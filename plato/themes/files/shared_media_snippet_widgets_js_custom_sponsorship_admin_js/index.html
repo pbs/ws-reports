@@ -44,11 +44,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
-      <p class="stat">73.53</p>
+      <p class="stat">66.77</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
-      <p class="stat">50</p>
+      <p class="stat">325</p>
     </div>
   </div>
   <div class="row historical">
@@ -62,11 +62,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
-      <p class="stat">10.75</p>
+      <p class="stat">31.68</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
-      <p class="stat">0.48</p>
+      <p class="stat">3.27</p>
     </div>
   </div>
 </div>
@@ -89,20 +89,249 @@
 
 <div class="container">
   <div class="row">
-    <textarea id="file-source" class="col-md-12">/* global django, jQuery, SnippetWidgetRegistry, limitChars */
+    <textarea id="file-source" class="col-md-12">/* global django, jQuery, put, SnippetWidgetRegistry, limitChars */
 
 (function ($) {
-    var fields = {
-        &#039;var_00_Title&#039;: 60,
-        &#039;var_01_Description&#039;: 190,
-        &#039;var_02_Funding_Text&#039;: 50
-    };
+    &#039;use strict&#039;;
 
-    CustomSponsorship = window.CustomSponsorship || {
-        validate: function(){
-            return true;
+    var $parent,
+        logoImgClass = &#039;customsponsorship-logo-img&#039;,
+        logoDFPClass = &#039;customsponsorship-logo-ad&#039;,
+        $select = {
+            &#039;Image&#039;: logoImgClass,
+            &#039;DFP Ad&#039;: logoDFPClass
+        },
+        widgetSelector = &#039;tr td.col-sm-12[colspan=&quot;2&quot;] &#039; +
+                            &#039;div.widget-box &#039; +
+                                &#039;div.widget-header &gt; &#039; +
+                                    &#039;h4.widget-title + &#039;+
+                                    &#039;div.widget-toolbar &#039; +
+                                        &#039;a.widget-anchor[href=&quot;#&quot;] &#039; +
+                                            &#039;i.ace-icon.glyphicon.glyphicon-chevron-up.bigger-125 &#039; +
+                                            &#039;&lt;&lt;&lt;&lt; div.widget-body &#039; +
+                                                &#039;div.widget-main &#039; +
+                                                    &#039;div.tab-content &#039; +
+                                                        &#039;table.form-horizontal&#039;,
+        formMap = [
+            {
+                wrapper: widgetSelector,
+                title: &#039;General settings&#039;,
+                collapsed: false,
+                fields: [
+                    &#039;00_Title&#039;,
+                    &#039;01_Description&#039;,
+                    &#039;02_Funding_Text&#039;,
+                ],
+                textLimit: {
+                    &#039;00_Title&#039;: 60,
+                    &#039;01_Description&#039;: 190,
+                    &#039;02_Funding_Text&#039;: 50
+                }
+            },
+            {
+                wrapper: widgetSelector,
+                title: &#039;Logo 1&#039;,
+                collapsed: true,
+                fields: [
+                    &#039;03_Logo_type&#039;,
+                    &#039;tr td[colspan=2] hr&#039;,
+                    &#039;03_Logo_1&#039;,
+                    &#039;03_Logo_Link&#039;,
+                    &#039;03_Logo_Hover_Text&#039;,
+                    &#039;03_Logo_Ad_id&#039;,
+                    &#039;03_Logo_Ad_slot&#039;,
+                ]
+            },
+            {
+                wrapper: widgetSelector,
+                title: &#039;Logo 2&#039;,
+                collapsed: true,
+                fields: [
+                    &#039;04_Logo_type&#039;,
+                    &#039;tr td[colspan=2] hr&#039;,
+                    &#039;04_Logo_2&#039;,
+                    &#039;04_Logo_Link&#039;,
+                    &#039;04_Logo_Hover_Text&#039;,
+                    &#039;04_Logo_Ad_id&#039;,
+                    &#039;04_Logo_Ad_slot&#039;,
+                ]
+            },
+            {
+                wrapper: widgetSelector,
+                title: &#039;Logo 3&#039;,
+                collapsed: true,
+                fields: [
+                    &#039;05_Logo_type&#039;,
+                    &#039;tr td[colspan=2] hr&#039;,
+                    &#039;05_Logo_3&#039;,
+                    &#039;05_Logo_Link&#039;,
+                    &#039;05_Logo_Hover_Text&#039;,
+                    &#039;05_Logo_Ad_id&#039;,
+                    &#039;05_Logo_Ad_slot&#039;,
+                ]
+            },
+            {
+                wrapper: widgetSelector,
+                title: &#039;Logo 4&#039;,
+                collapsed: true,
+                fields: [
+                    &#039;06_Logo_type&#039;,
+                    &#039;tr td[colspan=2] hr&#039;,
+                    &#039;06_Logo_4&#039;,
+                    &#039;06_Logo_Link&#039;,
+                    &#039;06_Logo_Hover_Text&#039;,
+                    &#039;06_Logo_Ad_id&#039;,
+                    &#039;06_Logo_Ad_slot&#039;,
+                ]
+            }
+        ];
+
+    window.CustomSponsorship = window.CustomSponsorship || {
+        buildAdminLayout: function($parent, map){
+            var $field, $label, $input, $widget, $widgetBox,
+                sectionIter, fieldsIter, section, fields, textLimits;
+
+            for (sectionIter = 0; sectionIter &lt; map.length; sectionIter++){
+
+                section = map[sectionIter];
+                $widget = $(put($parent.get(0), section.wrapper));
+                $widgetBox = $widget.closest(&#039;.widget-box&#039;);
+                $widgetBox.find(&#039;.widget-title&#039;).html(section.title);
+                this.setCollapseHandler($widgetBox);
+
+                fields = section.fields;
+                textLimits = section.textLimit ? section.textLimit : {};
+
+                for (fieldsIter = 0; fieldsIter &lt; fields.length; fieldsIter++){
+                    $input = $(&#039;#var_&#039; + section.fields[fieldsIter]);
+                    if(!$input.length){
+                        // input doesn&#039;t exist =&gt; we need to create an element
+                        put($widget.find(&#039;tbody&#039;).get(0), section.fields[fieldsIter]);
+                    }
+                    else{
+                        //input exists =&gt; append it
+                        $label = $(&#039;label[for=&quot;var_&#039; + section.fields[fieldsIter] + &#039;&quot;]&#039;);
+                        $field = $input.closest(&#039;tr&#039;);
+                        $label.text(this.userFriendlyLabel($label.text()));
+
+                        if (textLimits[section.fields[fieldsIter]]) {
+                            this.setLimiter($input, textLimits[section.fields[fieldsIter]]);
+                        }
+                        $field.appendTo($widget);
+                    }
+                }
+                this.collapseItem($widgetBox,
+                                  (section.collapsed ? &#039;collapsed&#039; : &#039;&#039;));
+            }
+
         },
 
+        setCollapseHandler: function(elem){
+            var self = this;
+            elem.find(&quot;.widget-anchor&quot;)
+                .off(&#039;click&#039;)
+                .on(&#039;click&#039;, function(e){
+                    e.preventDefault();
+                    return self.collapseItem($(this).closest(&#039;.widget-box&#039;));
+                });
+        },
+
+        userFriendlyLabel: function(text){
+            /***
+            * strips numeric after replacing `_` with spaces
+            * expected text : 01_Some_Label, Some_Label_01
+            */
+            return text.split(&#039;_&#039;).filter(function(item){
+                return isNaN(parseInt(item, 10));
+            }).join(&#039; &#039;);
+        },
+        animateHeight: function(elem, height) {
+            var self = this;
+            elem.animate({&#039;height&#039;: height}, {
+                step: function() {
+                    self.resizeIframe();
+                }
+            });
+        },
+        collapseItem: function(elem, state) {
+            var link = elem.find(&#039;.widget-anchor&#039;),
+                widgetBody = elem.find(&#039;.widget-body&#039;),
+                height = $(widgetBody).find(&#039;.widget-main&#039;).outerHeight(),
+                self = this;
+
+            if (widgetBody.hasClass(&#039;on&#039;) || state === &#039;collapsed&#039;) {
+                self.animateHeight(widgetBody, 0);
+                widgetBody.removeClass(&#039;on&#039;);
+                link.addClass(&#039;collapsed&#039;);
+            }
+            else {
+                self.animateHeight(widgetBody, height);
+                widgetBody.addClass(&#039;on&#039;);
+                link.removeClass(&#039;collapsed&#039;);
+            }
+        },
+
+        resizeIframe: function(toResizeTo) {
+            var insideIframe = window.location !== window.parent.location,
+                documentHeight = $(&#039;body&#039;).outerHeight(true),
+                margin = 20;
+
+            if (!insideIframe) {
+                return;
+            }
+
+            if (toResizeTo) {
+                documentHeight = Math.max($(&#039;body&#039;).outerHeight(true),
+                    toResizeTo.outerHeight(true));
+            }
+
+            $(window.frameElement).css(&#039;height&#039;, (documentHeight + margin) + &#039;px&#039;);
+        },
+        getSelectValue: function(parent) {
+            return parent.find(&#039;select[id*=&quot;_Logo_type&quot;]&#039;).val();
+        },
+        groupFields: function() {
+            var logoAdPattern = &#039;_Logo_Ad_&#039;,
+                logoAdFields,
+                logoImgFields;
+
+            $parent.find(&#039;.widget-body&#039;).each(function(){
+                logoAdFields = $(this).find(&#039;input[id*=&quot;&#039; + logoAdPattern + &#039;&quot;]&#039;).closest(&#039;tr&#039;);
+                logoImgFields = $(this).find(&#039;input[id*=&quot;_Logo_&quot;]&#039;).not(&#039;[id*=&quot;&#039; + logoAdPattern + &#039;&quot;]&#039;).closest(&#039;tr&#039;);
+
+                logoAdFields.addClass(logoDFPClass);
+                logoImgFields.addClass(logoImgClass);
+            });
+        },
+
+        setSelectHandler: function(){
+            var self = this;
+            $parent.find(&#039;select[id*=&quot;_Logo_type&quot;]&#039;)
+                .on(&#039;change&#039;, function(){
+                    var widgetBody = $(this).closest(&#039;.widget-body&#039;),
+                        height;
+
+                    self.displayFields($(this).val(), $(this).closest(&#039;.widget-main&#039;));
+                    height = widgetBody.find(&#039;.widget-main&#039;).outerHeight();
+                    self.animateHeight(widgetBody, height);
+                });
+        },
+        displayFields: function(value, parent) {
+            var field_class = &#039;.&#039; + $select[value],
+                imageClass = &#039;.&#039; + logoImgClass,
+                dfpClass = &#039;.&#039; + logoDFPClass;
+
+            parent.find(imageClass + &#039;,&#039; + dfpClass).closest(&#039;tr&#039;).hide();
+            parent.find(field_class).show();
+        },
+        initialDisplay: function(variable) {
+            var self = this;
+            variable.closest(&#039;table&#039;).find(&#039;.widget-main&#039;).each(function(){
+                var parent = $(this),
+                    logoType = self.getSelectValue(parent);
+                self.displayFields(logoType, parent);
+            });
+        },
         setLimiter: function($elem, limit){
             var html = &#039;&lt;p class=&quot;limiter&quot; data-input=&quot;label&quot; data-limit=&quot;&#039;+limit+&#039;&quot;&gt;&lt;i class=&quot;counter&quot;&gt;&#039;+limit+&#039;&lt;/i&gt;&lt;i&gt; characters remaining.&lt;/i&gt;&lt;/p&gt;&#039;;
             $elem.after(html);
@@ -112,35 +341,81 @@
             $elem.css(&#039;margin-bottom&#039;, 0);
             limitChars($elem, limit, $elem.next(&#039;.limiter&#039;).find(&#039;.counter&#039;));
         },
-        logosDescription: function(snippet_id){
-            var logos_wrapper = $(&#039;#&#039;+snippet_id).closest(&#039;table&#039;).find(&#039;input[id*=&quot;_Logo_&quot;].filer_field&#039;).closest(&#039;.form-group&#039;),
+        logosDescription: function(){
+            var logos_wrapper = $parent.find(&#039;input[id*=&quot;_Logo_&quot;].filer_field&#039;).closest(&#039;.form-group&#039;),
                 help_text = &#039;Enter image url, browse the Filer and select one of the available images. Recommended specs: Max height 60px; Max width 120px.&#039;,
                 tooltip = &#039;&lt;span class=&quot;help-button&quot; data-rel=&quot;popover&quot; data-trigger=&quot;hover&quot; data-placement=&quot;right&quot; data-content=&quot;&#039; + help_text + &#039;&quot; title=&quot;&quot;&gt;?&lt;/span&gt;&#039;;
 
             logos_wrapper.append(tooltip);
         },
+        selectDescription: function() {
+            var select_wrapper = $parent.find(&#039;select[id*=&quot;_Logo_type&quot;]&#039;).closest(&#039;td&#039;),
+                help_text = &#039;You may choose either a logo from filer or a logo from DFP. Recommended Max height 60px; Max width 120px.&#039;,
+                tooltip = &#039;&lt;span class=&quot;help-button&quot; data-rel=&quot;popover&quot; data-trigger=&quot;hover&quot; data-placement=&quot;right&quot; data-content=&quot;&#039; + help_text + &#039;&quot; title=&quot;&quot;&gt;?&lt;/span&gt;&#039;;
+
+            select_wrapper.append(tooltip);
+        },
+        cleanUnnecessaryFields: function() {
+            var self = this,
+                selectedType,
+                visibleClass;
+
+            $parent.find(&#039;.widget-main&#039;).each(function(){
+                var widget = $(this),
+                    logoType = self.getSelectValue(widget),
+                    visibleClass;
+
+                if (logoType) {
+                    visibleClass = &#039;.&#039; + $select[logoType];
+                    widget.find(&#039;tr&#039;).not(visibleClass).find(&#039;input[type=&quot;text&quot;]&#039;).val(&#039;&#039;);
+                } else if(logoType === &#039;&#039;) {
+                    widget.find(&#039;input[type=&quot;text&quot;]&#039;).val(&#039;&#039;);
+                }
+            });
+        },
+        checkValidLogo: function(){
+            $parent.find(&#039;.widget-main&#039;).each(function(){
+                var widget = $(this),
+                    logo_img = widget.find(&#039;.filer_field&#039;).val(),
+                    logo_dfp_id = widget.find(&#039;input[id*=&quot;_Logo_Ad_id&quot;]&#039;).val(),
+                    logo_dfp_slot = widget.find(&#039;input[id*=&quot;_Logo_Ad_slot&quot;]&#039;).val(),
+                    select = widget.find(&#039;select[id*=&quot;_Logo_type&quot;]&#039;);
+
+                if (!logo_img &amp;&amp; (!logo_dfp_slot || !logo_dfp_id)) {
+                    select.val(&quot;&quot;);
+                }
+            });
+        },
+
+        validate: function(){
+            var self = this;
+            self.checkValidLogo();
+            self.cleanUnnecessaryFields();
+            return true;
+        },
 
         init : function(variable_id){
-            var self = this;
+            var self = this,
+                $variable = $(&#039;#&#039; + variable_id);
+
+            $parent = $variable.closest(&#039;tbody&#039;);
+            self.buildAdminLayout($parent, formMap);
+            $variable.closest(&#039;tr&#039;).hide();
+            self.groupFields();
+            self.initialDisplay($variable);
+            self.setSelectHandler();
 
             $(document).ready(function(){
-                var siblingImputs = $(&#039;#&#039;+variable_id).closest(&#039;table&#039;).find(&#039;input, textarea&#039;).not(&#039;#&#039;+variable_id);
-                siblingImputs.each(function(index){
-                    if(fields[$(this).attr(&#039;id&#039;)]){
-                        self.setLimiter($(this), fields[$(this).attr(&#039;id&#039;)]);
-                    }
-                });
-
-                self.logosDescription(variable_id);
+                self.logosDescription();
+                self.selectDescription();
                 $(&#039;[data-rel=popover]&#039;).popover({container:&#039;body&#039;});
-
             });
         }
     };
 
 }(jQuery || django.jQuery));
 
-SnippetWidgetRegistry.registerWidget(&#039;customsponsorship&#039;,  CustomSponsorship);</textarea>
+SnippetWidgetRegistry.registerWidget(&#039;customsponsorship&#039;,  window.CustomSponsorship);</textarea>
   </div>
 </div>
 

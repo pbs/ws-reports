@@ -44,11 +44,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
-      <p class="stat">70.31</p>
+      <p class="stat">70.48</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
-      <p class="stat">478</p>
+      <p class="stat">506</p>
     </div>
   </div>
   <div class="row historical">
@@ -62,11 +62,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
-      <p class="stat">47.28</p>
+      <p class="stat">45.77</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
-      <p class="stat">5.05</p>
+      <p class="stat">5.53</p>
     </div>
   </div>
 </div>
@@ -89,21 +89,21 @@
 
 <div class="container">
   <div class="row">
-    <textarea id="file-source" class="col-md-12">(function($) {
+    <textarea id="file-source" class="col-md-12">(function(window, $) {
+    if (typeof ProfilePlugin === &#039;undefined&#039;) {
+        window.ProfilePlugin = {};
+    }
+
+ProfilePlugin.ProfileGridAdmin = function(config) {
     var initial_title,
         initial_description,
         initial_show_title,
         profile_added,
-        profile_deleted,
         form_id,
         all_profiles_initial_data, // profile-prefix -&gt; custom-profile-data
         all_profiles_changes_flag, // profile-prefix -&gt; flag if profile has changes
-        current_profile_value_before_edit; // input-id -&gt; [input_type, saved_custom_data]
-
-    function clear_data_for_profile(profile_prefix) {
-        delete all_profiles_changes_flag[profile_prefix];
-        delete all_profiles_initial_data[profile_prefix];
-    }
+        current_profile_value_before_edit, // input-id -&gt; [input_type, saved_custom_data]
+        save_rejected = config.save_rejected;
 
     function update_changed_status_for_profile(profile_prefix) {
         var initial_data = all_profiles_initial_data[profile_prefix],
@@ -118,7 +118,7 @@
             current_description = $(&quot;#id_description&quot;).val(),
             current_show_title = $(&quot;#id_show_title_on_thumbnails&quot;).prop(&#039;checked&#039;),
 
-            has_unsaved_changes = profile_added || profile_deleted ||
+            has_unsaved_changes = save_rejected || profile_added ||
                 current_title != initial_title ||
                 current_description != initial_description ||
                 current_show_title != initial_show_title ||
@@ -128,7 +128,7 @@
     }
 
     function isEmpty(field) {
-        return field.find(&#039;input[type=&quot;text&quot;], textarea&#039;).val() == &#039;&#039; ? true : false;
+        return field.find(&#039;input[type=&quot;text&quot;], textarea&#039;).val() === &#039;&#039; ? true : false;
     }
 
     function addErrorClass(field) {
@@ -155,13 +155,13 @@
     function checkValidLinks(form) {
         var valid = true;
 
-        form.find(&#039;.profile-add-links&#039;).each(function(){
+        form.find(&#039;.profile-add-links&#039;).each(function() {
             var self = $(this);
 
             // remove all error classes from all links
-            self.find(&#039;.form-row&#039;).each(function(){
+            self.find(&#039;.form-row&#039;).each(function() {
                 $(this).removeClass(&#039;mandatory has-error has-url-error&#039;)
-                    .find(&#039;input[type=&quot;text&quot;]&#039;).removeClass(&#039;error&#039;);;
+                    .find(&#039;input[type=&quot;text&quot;]&#039;).removeClass(&#039;error&#039;);
             });
             // if the input is not empty, we make it mandatory
             self.find(&#039;input[type=&quot;text&quot;]&#039;).each(function() {
@@ -235,7 +235,7 @@
 
     function resizeIframe(toResizeTo, scrollToTop) {
         var insideIframe = (window.location != window.parent.location ? true : false);
-        scrollToTop = (scrollToTop == false) ? false : true;
+        scrollToTop = (scrollToTop === false) ? false : true;
 
         if (!insideIframe) {
             return;
@@ -258,7 +258,7 @@
                 scrollTop: $(window.frameElement).offset().top
             }, &#039;fast&#039;);
         }
-    };
+    }
 
     function store_input_data(prefix) {
         // Stores all the input data for a profile in a custom format.
@@ -276,7 +276,7 @@
             data[input.attr(&quot;id&quot;)] = [type, value];
         });
 
-	$(&#039;select[name^=&quot;&#039; + prefix + &#039;&quot;]&#039;).each(function(index, e) {
+        $(&#039;select[name^=&quot;&#039; + prefix + &#039;&quot;]&#039;).each(function(index, e) {
             input = $(this);
             data[input.attr(&quot;id&quot;)] = [&quot;value&quot;, input.val()];
         });
@@ -306,7 +306,7 @@
                 element[0].checked = value;
             } else if (type === &quot;image_html&quot;) {
                 html = value[0];
-                input_value = value[1]
+                input_value = value[1];
                 element.closest(&quot;div.profile-image-panel&quot;).html(html);
                 element = $(&quot;#&quot; + key);
                 element[0].value = input_value;
@@ -365,24 +365,27 @@
     }
 
     //detect change on Show Title on Thumbnails field
-    function onChangeShowTitleOnThumbnail () {
+    function onChangeShowTitleOnThumbnail() {
         $(document).on(&quot;change&quot;, &quot;#id_show_title_on_thumbnails&quot;, function(e) {
             update_show_unsaved_warning();
         });
     }
 
+    function assert_initial_values_are_saved(prefix) {
+        current_profile_value_before_edit = store_input_data(prefix);
+        all_profiles_initial_data[prefix] = all_profiles_initial_data[prefix] ||
+                                            current_profile_value_before_edit;
+    }
+
     //edit profile item
-    function editProfileItem () {
+    function editProfileItem() {
         $(document).on(&#039;click&#039;, &#039;.profile-item-actions .edit-profile-item&#039;, function(e) {
             e.preventDefault();
             $(this).parent(&#039;.profile-item-actions&#039;).siblings().addClass(&#039;visible&#039;).closest(&#039;.inline-related&#039;).addClass(&#039;edit-mode&#039;);
             $(this).closest(&#039;.grid-list&#039;).siblings(&#039;.overlay&#039;).addClass(&#039;visible&#039;);
 
             prefix = $(this).data(&quot;profile-id-prefix&quot;);
-            current_profile_value_before_edit = store_input_data(prefix);
-            if (all_profiles_initial_data[prefix] === undefined) {
-                all_profiles_initial_data[prefix] = current_profile_value_before_edit;
-            }
+            assert_initial_values_are_saved(prefix);
 
             resizeIframe($(&#039;.visible&#039;));
             setLimiter();
@@ -395,18 +398,19 @@
             e.preventDefault();
 
             profile_prefix = $(this).data(&quot;profile-id-prefix&quot;);
-            $(&#039;#&#039; + profile_prefix).hide();
-
+            assert_initial_values_are_saved(profile_prefix);
+            profile = $(&#039;#&#039; + profile_prefix);
             delete_input = $(&#039;#id_&#039; + profile_prefix + &#039;-DELETE&#039;)[0];
-            if (delete_input === undefined) {
-                profile_div.remove();
+            delete_input.checked = !delete_input.checked;
+            if (delete_input.checked) {
+                profile.addClass(&quot;deleted&quot;);
             } else {
-                delete_input.checked = true;
+                profile.removeClass(&quot;deleted&quot;).removeClass(&quot;has-errors&quot;);
             }
-            clear_data_for_profile(profile_prefix);
-            profile_deleted = true;
+            update_changed_status_for_profile(profile_prefix);
 
             update_show_unsaved_warning();
+            resizeIframe($(&#039;.visible&#039;), false);
         });
     }
 
@@ -508,7 +512,7 @@
             prefix = link.attr(&quot;data-prefix&quot;);
             current = parseInt(link.attr(&quot;data-current&quot;), 10);
             next_link = $(&quot;#&quot; + prefix + current + &quot;container&quot;);
-            if (next_link != undefined) {
+            if (next_link !== undefined) {
                 next_link.show();
                 link.attr(&quot;data-current&quot;, current + 1);
                 is_last_link = $(&quot;#&quot; + prefix + (current + 1) + &quot;container&quot;)[0] === undefined;
@@ -539,34 +543,58 @@
         initial_description = $(&quot;#id_description&quot;).val(),
         initial_show_title = $(&quot;#id_show_title_on_thumbnails&quot;).prop(&#039;checked&#039;),
         profile_added = false,
-        profile_deleted = false,
         form_id = $(&#039;#profilegrid_form&#039;),
         all_profiles_initial_data = {}, // profile-prefix -&gt; custom-profile-data
         all_profiles_changes_flag = {}, // profile-prefix -&gt; flag if profile has changes
-        current_profile_value_before_edit = {}; // input-id -&gt; [input_type, saved_custom_data]
+        current_profile_value_before_edit = {}, // input-id -&gt; [input_type, saved_custom_data]
+        error_lists = $(&#039;.errorlist&#039;),
+        first_list = error_lists.first();
 
 
         //make entire grid sortable
         $(&quot;.grid-list&quot;).sortable({
             items: &quot;&gt; .inline-related&quot;,
             cancel: &quot;.edit-mode&quot;,
+            start: function(event, ui) {
+                $(&#039;[data-rel=&quot;popover&quot;]&#039;).popover(&#039;hide&#039;);
+            },
             update: function(event, ui) {
                 $(&#039;.order_field input&#039;).each(function(i) {
-                    $(this).attr(&#039;value&#039;, i + 1)
+                    $(this).attr(&#039;value&#039;, i + 1);
                 });
             }
         });
 
+        $(document).off(&#039;click&#039;).on(&#039;click&#039;, &#039;body&#039;, function(e) {
+            //did not click a popover toggle or popover
+            if ($(e.target).data(&#039;rel&#039;) !== &#039;popover&#039; &amp;&amp; $(e.target).parents(&#039;.popover.in&#039;).length === 0) {
+                $(&#039;[data-rel=&quot;popover&quot;]&#039;).popover(&#039;hide&#039;);
+            }
+        });
+
+        // Add all errors to the first list
+        error_lists.each(function(index) {
+            if (index &gt; 0) {
+                first_list.append($(this).html());
+                $(this).html(&quot;&quot;);
+            }
+        });
+
+        $(&#039;[id^=id_profile_set-][id$=-DELETE]&#039;).each(function(i, obj) {
+            if (obj.checked) {
+                $(obj).closest(&quot;.ui-widget&quot;).addClass(&quot;deleted&quot;);
+            }
+        });
         setLimiter();
         attachEvents();
-
+        update_show_unsaved_warning();
     }
 
-    $(document).ready(function() {
-        // init all functions
-        init();
-    });
-})(jQuery || django.jQuery);</textarea>
+    return {
+        init: init
+    };
+};
+})(window, jQuery);</textarea>
   </div>
 </div>
 

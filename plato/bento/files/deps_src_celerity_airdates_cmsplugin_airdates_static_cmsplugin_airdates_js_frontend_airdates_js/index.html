@@ -62,7 +62,7 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
-      <p class="stat">52.65</p>
+      <p class="stat">52.86</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
@@ -245,7 +245,7 @@
 
         var date = new Date(s_year, s_month, s_day);
         if(short){
-            return weekDaysShort[date.getDay()]+&#039;&lt;span class=&quot;separator&quot;&gt;,&lt;/span&gt; &lt;span&gt;&#039;+monthsShort[date.getMonth()]+&#039; &#039;+s_day+&#039;&lt;/span&gt;&#039;;    
+            return weekDaysShort[date.getDay()]+&#039;&lt;span class=&quot;separator&quot;&gt;,&lt;/span&gt; &lt;span&gt;&#039;+monthsShort[date.getMonth()]+&#039; &#039;+s_day+&#039;&lt;/span&gt;&#039;;
         }
         return weekDays[date.getDay()]+&#039;&lt;span class=&quot;separator&quot;&gt;,&lt;/span&gt; &lt;span&gt;&#039;+months[date.getMonth()]+&#039; &#039;+s_day+&#039;&lt;/span&gt;&#039;;
     };
@@ -347,7 +347,7 @@
         }
 
         if(Object.keys(data).length &lt; maxHeroAirdates){
-            $(&#039;#&#039; + elem_id + &#039;.full-schedule-url&#039;).hide();
+            jQuery(&#039;#&#039; + elem_id + &#039;.full-schedule-url&#039;).hide();
         }
 
         return HTML;
@@ -378,7 +378,7 @@
 
             that.localization.triggerGAEvent(&quot;ViewedOverlay&quot;);
         });
-        
+
         jQuery(document).on(&#039;click&#039;, &#039;#pbs-modal-window .closeBtn&#039;, function(){
             that.localization.triggerGAEvent(&quot;ClosedPopup&quot;);
         });

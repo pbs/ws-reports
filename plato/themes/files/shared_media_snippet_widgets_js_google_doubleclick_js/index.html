@@ -95,7 +95,7 @@
             Desktop_Ad_id: &quot;Found in Ad Code. Visit &lt;a href=&#039;http://bit.ly/DFPHelp&#039; target=&#039;_blank&#039;&gt;Google&#039;s Documentation&lt;/a&gt; for More.&quot;,
             Desktop_Ad_size: &quot;Select All Display Sizes That Relate to Ad.&quot;,
             Desktop_Ad_slot: &quot;Found in Ad Code. Visit &lt;a href=&#039;http://bit.ly/DFPHelp&#039; target=&#039;_blank&#039;&gt;Google&#039;s Documentation&lt;/a&gt; for More.&quot;,
-            Desktop_Ad_type: &quot;Selecting Station or Producer will Enables Customization Options of the Supporting Text That Displays Under Ad.&quot;,
+            Desktop_Ad_type: &quot;Selecting Station or Producer Will Enable Customization Options of the Supporting Text That Displays Under Ad.&quot;,
             Desktop_Background_color: &quot;Billboard and Leaderboard Only: Enter HEX Value for Background Color Behind Ad.&quot;,
             Desktop_Color_message_text: &quot;Billboard and Leaderboard Only: Select the Color of the Messaging Text Under Ad.&quot;,
             Station_Short_Name: &quot;Enter Desired Station Name to Customize Supporting Text That Displays Under Ad.&quot;,
@@ -132,14 +132,14 @@
 
                 var desktop_item = filterFromList(desktop_items),
                     adhesion_item = filterFromList(adhesion_items);
-           
+
                 if (desktop_item.val() == adhesion_item.val()) {
                     adhesion_item
                         .addClass(&#039;error&#039;)
                         .closest(&#039;tr&#039;).addClass(&#039;has-error&#039;)
                         .find(&#039;.help-block&#039;).text(&#039;This field should be different from Desktop_Ad_&#039; + item +&#039;.&#039;);
-                    notUnique = true;   
-                    return true;    
+                    notUnique = true;
+                    return true;
                 }
             });
             return notUnique;
@@ -174,7 +174,7 @@
         toggleSpecificFields: function(state) {
             var fields = this.getType().closest(&#039;table&#039;)
                              .find(&#039;input[id*=&quot;Station_Short_Name&quot;], input[id*=&quot;Station_Sponsorship_Link&quot;]&#039;);
-           
+
             if (state == &#039;hide&#039;) {
                 fields.closest(&#039;tr&#039;).hide();
             }
@@ -184,14 +184,14 @@
         },
         beautifyLabels: function () {
             var labels = this.getType().closest(&#039;table&#039;).find(&#039;.control-label &gt; label&#039;);
-            
+
             labels.each(function(idx, elem) {
                 var label = $(elem);
 
                 label.text(label.text().replace(/\_/g, &#039; &#039;));
                 label.text(label.text().replace(/Desktop|Adhesion/g, &#039;&#039;));
             });
-          
+
         },
         isStationSelectedActions: function() {
             var self = this;
@@ -245,8 +245,8 @@
             var adhesionFields = self.getAdhesionFields();
             var desktopFields = self.getAdSlotIdSize();
 
-            if (self.areSectionInputsEmpty(adhesionFields) &amp;&amp; 
-                self.areSectionInputsEmpty(desktopFields) &amp;&amp; 
+            if (self.areSectionInputsEmpty(adhesionFields) &amp;&amp;
+                self.areSectionInputsEmpty(desktopFields) &amp;&amp;
                 !desktopFields.find(&#039;option:selected&#039;).length) {
 
                 if (!desktopFields.closest(&#039;fieldset&#039;).find(&#039;.general-error&#039;).length) {
@@ -291,7 +291,7 @@
             });
             return emptyData;
         },
-       
+
         unsetUnnecessaryFields: function() {
             var hiddenFields = this.getType().closest(&#039;tbody&#039;).find(&#039;tr:hidden input&#039;);
 
@@ -335,7 +335,7 @@
             AdSetup.unsetUnnecessaryFields();
             AdSetup.setAllowEmpty(adhesionFields, false);
             AdSetup.setAllowEmpty(desktopFields, false);
-            
+
             if (AdSetup.areAllEmpty()) {
                 return false;
             }
