@@ -44,11 +44,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
-      <p class="stat">63.19</p>
+      <p class="stat">63.32</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
-      <p class="stat">838</p>
+      <p class="stat">848</p>
     </div>
   </div>
   <div class="row historical">
@@ -62,11 +62,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
-      <p class="stat">70.01</p>
+      <p class="stat">69.98</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
-      <p class="stat">8.70</p>
+      <p class="stat">8.74</p>
     </div>
   </div>
 </div>
@@ -418,7 +418,8 @@ JAWS.Localization = (function () {
 
     // switch between modals
     function switchModals(state) {
-        var localization_widget;
+        var localization_widget,
+            activeStationListItem = document.querySelector(&#039;#autoStationsList .stationItem.active&#039;);
         // modals
         modalFind = document.querySelector(&#039;#pbs-modal-window.pbs-find-stations&#039;);
         modalList = document.querySelector(&#039;#pbs-modal-window.pbs-stastions-list&#039;);
@@ -436,7 +437,9 @@ JAWS.Localization = (function () {
             modalConfirm.jwAddClass(&#039;none&#039;);
             modalFind.jwRemoveClass(&#039;none&#039;);
             modalOverlay.jwRemoveClass(&#039;none&#039;);
-            document.querySelector(&#039;#autoStationsList .stationItem.active&#039;).jwRemoveClass(&#039;active&#039;);
+            if(activeStationListItem){
+                activeStationListItem.jwRemoveClass(&#039;active&#039;);
+            }
             trackEvent(trackingCategory, &#039;Find Station&#039;, &#039;viewed step&#039;);
             break;
         case &#039;confirm&#039;:
@@ -818,8 +821,11 @@ JAWS.Localization = (function () {
         popup_location = popup_location || &#039;&#039;; // optional parameter
         donate = popup_location;
         trackingCategory = &quot;See more Stations – Localization Overlay&quot;;
+
         var url = localizationUrl + &#039;true/&#039;,
             ajax;
+
+        initCookieData();
 
         if (stationCookie) {
             if (post_data &amp;&amp; post_data.extended) {
@@ -843,7 +849,7 @@ JAWS.Localization = (function () {
         }, function (data) {
             localizationData = data;
             localizationType = &#039;manual&#039;;
-            zipCode = data.zip;
+            zipCode = data.zip || zipCode;
             if (staExtended &amp;&amp; !popup_location) {
 	            createOverlay(&#039;list&#039;);
             } else {
@@ -851,11 +857,6 @@ JAWS.Localization = (function () {
             }
         });
     }
-
-    staExtended = readCookie(&#039;pbsol.sta_extended&#039;);
-    kidsCookie = readCookie(&#039;pbskids.localized&#039;);
-    stationCookie = readCookie(&#039;pbsol.station&#039;);
-    preventOverlaysCookie = readCookie(&#039;pbs.preventOverlays&#039;);
 
     function processStaExtendedCookie(key) {
         var cookieData = staExtended,
@@ -876,13 +877,22 @@ JAWS.Localization = (function () {
         return data;
     }
 
-    if (staExtended) {
-        post_data.extended = {
-            zip: processStaExtendedCookie(&quot;z&quot;)[0],
-            state: processStaExtendedCookie(&quot;st&quot;)[0],
-            stations: processStaExtendedCookie(&quot;s&quot;)
-        };
+    function initCookieData(){
+        staExtended = readCookie(&#039;pbsol.sta_extended&#039;);
+        kidsCookie = readCookie(&#039;pbskids.localized&#039;);
+        stationCookie = readCookie(&#039;pbsol.station&#039;);
+        preventOverlaysCookie = readCookie(&#039;pbs.preventOverlays&#039;);
+
+        if (staExtended) {
+            post_data.extended = {
+                zip: processStaExtendedCookie(&quot;z&quot;)[0],
+                state: processStaExtendedCookie(&quot;st&quot;)[0],
+                stations: processStaExtendedCookie(&quot;s&quot;)
+            };
+        }
     }
+
+    initCookieData();
 
     // load necesarry files
     if (!filesLoaded) {
