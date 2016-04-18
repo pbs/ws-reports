@@ -532,12 +532,12 @@
                     event.preventDefault();
 
                     //keep old function reference, set it back later
-                    window._showRelatedObjectLookupPopup = window.showRelatedObjectLookupPopup;
+                    window._old_showRelatedObjectLookupPopup = window._showRelatedObjectLookupPopup;
 
                     // override dfault django function,
                     // needs to return window instance,
                     // also increase window size
-                    window.showRelatedObjectLookupPopup = function(triggeringLink) {
+                    window._showRelatedObjectLookupPopup = function(triggeringLink) {
                         var name = triggeringLink.id.replace(/^lookup_/, &#039;&#039;);
                         name = id_to_windowname(name);
                         var href;
@@ -560,7 +560,7 @@
                     };
 
                     // set back to default value
-                    window.showRelatedObjectLookupPopup = window._showRelatedObjectLookupPopup;
+                    window._showRelatedObjectLookupPopup = window._old_showRelatedObjectLookupPopup;
                 },
                 addListControls: function(){
                     var _this = this;
