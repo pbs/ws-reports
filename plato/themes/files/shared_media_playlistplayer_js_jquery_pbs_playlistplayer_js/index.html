@@ -44,11 +44,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
-      <p class="stat">68.65</p>
+      <p class="stat">68.60</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
-      <p class="stat">186</p>
+      <p class="stat">200</p>
     </div>
   </div>
   <div class="row historical">
@@ -62,11 +62,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
-      <p class="stat">30.07</p>
+      <p class="stat">31.10</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
-      <p class="stat">1.94</p>
+      <p class="stat">1.92</p>
     </div>
   </div>
 </div>
@@ -91,55 +91,59 @@
   <div class="row">
     <textarea id="file-source" class="col-md-12">(function(window, $) {
     if (typeof PBS === &#039;undefined&#039;) {
-        window.PBS = {}
+        window.PBS = {};
     }
-    PBS.PlaylistPlayer = function(config){
-        if(!config){
-            return console.error(&quot;Video Playlist has no configuration: &quot;, config);
+    PBS.PlaylistPlayer = function(config) {
+        if (!config) {
+            return console.error(&#039;Video Playlist has no configuration: &#039;,
+                                 config);
         }
-           
+
         var playlist = $(config.snippet);
+
+        function setVideoData(videoData, videoElem) {
+            var title = videoData.title || &#039;&#039;;
+            var contentChannel = videoData.contentchannel || &#039;&#039;;
+            var shortDescription = videoData.short_description || &#039;&#039;;
+            var runtime = videoData.runtime || &#039;&#039;;
+            var airdate = videoData.airdate ? &#039;Aired: &#039; + videoData.airdate : &#039;&#039;;
+            var expiration = videoData.expiration ? &#039;Expires: &#039; + videoData.expiration : &#039;&#039;;
+            var rating = videoData.rating ? &#039;Rating: &#039; + videoData.rating : &#039;&#039;;
+
+            videoElem.find(&#039;.vid-title&#039;).html(title);
+            videoElem.find(&#039;.vid-contentchannel&#039;).html(contentChannel);
+            videoElem.find(&#039;.vid-shortdesc&#039;).html(shortDescription);
+            videoElem.find(&#039;.vid-aired&#039;).html(airdate);
+            videoElem.find(&#039;.vid-runtime&#039;).html(runtime);
+            videoElem.find(&#039;.vid-expires&#039;).html(expiration);
+            videoElem.find(&#039;.vid-rating&#039;).html(rating);
+
+        }
 
         var loadVideo = function(index, videoPlayer) {
             var videoWrapper = videoPlayer.closest(&#039;.video&#039;);
-            if (config.videoList.videoItems[index]) {
+            var video = config.videoList.videoItems[index];
+
+            if (video) {
                 $.ajax({
-                    url: &#039;/merlin_plugin/video_frame/&#039; + config.videoList.videoItems[index].url + &#039;/?autoplay=false&amp;topbar=&#039; + config.socialSharing,
+                    url: &#039;/merlin_plugin/video_frame/&#039; + video.url + &#039;/?autoplay=false&amp;topbar=&#039; + config.socialSharing,
                     dataType: &#039;json&#039;,
-                    success: function (response) {
-                        var template, notAvailableImg;
+                    success: function(response) {
+                        var template,
+                            notAvailableImg;
                         if (response.player_code) {
                             template = response.player_code.template;
                             var iframe = $(template);
                             videoPlayer.html(iframe);
                             fitCoveVideo(iframe);
-                            iframe.load(function(){
+                            iframe.load(function() {
                                 fitCoveVideo($(this));
-                                videoWrapper.find(&#039;.vid-title&#039;).html(config.videoList.videoItems[index].title);
-                                videoWrapper.find(&#039;.vid-contentchannel&#039;).html(config.videoList.videoItems[index].contentchannel);
-                                videoWrapper.find(&#039;.vid-shortdesc&#039;).html(config.videoList.videoItems[index].short_description);
-                                
-                                if (config.videoList.videoItems[index].airdate) {
-                                    videoWrapper.find(&#039;.vid-aired&#039;).html(&#039;Aired: &#039; + config.videoList.videoItems[index].airdate);
-                                }
-                                else {
-                                    videoWrapper.find(&#039;.vid-aired&#039;).html(&#039;&#039;);
-                                }
-
-                                videoWrapper.find(&#039;.vid-runtime&#039;).html(config.videoList.videoItems[index].runtime);
-
-                                if (config.videoList.videoItems[index].expiration) {
-                                    videoWrapper.find(&#039;.vid-expires&#039;).html(&#039;Expires: &#039; + config.videoList.videoItems[index].expiration);
-                                }
-                                else {
-                                    videoWrapper.find(&#039;.vid-expires&#039;).html(&#039;&#039;);   
-                                }
-
-                                if (config.videoList.videoItems[index].rating) {
-                                    videoWrapper.find(&#039;.vid-rating&#039;).html(&#039;Rating: &#039; + config.videoList.videoItems[index].rating);
-                                }
-                                else {
-                                    videoWrapper.find(&#039;.vid-rating&#039;).html(&#039;&#039;);
+                                setVideoData(video, videoWrapper);
+                                if (window.matchMedia(&#039;(min-width: 961px)&#039;).matches) {
+                                    if (totalVideos &gt; 6) {
+                                        hideLoadMoreButton();
+                                        scrollBar();
+                                    }
                                 }
                             });
                         }else {
@@ -150,49 +154,57 @@
                     }
                 });
             }
-        }
+        };
+
         var scrollBar = function() {
             if (playlist.closest(&#039;.span12.page-content&#039;).length) {
                 var viewport = playlist.find(&#039;.viewport&#039;);
-                viewport.css(&#039;height&#039;, playlist.height() - playlist.find(&#039;.bar-h2&#039;).outerHeight());
+                var playlitHeader = playlist.find(&#039;.bar-h2&#039;);
+                var height = playlist.height() - playlitHeader.outerHeight();
+                viewport.css(&#039;height&#039;, height);
             }
-            playlist.find(&#039;.featured&#039;).customScrollbar(&quot;remove&quot;).customScrollbar({
-                skin: &quot;default-skin&quot;, 
-                hScroll: false,
-                updateOnWindowResize: true
-            });
-        }   
+            playlist
+                .find(&#039;.featured&#039;)
+                .customScrollbar(&#039;remove&#039;)
+                .customScrollbar({
+                    skin: &#039;default-skin&#039;,
+                    hScroll: false,
+                    updateOnWindowResize: true
+                });
+        };
 
-        var getLastVisibleIdx = function () {
-            return playlist.find(&#039;.overview li:visible&#039;).not(&#039;.video-load-more&#039;).last().index() + 1;
-        }
-        
+        var getLastVisibleIdx = function() {
+            return playlist
+                    .find(&#039;.overview li:visible&#039;)
+                    .not(&#039;.video-load-more&#039;)
+                    .last()
+                    .index() + 1;
+        };
+
         var totalVideos = playlist.find(&#039;.overview li&#039;).length - 1; //we exclude the &quot;show more videos&quot; li
         var loadMoreButton = playlist.find(&#039;.video-load-more&#039;);
         var lastVisibleIdx = getLastVisibleIdx();
 
-
         var showLoadMoreButton = function() {
             loadMoreButton.show();
-        }
-        
+        };
+
         var hideLoadMoreButton = function() {
             loadMoreButton.hide();
-        }
-
+        };
 
         var attachEvents = function() {
 
             //attach the loadMore action
-            loadMoreButton.on(&#039;click&#039;, function () {
+            loadMoreButton.on(&#039;click&#039;, function() {
                 //display 6 more videos
                 $(&#039;.overview li:lt(&#039; + (lastVisibleIdx += 6) + &#039;)&#039;).show();
-                
+
                 if (lastVisibleIdx &gt;= totalVideos) {
                     hideLoadMoreButton();
                 }
             });
-        }
+        };
 
         $(document).ready(function() {
             var videoPlayer = playlist.find(&#039;.player&#039;);
@@ -204,34 +216,36 @@
             attachEvents();
 
             videoPlayer.css({
-                &#039;background-image&#039;: &quot;url(&quot; + config.loadingImg +  &quot;)&quot;,
+                &#039;background-image&#039;: &#039;url(&#039; + config.loadingImg +  &#039;)&#039;,
                 &#039;background-repeat&#039;: &#039;no-repeat&#039;,
                 &#039;background-position&#039;: &#039;50% 50%&#039;
             });
 
             // navigation through videos
-            playlist.find(&#039;.overview li a&#039;).each(function(index){
-                $(this).on(&#039;click&#039;, function () {
+            playlist.find(&#039;.overview li a&#039;).each(function(index) {
+                $(this).on(&#039;click&#039;, function() {
                     var self = $(this);
-                    var current_idx = self.parent().index();
+                    var currentIdx = self.parent().index();
 
-                    playlist.find(&#039;.overview li a&#039;).removeClass(&quot;active&quot;);
-                    self.addClass(&quot;active&quot;);
+                    playlist.find(&#039;.overview li a&#039;).removeClass(&#039;active&#039;);
+                    self.addClass(&#039;active&#039;);
 
-                    loadVideo(current_idx ,videoPlayer);
-                    
-                    playlist.find(&#039;.videos-nr .current-video&#039;).text(self.parent().index() + 1);
+                    loadVideo(currentIdx ,videoPlayer);
+
+                    playlist
+                        .find(&#039;.videos-nr .current-video&#039;)
+                        .text(self.parent().index() + 1);
 
                 });
             });
-            
+
             // Add load more button if under 960px;
             if (window.matchMedia(&#039;(max-width: 960px)&#039;).matches &amp;&amp; totalVideos &gt; 6) {
                 showLoadMoreButton();
             }
 
             // Collapsible Playlist
-            playlist.find(&#039;.collapse-videos&#039;).on(&#039;click&#039;, function () {
+            playlist.find(&#039;.collapse-videos&#039;).on(&#039;click&#039;, function() {
                 $(this).toggleClass(&#039;closed&#039;);
                 playlist.find(&#039;.featured&#039;).slideToggle();
             });
@@ -243,12 +257,12 @@
         });
 
         //lazy load hidden images and update scrollbar container
-        $(window).load(function(){
-            playlist.find(&#039;.bar .featured .overview li a img&#039;).each(function(iter){
-                if(config.videoList.videoItems[iter].data){
-                    $(this).attr(&quot;src&quot;, config.videoList.videoItems[iter].data)
+        $(window).load(function() {
+            playlist.find(&#039;.bar .featured .overview li a img&#039;).each(function(iter) {
+                if (config.videoList.videoItems[iter].data) {
+                    $(this).attr(&#039;src&#039;, config.videoList.videoItems[iter].data);
                 }
-            })
+            });
             if (window.matchMedia(&#039;(min-width: 961px)&#039;).matches) {
                 if (totalVideos &gt; 6) {
                     playlist.find(&#039;.bar .featured .viewport&#039;).css(&#039;height&#039;, &#039;480px&#039;);
@@ -259,22 +273,22 @@
 
         $(window).resize(function() {
             if (window.matchMedia(&#039;(min-width: 961px)&#039;).matches) {
-                hideLoadMoreButton();
-                scrollBar();
-            }
-            else {
+                if (totalVideos &gt; 6) {
+                    hideLoadMoreButton();
+                    scrollBar();
+                }
+            } else {
                 lastVisibleIdx = getLastVisibleIdx();
 
                 if (lastVisibleIdx &lt; totalVideos) {
                     showLoadMoreButton();
-                }
-                else {
+                } else {
                     hideLoadMoreButton();
                 }
             }
         });
-    }
-}(window, jQuery))</textarea>
+    };
+}(window, jQuery));</textarea>
   </div>
 </div>
 

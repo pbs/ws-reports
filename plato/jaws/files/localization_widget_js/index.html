@@ -44,11 +44,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
-      <p class="stat">63.32</p>
+      <p class="stat">62.70</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
-      <p class="stat">848</p>
+      <p class="stat">1026</p>
     </div>
   </div>
   <div class="row historical">
@@ -62,11 +62,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
-      <p class="stat">69.98</p>
+      <p class="stat">75.92</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
-      <p class="stat">8.74</p>
+      <p class="stat">10.31</p>
     </div>
   </div>
 </div>
@@ -138,10 +138,13 @@ JAWS.Localization = (function () {
         trackingCategory = &quot;Auto-localization overlay&quot;,
         filesLoaded = false,
         setOnce = false,
+        initialCallSign = false,
         localizationType,
         modalOverlay,
+        confirmOverlay,
         modalFind,
         modalConfirm,
+        needsRefresh = false,
         post_data = {},
         modalList,
         bodyElem = document.querySelector(&#039;body&#039;),
@@ -158,14 +161,16 @@ JAWS.Localization = (function () {
     /* START Helping functions */
     /***************************/
     if(typeof trackEvent == &#039;undefined&#039;){
-        // tracking functions
-        window.trackEvent = function(target, action, label) {
+        // tracking functions, note fourth parameter for setting the non-interaction flag
+        window.trackEvent = function(target, action, label, nonInteraction) {
             if (typeof GTMDataLayer !== &quot;undefined&quot;) {
+                var nonInteraction = nonInteraction ? nonInteraction : false;
                 GTMDataLayer.push({
                     &#039;event&#039; : &#039;GlobalChrome&#039;,
                     &#039;category&#039; : target,
                     &#039;action&#039; : action,
-                    &#039;label&#039; : label
+                    &#039;label&#039; : label,
+                    &#039;nonInteraction&#039; : nonInteraction,
                 });
             }
         }
@@ -235,10 +240,7 @@ JAWS.Localization = (function () {
     function localizeUser(stationData) {
         createCookie(&#039;pbsol.common.name&#039;, stationData.common_name, 356);
         createCookie(&#039;pbsol.station&#039;, stationData.station, 356);
-        // set favorite station on pbs profile
-        if (window.PBS &amp;&amp; PBS.Profile) {
-            PBS.Profile.favoriteStations.add(stationData.station, stationData.zipCode);
-        }
+
     }
 
     function setDonateLink(donateLink){
@@ -273,9 +275,9 @@ JAWS.Localization = (function () {
     }
 
     // change station logo
-    function changeStationLogo(logo) {
+    function changeStationLogo(logo, shortCommonName) {
         var logoHolder = document.querySelector(&#039;.modalStationImage&#039;);
-        logoHolder.innerHTML = &#039;&lt;img src=&quot;http://image.pbs.org/station-images/StationColorProfiles/color/&#039; + logo + &#039;.png.resize.106x106.png&quot; alt=&quot;&quot;&gt;&#039;;
+        logoHolder.innerHTML = &#039;&lt;img src=&quot;http://image.pbs.org/station-images/StationColorProfiles/color/&#039; + logo + &#039;.png.resize.106x106.png&quot; alt=&quot;&#039;+ shortCommonName +&#039;&quot;&gt;&#039;;
     }
 
     function closest(el, fn) {
@@ -288,17 +290,20 @@ JAWS.Localization = (function () {
         var stationItems = document.querySelectorAll(&#039;#autoStationsList .stationItem&#039;),
             that = evt.target,
             stationId,
-            stationElem;
+            stationElem,
+            stationCommonName;
 
         Array.prototype.forEach.call(stationItems, function (el) {
             el.jwRemoveClass(&#039;active&#039;);
+            el.setAttribute(&#039;aria-pressed&#039;, &#039;false&#039;);
         });
         // hightlight the current station item
-        stationElem = closest(that, function(el){return el.tagName.toLowerCase() === &#039;li&#039;;});
+        stationElem = closest(that, function(el){return el.tagName.toLowerCase() === &#039;button&#039;;});
         stationId = stationElem.id;
-        stationElem.jwAddClass(&quot;active&quot;);
-
-        changeStationLogo(stationId);
+        stationElem.jwAddClass(&#039;active&#039;);
+        stationElem.setAttribute(&#039;aria-pressed&#039;, &#039;true&#039;);
+        stationCommonName = stationElem.getAttribute(&#039;data-common_name&#039;);
+        changeStationLogo(stationId, stationCommonName);
     }
 
     // toggles station elements
@@ -324,10 +329,10 @@ JAWS.Localization = (function () {
 
     // Add stations
     function addStations(data) {
-        var station,
+        var defaultStation = data[0],
             stationHTML = &#039;&#039;,
             stationsLength = Object.keys(data).length,
-            modalList = document.querySelector(&#039;#pbs-modal-window.pbs-stastions-list&#039;),
+            modalList = document.querySelector(&#039;#pbs-stations-list&#039;),
             stationsSection = document.querySelector(&#039;#autoSelectStation&#039;),
             stations = document.querySelector(&#039;#autoStationsList&#039;),
             stationItems,
@@ -338,34 +343,36 @@ JAWS.Localization = (function () {
         modalList.jwRemoveClass(&#039;twoStation&#039;);
 
         switch (stationsLength) {
-        case 0:
-            toggleElements(false);
-            trackEvent(trackingCategory, &#039;No Stations for Zip&#039;, &#039;viewed step&#039;);
-            break;
-        case 1:
-            modalList.jwAddClass(&#039;oneStation&#039;);
-            break;
-        case 2:
-            modalList.jwAddClass(&#039;twoStation&#039;);
-            break;
+            case 0:
+                toggleElements(false);
+                trackEvent(trackingCategory, &#039;No Stations for Zip&#039;, &#039;viewed step&#039;);
+                break;
+            case 1:
+                modalList.jwAddClass(&#039;oneStation&#039;);
+                break;
+            case 2:
+                modalList.jwAddClass(&#039;twoStation&#039;);
+                break;
         }
-        for (index = 0; index &lt; data.length; index += 1) {
-            if (index === 0 &amp;&amp; data[index].flagship !== &#039;&#039;) {
-                changeStationLogo(data[index].flagship);
-                if (!setOnce &amp;&amp; localizationType === &#039;forced&#039;) {
-                    localizeUser({
-                        &#039;common_name&#039;: data[index].common_name_short,
-                        &#039;station&#039;: data[index].flagship,
-                        &#039;zipCode&#039;: zipCode
-                    });
-                    setOnce = true;
-                }
-            }
 
-            stationHTML += &#039;&lt;li id=&quot;&#039; + data[index].flagship + &#039;&quot; class=&quot;stationItem&#039; + (index === 0 ? &#039; active&#039; : &#039;&#039;) + &#039;&quot; data-donate_url=&quot;&#039; + data[index].membership_url + &#039;&quot; data-common_name=&quot;&#039; + data[index].common_name_short + &#039;&quot; data-zipcode=&quot;&#039; + zipCode + &#039;&quot;&gt;&#039;;
+        if (defaultStation &amp;&amp; defaultStation.flagship) {
+            changeStationLogo(defaultStation.flagship, defaultStation.common_name_short);
+            if (!setOnce &amp;&amp; localizationType === &#039;forced&#039;) {
+                localizeUser({
+                    &#039;common_name&#039;: defaultStation.common_name_short,
+                    &#039;station&#039;: defaultStation.flagship,
+                    &#039;zipCode&#039;: defaultStation.zip_code
+                });
+                setOnce = true;
+            }
+        }
+
+        for (index = 0; index &lt; data.length; index += 1) {
+
+            stationHTML += &#039;&lt;button id=&quot;&#039; + data[index].flagship + &#039;&quot; class=&quot;stationItem&#039; + (index === 0 ? &#039; active&#039; : &#039;&#039;) + &#039;&quot; data-donate_url=&quot;&#039; + data[index].membership_url + &#039;&quot; data-common_name=&quot;&#039; + data[index].common_name_short + &#039;&quot; data-zipcode=&quot;&#039; + data[index].zip_code + &#039;&quot; aria-pressed=&quot;&#039;+ (index === 0 ? &#039;true&#039; : &#039;false&#039;) +&#039;&quot;&gt;&#039;;
             stationHTML += &#039;&lt;h3&gt;&lt;strong class=&quot;commonName&quot;&gt;&#039; + data[index].common_name + &#039;&lt;/strong&gt;&lt;strong class=&quot;shortCommonName&quot;&gt;&#039; + data[index].common_name_short + &#039;&lt;/strong&gt;&lt;/h3&gt;&#039;;
             stationHTML += &#039;&lt;span&gt;&#039; + data[index].address + &#039;&lt;/span&gt;&#039;;
-            stationHTML += &#039;&lt;/li&gt;&#039;;
+            stationHTML += &#039;&lt;/button&gt;&#039;;
         }
         stations.innerHTML = stationHTML;
         stationsSection.jwRemoveClass(&#039;none&#039;);
@@ -415,46 +422,89 @@ JAWS.Localization = (function () {
         document.body.insertBefore(container, document.body.firstChild);
     }
 
+    // passing focus once the modals are closed
+    function passFocusOnClose(){
+        var passFocusToOnClose = bodyElem.getAttribute(&#039;data-pass-focus-to-on-close&#039;);
+        // will return an element or undefined, based on bodyElem.getAttribute(&#039;data-pass-focus-to-on-close&#039;)
+        var targetElem = document.getElementById(passFocusToOnClose);
+        // will return true if targetElem exists AND is actually visible (using offsetHeight)
+        var targetIsVisible = targetElem &amp;&amp; targetElem.offsetHeight !== 0;
+
+        if (!targetIsVisible){
+            // if the target either doesn&#039;t exist, or isn&#039;t visible, target the body
+            targetElem = bodyElem;
+        }
+
+        // actually pass focus
+        targetElem.focus();
+        bodyElem.removeAttribute(&#039;data-pass-focus-to-on-close&#039;);
+    }
 
     // switch between modals
     function switchModals(state) {
         var localization_widget,
             activeStationListItem = document.querySelector(&#039;#autoStationsList .stationItem.active&#039;);
         // modals
-        modalFind = document.querySelector(&#039;#pbs-modal-window.pbs-find-stations&#039;);
-        modalList = document.querySelector(&#039;#pbs-modal-window.pbs-stastions-list&#039;);
+        modalFind = document.querySelector(&#039;#pbs-find-stations&#039;);
+        modalList = document.querySelector(&#039;#pbs-stations-list&#039;);
         modalConfirm = document.querySelector(&#039;#pbs-confirm-station&#039;);
+
         switch (state) {
-        case &#039;list&#039;:
-            modalFind.jwAddClass(&#039;none&#039;);
-            modalConfirm.jwAddClass(&#039;none&#039;);
-            modalList.jwRemoveClass(&#039;none&#039;);
-            modalOverlay.jwRemoveClass(&#039;none&#039;);
-            trackEvent(trackingCategory, &#039;Confirm Station&#039;, &#039;Viewed Overlay&#039;);
-            break;
-        case &#039;find&#039;:
-            modalList.jwAddClass(&#039;none&#039;);
-            modalConfirm.jwAddClass(&#039;none&#039;);
-            modalFind.jwRemoveClass(&#039;none&#039;);
-            modalOverlay.jwRemoveClass(&#039;none&#039;);
-            if(activeStationListItem){
-                activeStationListItem.jwRemoveClass(&#039;active&#039;);
-            }
-            trackEvent(trackingCategory, &#039;Find Station&#039;, &#039;viewed step&#039;);
-            break;
-        case &#039;confirm&#039;:
-            modalOverlay.jwAddClass(&#039;none&#039;);
-            modalConfirm.jwRemoveClass(&#039;none&#039;);
-            positionConfirmModal();
-            bodyElem.style.overflow = &#039;auto&#039;;
-            break;
-        default:
-            modalList.jwAddClass(&#039;none&#039;);
-            modalFind.jwAddClass(&#039;none&#039;);
-            modalConfirm.jwAddClass(&#039;none&#039;);
-            localization_widget = document.querySelector(&#039;#jaws_localization&#039;);
-            localization_widget.parentNode.removeChild(localization_widget);
-            bodyElem.style.overflow = &#039;auto&#039;;
+            case &#039;list&#039;:
+                modalFind.jwAddClass(&#039;none&#039;);
+                modalConfirm.jwAddClass(&#039;none&#039;);
+                modalList.jwRemoveClass(&#039;none&#039;);
+                modalOverlay.jwRemoveClass(&#039;none&#039;);
+                confirmOverlay.jwAddClass(&#039;none&#039;);
+                trackEvent(trackingCategory, &#039;Confirm Station&#039;, &#039;Viewed Overlay&#039;);
+                modalList.focus();
+                window.addEventListener(&#039;keyup&#039;, closeOnEscape);
+                modalList.addEventListener(&#039;keydown&#039;, onKeyDown);
+                break;
+            case &#039;find&#039;:
+                modalList.jwAddClass(&#039;none&#039;);
+                modalConfirm.jwAddClass(&#039;none&#039;);
+                modalFind.jwRemoveClass(&#039;none&#039;);
+                modalOverlay.jwRemoveClass(&#039;none&#039;);
+                confirmOverlay.jwAddClass(&#039;none&#039;);
+                if(activeStationListItem){
+                    activeStationListItem.jwRemoveClass(&#039;active&#039;);
+                }
+                trackEvent(trackingCategory, &#039;Find Station&#039;, &#039;viewed step&#039;);
+                modalFind.focus();
+                modalList.removeEventListener(&#039;keydown&#039;, onKeyDown);
+                window.addEventListener(&#039;keyup&#039;, closeOnEscape);
+                modalFind.addEventListener(&#039;keydown&#039;, function(evt){
+                    // we just need the keydown event listener on the modal itself, not it&#039;s children
+                    if (evt.target === modalFind){
+                        onKeyDown(evt);
+                    }
+                });
+                break;
+            case &#039;confirm&#039;:
+                modalOverlay.jwAddClass(&#039;none&#039;);
+                confirmOverlay.jwRemoveClass(&#039;none&#039;);
+                modalConfirm.jwRemoveClass(&#039;none&#039;);
+                positionConfirmModal();
+                bodyElem.style.overflow = &#039;auto&#039;;
+                break;
+            default:
+                if (modalList) {
+                    modalList.jwAddClass(&#039;none&#039;);
+                }
+                if (modalFind) {
+                    modalFind.jwAddClass(&#039;none&#039;);
+                }
+                if (modalConfirm) {
+                    modalConfirm.jwAddClass(&#039;none&#039;);
+                }
+                localization_widget = document.querySelector(&#039;#jaws_localization&#039;);
+                if (localization_widget) {
+                    localization_widget.parentNode.removeChild(localization_widget);
+                }
+                bodyElem.style.overflow = &#039;auto&#039;;
+                passFocusOnClose();
+                window.removeEventListener(&#039;keyup&#039;, closeOnEscape);
         }
     }
 
@@ -491,101 +541,195 @@ JAWS.Localization = (function () {
         }
     }
 
-    // close stations modal
-    function close(evt) {
+    /**
+     * Handles keyDown events - see &#039;keydown&#039; event listeners that invoke this.
+     * @param {event} evt - the keyboard event
+     * @attr {string} data-pass-focus-on-tab-to - the id we want to
+     * pass focus to on regular tab
+     * @attr {string} data-pass-focus-on-shift-tab-to - the id we want to
+     * pass focus to on *shift* tab
+     */
+    function onKeyDown(evt){
+        var el = evt.target;
+        var tabKeyCode = 9;
+        var returnKeyCode = 13;
+        var spaceKeyCode = 32;
+        var tabFocusTarget = el.getAttribute(&#039;data-pass-focus-on-tab-to&#039;);
+        var shiftTabFocusTarget = el.getAttribute(&#039;data-pass-focus-on-shift-tab-to&#039;);
+
+        // Is this a return or space key press? If so, invoke close();
+        if (evt.keyCode === returnKeyCode || evt.keyCode === spaceKeyCode) {
+            prepareToClose(evt);
+            return;
+        }
+
+        // Here is where we trap focus
+        // Is this a tab key event?
+        if (evt.keyCode === tabKeyCode){
+            // if there is a shift key, and shiftTabFocusTarget
+            if ( evt.shiftKey &amp;&amp; shiftTabFocusTarget ) {
+                evt.preventDefault();
+                document.getElementById(shiftTabFocusTarget).focus();
+            } else if ( !evt.shiftKey &amp;&amp; tabFocusTarget) {
+                // else if it&#039;s not with the shift key, and there is a
+                // tabFocusTarget
+                evt.preventDefault();
+                document.getElementById(tabFocusTarget).focus();
+            }
+        }
+    }
+
+    /**
+     * When the escape key is hit, invoke close() or switchModals()
+     * @param {event} evt - the keyboard event
+     */
+    function closeOnEscape(evt){
+        var escKeyCode = 27;
+        var selectedStation = document.querySelector(&#039;#autoStationsList .stationItem.active&#039;);
+        var modalFind = document.querySelector(&#039;#pbs-find-stations&#039;);
+        var modalList = document.querySelector(&#039;#pbs-stations-list&#039;);
+        var confirmOverlay = document.querySelector(&#039;#pbs-confirm-station&#039;);
+
+        if (evt.keyCode === escKeyCode){
+            if (needsRefresh) {
+                prepareToClose(evt, true);
+            } else {
+                switchModals();
+            }
+        }
+    }
+
+    /**
+     * Gets ready to close the various modals - as the closing is actually done by switchModals();
+     * @param {event} evt - the event that triggered close()
+     * @param {boolean} initLocalize - if we want to init localization programatically
+     * This function is long, and complicated, and in desperate need of a refactor
+     */
+    function prepareToClose(evt, initLocalize) {
         var that = evt.target,
             selectedStation = document.querySelector(&#039;#autoStationsList .stationItem.active&#039;),
             station,
             stationList = Array.prototype.slice.call(document.getElementById(&#039;autoStationsList&#039;).children);
 
-        if(selectedStation){
-            station = {
-                &#039;common_name&#039; : selectedStation.getAttribute(&#039;data-common_name&#039;),
-                &#039;station&#039; : selectedStation.getAttribute(&#039;id&#039;),
-                &#039;zipCode&#039; : selectedStation.getAttribute(&#039;data-zipcode&#039;)
-            };
-        }
-
         function callback(){
-            if(redirect_to){
+            if (redirect_to) {
                 window.location.href = redirect_to;
-            }else{
-                if(!that.getAttribute(&#039;data-noreload&#039;)){
+            } else {
+                if (!that.getAttribute(&#039;data-noreload&#039;)) {
                     location.reload();
-                }else{
+                } else {
                     switchModals();
                 }
             }
         }
-        if (that.getAttribute(&#039;class&#039;) === &#039;closeBtn&#039;) {
-            // autolocalization
-            if (localizationType === &#039;forced&#039;) {
-                if(selectedStation){
-                    trackEvent(trackingCategory, &#039;Close&#039;, selectedStation.getAttribute(&#039;id&#039;) + &#039; - &#039; + parseInt(stationList.indexOf(selectedStation) + 1));
-                }
-                else{
-                    if(document.querySelector(&#039;#autoStationsList .stationItem&#039;))
-                        trackEvent(trackingCategory, &#039;Find Station&#039;, &#039;Close&#039;);
-                    else
-                        trackEvent(trackingCategory, &#039;No Stations for Zip&#039;, &#039;Close&#039;);
+
+        function handleButtonAction(stationData){
+            if (that.getAttribute(&#039;class&#039;) === &#039;closeBtn&#039;) {
+                // autolocalization
+                if (localizationType === &#039;forced&#039;) {
+                    if(selectedStation){
+                        trackEvent(trackingCategory, &#039;Close&#039;, selectedStation.getAttribute(&#039;id&#039;) + &#039; - &#039; + parseInt(stationList.indexOf(selectedStation) + 1));
+                    }
+                    else{
+                        if(document.querySelector(&#039;#autoStationsList .stationItem&#039;))
+                            trackEvent(trackingCategory, &#039;Find Station&#039;, &#039;Close&#039;);
+                        else
+                            trackEvent(trackingCategory, &#039;No Stations for Zip&#039;, &#039;Close&#039;);
+                        evt.preventDefault();
+                        callback();
+                        return false;
+                    }
+                    // reload
                     evt.preventDefault();
                     callback();
-                    return false;
                 }
+                if (localizationType === &#039;manual&#039;) {
+                    if(selectedStation){
+                        trackEvent(trackingCategory, &#039;Close&#039;, selectedStation.id + &#039; - &#039; + (stationList.indexOf(selectedStation) + 1) );
+                    }
+                    else{
+                        if(document.querySelector(&#039;#autoStationsList .stationItem&#039;) || document.querySelector(&#039;.localizationStationListNoStations&#039;).offsetHeight == 0)
+                            trackEvent(trackingCategory, &#039;Find Station&#039;, &#039;Close&#039;);
+                        else
+                            trackEvent(trackingCategory, &#039;No Stations for Zip&#039;, &#039;Close&#039;);
+                            //trackEvent(trackingCategory, &#039;Find Station&#039;, &#039;Close&#039;);
+                    }
+                    switchModals();
+                }
+                if(redirect_to){
+                    window.location.href = redirect_to;
+                }
+            }
+
+            if (that.id === &#039;confirmStation&#039; ||
+                that.getAttribute(&#039;data-confirm-station&#039;) === &#039;true&#039; ||
+                initLocalize) {
+                // the following code will assure that the page doesn&#039;t go in infinite loop
+                // there&#039;s another piece of code somewhere that fires the click event
+                // lvl 100 wizard magic, event.detail means how many times the button has been pressed,
+                // 0 means it has been triggered by code
+                // we need to make sure this isn&#039;t a keyboard press, so we make sure keyCode is undefined
+                if (typeof evt.keyCode === &#039;undefined&#039; &amp;&amp; evt.detail == 0) {
+                //here be dragons - lvl 101 dark elven magic - hack for IE 11, touch event
+                    if(evt.pointerId != 1)
+                        return;
+                }
+
+                // If the &#039;data-ga-event&#039; attribute isn&#039;t present, track events one way
+                if(!that.getAttribute(&#039;data-ga-event&#039;)){
+                    trackEvent(trackingCategory, &#039;Confirm&#039;, selectedStation.id + &#039; - &#039; + parseInt(stationList.indexOf(selectedStation) + 1));
+                } else {
+                    // otherwise use the attribute in the event
+                    // This attribute is currently only in the overlay
+                    trackEvent(trackingCategory, &#039;Is This Your Station&#039;, that.getAttribute(&#039;data-ga-event&#039;) + &#039; - &#039; + initialCallSign);
+                }
+
+                localizeUser(station);
+
+                // The custom event that will be created
+                var confirmEvent = createEvent(&#039;confirmStationEvent&#039;, {
+                                        link: stationData.donate_url,
+                                        zipCode: stationData.zip_code,
+                                        confirmBtn: that.getAttribute(&#039;id&#039;) ? &quot;#&quot; + that.getAttribute(&#039;id&#039;) : &#039;&#039;,
+                                        donate: donate,
+                                        station: stationData.call_sign
+                                    });
+
+                fireEvent(confirmEvent);
+
+                var donate_location = &quot;@PBS_DONATE_URL@&quot;;
+
                 // reload
                 evt.preventDefault();
                 callback();
             }
-            if (localizationType === &#039;manual&#039;) {
-                if(selectedStation){
-                    trackEvent(trackingCategory, &#039;Close&#039;, selectedStation.getAttribute(&#039;id&#039;) + &#039; - &#039; + parseInt(stationList.indexOf(selectedStation) + 1));
-                }
-                else{
-                    if(document.querySelector(&#039;#autoStationsList .stationItem&#039;) || document.querySelector(&#039;.localizationStationListNoStations&#039;).offsetHeight == 0)
-                        trackEvent(trackingCategory, &#039;Find Station&#039;, &#039;Close&#039;);
-                    else
-                        trackEvent(trackingCategory, &#039;No Stations for Zip&#039;, &#039;Close&#039;);
-                        //trackEvent(trackingCategory, &#039;Find Station&#039;, &#039;Close&#039;);
-                }
-                switchModals();
-            }
-            if(redirect_to){
-                window.location.href = redirect_to;
-            }
         }
 
-        if (that.getAttribute(&#039;id&#039;) === &#039;confirmStation&#039; ||
-            that.getAttribute(&#039;data-confirm-station&#039;) === &#039;true&#039;) {
-            //the following code will assure that the page doesn&#039;t go in infinite loop
-            //there&#039;s another piece of code somewhere that fires the click event
-            //lvl 100 wizard magic, event.detail means how many times the button has been pressed, 0 means it has been triggered by code
-            if(evt.detail == 0){
-            //here be dragons - lvl 101 dark elven magic - hack for IE 11, touch event
-                if(evt.pointerId != 1)
-                    return;
-            }
-
-            //don&#039;t sent any GTM evets when using the new autolocalization confirm modal
-            if(!that.getAttribute(&#039;data-prevent-ga-event&#039;)){
-                trackEvent(trackingCategory, &#039;Confirm&#039;, selectedStation.getAttribute(&#039;id&#039;) + &#039; - &#039; + parseInt(stationList.indexOf(selectedStation) + 1));
-            }
-            localizeUser(station);
-
-            // The custom event that will be created
-            var confirmEvent = createEvent(&#039;confirmStationEvent&#039;, {
-                                    &quot;link&quot;: selectedStation.getAttribute(&#039;data-donate_url&#039;),
-                                    &quot;confirmBtn&quot;: &quot;#&quot; + that.getAttribute(&#039;id&#039;),
-                                    &quot;donate&quot;: donate,
-                                    &quot;station&quot;: autoSelectedStation || station
-                                });
-
-            fireEvent(confirmEvent);
-
-            var donate_location = &quot;@PBS_DONATE_URL@&quot;;
-
-            // reload
-            evt.preventDefault();
+        // Here is where the action starts: first, is there a selectedStation?
+        if (selectedStation) {
+            // get station details for selected station
+            var ajax = new Ajax({
+                url : localizationUrl + &#039;false/?callsign=&#039; + selectedStation.getAttribute(&#039;id&#039;),
+                type : &#039;JSONP&#039;
+            }, function (data) {
+                var stationData = data.station.skylab_data;
+                station = {
+                    &#039;common_name&#039;: stationData.common_name,
+                    &#039;station&#039;: stationData.call_sign,
+                    &#039;zipCode&#039;: stationData.zip_code,
+                    &#039;donate_url&#039;: stationData.donate_url,
+                    &#039;tvss_url&#039;: stationData.tvss_url
+                };
+                handleButtonAction(stationData);
+            });
+        } else if (needsRefresh) {
+            // if there is no selectedStation, but needsRefresh is true [see autolocalize()], invoke callback()
             callback();
+        } else {
+            // if there is no selectedStation, and needsRefresh is false
+            // (which is the case if modals have been opened in a localized state)
+            // we invoke switchModals() - which, in the default state, closes and removes all modals
+            switchModals();
         }
     }
 
@@ -692,9 +836,9 @@ JAWS.Localization = (function () {
         }
 
         window.addEventListener(&#039;resize&#039;, positionBox);
-
         positionBox();
     }
+
     // Create the stations overlay
     function createOverlay(state) {
         var closeBtn,
@@ -702,7 +846,9 @@ JAWS.Localization = (function () {
             moreStations,
             searchByZip,
             searchByState,
+            initialShortCommonName,
             confirmCallsign,
+            confirmButton,
             changeStations,
             backBtn;
         // insert the stations overlay
@@ -713,28 +859,44 @@ JAWS.Localization = (function () {
             if (localizationData.stations_list.length &gt; 0) {
                 // add stations to the overlay
                 addStations(localizationData.stations_list);
-                confirmCallsign = document.querySelector(&#039;#confirmCallsign&#039;);
+                confirmCallsign = document.querySelectorAll(&#039;.confirmCallsign&#039;);
+
                 // autolocalize to first station, let the user confirm it
-                confirmCallsign.innerHTML = localizationData.stations_list[0].common_name_short;
+                initialShortCommonName = localizationData.stations_list[0].common_name_short;
+
+                // see the top level variable
+                initialCallSign = localizationData.stations_list[0].callsign;
+
+                for (var i = 0; i &lt; confirmCallsign.length; i++) {
+                    confirmCallsign[i].innerHTML = initialShortCommonName;
+                }
             }
+
             // close the modal
             closeBtn = document.querySelectorAll(&#039;.closeBtn, .close&#039;);
             changeStations = document.querySelectorAll(&#039;.changeStation&#039;);
             moreStations = document.querySelectorAll(&#039;.showStatesModal&#039;);
             confirmBtn = document.querySelectorAll(&#039;.modalConfirmStation&#039;);
             modalOverlay = document.querySelector(&#039;#pbs-modal-overlay&#039;);
+            confirmOverlay = document.querySelector(&#039;#pbs-confirm-modal-overlay&#039;);
             searchByZip = document.querySelector(&#039;#searchByZip&#039;);
             searchByState = document.querySelector(&#039;#serchByRegion&#039;);
             backBtn = document.querySelector(&#039;#backButton&#039;);
 
             // close buttons event listener
             Array.prototype.forEach.call(closeBtn, function (el) {
-                el.addEventListener(&#039;click&#039;, close);
+                el.addEventListener(&#039;click&#039;, prepareToClose);
+                // this keydown event listener works keyboard users
+                el.addEventListener(&#039;keydown&#039;, onKeyDown);
             });
+
             // confirm button event listener
             Array.prototype.forEach.call(confirmBtn, function(el){
-                el.addEventListener(&#039;click&#039;, close);
-            })
+                el.addEventListener(&#039;click&#039;, prepareToClose);
+                // this keydown event listener works keyboard users
+                el.addEventListener(&#039;keydown&#039;, onKeyDown);
+            });
+
             // more stations button event listener
             Array.prototype.forEach.call(changeStations, function(el){
                 el.addEventListener(&#039;click&#039;, function (evt) {
@@ -744,6 +906,7 @@ JAWS.Localization = (function () {
                     for (i = 0; i &lt; errors.length; i += 1) {
                         errors[i].jwAddClass(&quot;none&quot;);
                     }
+                    trackEvent(trackingCategory, &#039;Is This Your Station&#039;, &#039;Change - &#039; + initialCallSign);
                     switchModals(&#039;list&#039;);
                     evt.preventDefault();
                 });
@@ -755,6 +918,7 @@ JAWS.Localization = (function () {
                     createOverlay(&#039;find&#039;);
                 });
             });
+
             // zip code
             searchByZip.addEventListener(&#039;click&#039;, localizeZip);
             // state
@@ -789,9 +953,8 @@ JAWS.Localization = (function () {
             url : url,
             type : &#039;JSONP&#039; // GET, POST, JSON, JSONP
         }, function (data) {
-            localizationData = data;
             localizationType = &#039;forced&#039;;
-            zipCode = data.zip;
+            localizationData = data;
             var callsign = localizationData.stations_list[0].flagship;
 
             // prevents other overlays such as lightboxes this sesion
@@ -801,6 +964,7 @@ JAWS.Localization = (function () {
                 type : &#039;JSONP&#039; // GET, POST, JSON, JSONP
             }, function (data) {
                 autoSelectedStation = data.station;
+                zipCode = autoSelectedStation.zip_code;
                 var localizedEv = createEvent(&#039;jaws.localized&#039;,
                                               { station: autoSelectedStation});
 
@@ -808,10 +972,24 @@ JAWS.Localization = (function () {
                                autoSelectedStation.site_address,
                                autoSelectedStation.logo_url);
                 setDonateLink(autoSelectedStation.membership_url);
+                needsRefresh = true;
                 createOverlay(&#039;confirm&#039;);
-                document.dispatchEvent(localizedEv);
-            });
+                fireEvent(localizedEv);
 
+                // passing focus to the overlay once it&#039;s been invoked
+                var confirmBox = document.querySelector(&#039;#pbs-confirm-station-box&#039;);
+                confirmBox.focus();
+                trackEvent(trackingCategory, &#039;Is This Your Station&#039;, &#039;Viewed Overlay&#039;, true);
+
+                confirmBox.addEventListener(&#039;keydown&#039;, function(evt){
+                    // we just need the keydown event listener on the modal itself, not it&#039;s children
+                    if (evt.target === confirmBox){
+                        onKeyDown(evt);
+                    }
+                });
+                // now that the overlay is present, let&#039;s listen for keyup
+                window.addEventListener(&#039;keyup&#039;, closeOnEscape);
+            });
         });
     }
 
