@@ -44,11 +44,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
-      <p class="stat">62.70</p>
+      <p class="stat">62.64</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
-      <p class="stat">1026</p>
+      <p class="stat">1028</p>
     </div>
   </div>
   <div class="row historical">
@@ -62,11 +62,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
-      <p class="stat">75.92</p>
+      <p class="stat">76.12</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
-      <p class="stat">10.31</p>
+      <p class="stat">10.39</p>
     </div>
   </div>
 </div>
@@ -714,7 +714,7 @@ JAWS.Localization = (function () {
             }, function (data) {
                 var stationData = data.station.skylab_data;
                 station = {
-                    &#039;common_name&#039;: stationData.common_name,
+                    &#039;common_name&#039;: stationData.short_common_name,
                     &#039;station&#039;: stationData.call_sign,
                     &#039;zipCode&#039;: stationData.zip_code,
                     &#039;donate_url&#039;: stationData.donate_url,
@@ -827,11 +827,13 @@ JAWS.Localization = (function () {
                 before.jwAddClass(&#039;top-left&#039;);
                 confirmBox.style.textAlign = &#039;left&#039;;
                 arrowBox.style.marginLeft  = callsignLeft - before.offsetLeft / 2 + &#039;px&#039;;
+                arrowBox.style.marginRight  = callsignLeft - before.offsetLeft / 2 + &#039;px&#039;;
             }else{
                 after.jwAddClass(&#039;top-right&#039;);
                 before.jwAddClass(&#039;top-right&#039;);
                 confirmBox.style.textAlign = &#039;right&#039;;
                 arrowBox.style.marginLeft  = 0 + &#039;px&#039;;
+                arrowBox.style.marginRight  = 0 + &#039;px&#039;;
             }
         }
 
